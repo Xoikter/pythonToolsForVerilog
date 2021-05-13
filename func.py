@@ -198,13 +198,9 @@ def sim_gen(dic,name):
 
 
 if __name__ ==  '__main__':
-<<<<<<< HEAD
-
-=======
     os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
     SourcePath = "./code"
     file_inst(SourcePath,'test')
     # targetpath = make_sim_dic("Top")
     # makefile_src_gen(targetpath,"Top")
     # filelist_gen(path,targetpath,"uart_byte_txTB")
->>>>>>> 357f2046013cf5555292314185bcf5f9524d8836
