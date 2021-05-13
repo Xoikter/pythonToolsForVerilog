@@ -198,13 +198,6 @@ def sim_gen(dic,name):
 
 
 if __name__ ==  '__main__':
-
-#########test
-###test
-
-
-
-
     os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
     SourcePath = "./code"
     file_inst(SourcePath,'test')
