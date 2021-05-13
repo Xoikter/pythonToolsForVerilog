@@ -1,0 +1,4 @@
+global env
+fsdbDumpfile "$env(demo_name).fsdb"
+fsdbDumpvars 0 "$env(demo_name)" 
+run 10000ns
