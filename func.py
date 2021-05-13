@@ -236,8 +236,6 @@ if __name__ ==  '__main__':
     # path = find_file(path,"test")
     targetpath = make_sim_dic("uart_byte_tx")
     makefile_src_gen(targetpath,"uart_byte_tx")
-    # print(targetpath)
-    # print(targetpath)
     # tb_inst(path,targetpath,"uart_byte_tx")
     filelist_gen(path,targetpath,"uart_byte_txTB")
     # fp = open("/home/IC/xsc/python_pro/verilog_python/code/encryption/crypto_engine_reg.v","r")
