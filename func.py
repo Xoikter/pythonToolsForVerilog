@@ -87,13 +87,9 @@ def filelist_gen(source_path,target_path,name):
             if list not in list_pass:
                 list_pass.append(list)
         lists = list_temp
-        # print(list_temp)
-        # print(lists)
-        # print(list_pass)
     os.chdir(target_path)
     fp = open("filelist.f","w")
     for list in lists:
-        # print(list)
         fp.write(find_file(source_path,list) + "\n")
     fp.close()
 
@@ -129,9 +125,11 @@ def makefile_src_gen(target_path,name):
 def file_inst(dic, name):
     os.chdir(os.path.dirname(__file__)) 
     path = find_file(dic, name)
-    # print(path)
     fp = open(path,"r+",errors='ignore')
     lines = fp.readlines()
+    fp.close()
+    fp = open(path + '.bak', 'w', errors='ignore')
+    fp.writelines(lines)
     fp.close()
     fp = open(path,"w+")
     for lineT in lines:
@@ -184,62 +182,25 @@ def tb_inst(SourceDic,TargetDic, name):
         print("file exists")
 
 def make_sim_dic(name):
-    os.chdir(os.path.dirname(__file__)) 
-    # path = findfile(dic , name)
-    # print(path)
-    # ports = findport(path)
-    if not os.path.isdir("./sim"):
-        os.makedirs("./sim")
-    if not os.path.isdir("./sim/" + name + "Test"):
-        os.makedirs("./sim/" + name + "Test")
-    # return ("./sim/" + name + "Test")
-    return os.path.normpath(os.path.abspath("./sim/" + name + "Test")).replace("\\", "/")
-    os.chdir("./sim/" + name + "Test")
-    # if not os.path.isfile(name + r"TB.sv"):
-    #     fp = open(name + r"TB.sv","w+")
-    #     fp.write("module " + name + "TB;\n")
-    #     for port in ports:
-    #         fp.write("logic " + port[2] + ( 0 if len(port[2]) == 0 else 1) * " " +  port[3] + ";\n")
-    #     fp.write(name + " " + name + "Inst(\n")
-    #     lenStr = 0
-    #     for port in ports:
-    #         if(len(port[3]) > lenStr):
-    #             lenStr = len(port[3])
-    #             # print(lenStr)
-    #     for port in ports:
-    #         if(port == ports[len(ports) - 1]):
-    #             fp.write(" " * 8 + r"."+port[3] +" "*(lenStr + 2 - len(port[3])) + r"(" +port[3] + " "*(lenStr - len(port[3])) + "));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[2] + "\n")
-    #         else:
-    #             fp.write(" " * 8 + r"."+port[3] +" "*(lenStr + 2 - len(port[3])) + r"(" +port[3] + " "*(lenStr - len(port[3]))+ ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[2] + "\n")
-        
-    #     fp.write("initial begin\n")
-    #     fp.write("\n")
-    #     fp.write("end\n")
-    #     fp.write("\n\n\n\n\nendmodule\n")
-    #     fp.close()
-    # else:
-    #     print("file exists")
-    
+    os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
+    str = "../sim/"
+    if not os.path.isdir(str):
+        os.makedirs(str)
+    if not os.path.isdir(str + name + "Test"):
+        os.makedirs(str + name + "Test")
+    return os.path.normpath(os.path.abspath(str + name + "Test")).replace("\\", "/")
+
+
+
 def sim_gen(dic,name):
     TargetPath = make_sim_dic(name)
     tb_inst(dic,TargetPath,name)
 
 
 if __name__ ==  '__main__':
-    # path = findfile(path, filename)
-    # print(path)
-    # path = path.replace("\\", "/")
-    # print(path)
-    # ports = findport(path)
-    # fileInst(path, "test")
-    # sim_gen(path,"fifo_ctr")
-    # path = find_file(path,"test")
-    targetpath = make_sim_dic("uart_byte_tx")
-    makefile_src_gen(targetpath,"uart_byte_tx")
-    # print(targetpath)
-    # print(targetpath)
-    # tb_inst(path,targetpath,"uart_byte_tx")
-    filelist_gen(path,targetpath,"uart_byte_txTB")
-    # fp = open("/home/IC/xsc/python_pro/verilog_python/code/encryption/crypto_engine_reg.v","r")
-    # find_file("/home/IC/xsc","axi_top")
-    # print(find_module(path))
+    os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
+    SourcePath = "./code"
+    file_inst(SourcePath,'test')
+    # targetpath = make_sim_dic("Top")
+    # makefile_src_gen(targetpath,"Top")
+    # filelist_gen(path,targetpath,"uart_byte_txTB")

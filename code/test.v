@@ -8,6 +8,8 @@ fifo_ctr fifo_ctr_inst (
         .r_data   () ,//output  [`data_width-1:0]
         .full     () ,//output  
         .empty    ());//output  
+
+
 fifo_ctr fifo_ctr_inst (
         .clk_wr   () ,//input   
         .clk_rd   () ,//input   
@@ -18,3 +20,5 @@ fifo_ctr fifo_ctr_inst (
         .r_data   () ,//output  [`data_width-1:0]
         .full     () ,//output  
         .empty    ());//output  
+
+

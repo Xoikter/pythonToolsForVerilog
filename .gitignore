@@ -55,3 +55,4 @@ simv*
 *.conf 
 *.dat 
 *.conf
+*.json
