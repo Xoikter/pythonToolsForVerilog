@@ -204,5 +204,3 @@ if __name__ ==  '__main__':
     # targetpath = make_sim_dic("Top")
     # makefile_src_gen(targetpath,"Top")
     # filelist_gen(path,targetpath,"uart_byte_txTB")
-
-#########
