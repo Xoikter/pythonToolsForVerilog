@@ -16,7 +16,11 @@ def find_port(filename):
     fd = open(filename,errors='ignore')
     # result = 
     str = fd.read()
-    result = re.findall('(input|output)\s+(wire|reg)?\s*(\[.*?\])?\s*(\w+)',str)
+    str_temp = re.sub("\/\*[\s\S]*?\*\/","",str)
+    str_temp = re.sub(r'//.*$',"",str_temp)
+    str_temp = re.sub("function[\s\S]*?endfunction","",str_temp)
+    str_temp = re.sub("task[\s\S]*?endtask","",str_temp)
+    result = re.findall('(input|output)\s+(wire|reg)?\s*(\[.*?\])?\s*(\w+)',str_temp)
     for res in result:
         # print(res)
         portTemp = [res[0],res[1],res[2],res[3]]
@@ -32,8 +36,10 @@ def find_module(path):
     # print(path)
     fp = open(path,"r",errors="ignore")
     str = fp.read()
+    str_temp = re.sub("\/\*[\s\S]*?\*\/","",str)
+    str_temp = re.sub(r'//.*$',"",str_temp)
     modules = []
-    result = re.findall('(\w+)\s+(\w+)\s*\(',str)
+    result = re.findall('(\w+)\s+(\w+)\s*\(',str_temp)
     for item in result:
         if((item[0] not in keyword) and (item[1] not in keyword)):
             # print(item)
@@ -54,8 +60,10 @@ def find_file(start, name):
                 return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
 
 def filelist_gen(source_path,target_path,name):
+    os.chdir(os.path.dirname(__file__)) 
     path = find_file(source_path,name)
     # print(path)
+    # print(name)
     lists = find_module(path)
     # print(lists)
     flag = 1
@@ -89,6 +97,7 @@ def filelist_gen(source_path,target_path,name):
         lists = list_temp
     os.chdir(target_path)
     fp = open("filelist.f","w")
+    os.chdir(os.path.dirname(__file__)) 
     for list in lists:
         fp.write(find_file(source_path,list) + "\n")
     fp.close()
@@ -101,7 +110,7 @@ def makefile_src_gen(target_path,name):
     fp.write("export name = ${OUTPUT}\n")
     fp.write("VCS:\n") 
     # fp.write("\tvcs -full64 +v2k -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
-    fp.write("\tvcs -full64 +v2k -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
+    fp.write("\tvcs -full64 +v2k -sverilog -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
     fp.write(r"-P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ")
     fp.write(r"${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a ")
     fp.write(r" -f filelist.f -o ${OUTPUT} -l sim.log"+" ./"+ name + "TB.sv\n")
@@ -152,6 +161,7 @@ def file_inst(dic, name):
     fp.close()
 
 def tb_inst(SourceDic,TargetDic, name):
+    os.chdir(os.path.dirname(__file__)) 
     path = find_file(SourceDic , name)
     # print(path)
     ports = find_port(path)
@@ -180,15 +190,17 @@ def tb_inst(SourceDic,TargetDic, name):
         fp.close()
     else:
         print("file exists")
+    return name + r"TB"
 
-def make_sim_dic(name):
+def make_sim_dic(targetPath,name):
     os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
-    str = "../sim/"
+    # str = "../sim/"
+    str = targetPath
     if not os.path.isdir(str):
         os.makedirs(str)
     if not os.path.isdir(str + name + "Test"):
         os.makedirs(str + name + "Test")
-    return os.path.normpath(os.path.abspath(str + name + "Test")).replace("\\", "/")
+    return os.path.normpath(os.path.abspath(str + name + r"Test/")).replace("\\", "/")
 
 
 
@@ -196,6 +208,14 @@ def sim_gen(dic,name):
     TargetPath = make_sim_dic(name)
     tb_inst(dic,TargetPath,name)
 
+def simflow(sourcePath,targetPath,name):
+    os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
+    # SourcePath = "../code/"
+    targetpath = make_sim_dic(targetPath,name)
+    TB = tb_inst(sourcePath,targetpath,name)
+    makefile_src_gen(targetpath,name)
+    # tb_inst(path,targetpath,"uart_byte_tx")
+    filelist_gen(sourcePath,targetpath,TB)
 
 if __name__ ==  '__main__':
     os.chdir(os.path.dirname(__file__)) #路径是以此python文件路径为参考 
