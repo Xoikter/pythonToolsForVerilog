@@ -113,11 +113,11 @@ def makefile_src_gen(target_path,name):
     fp.write("\tvcs -full64 +v2k -sverilog -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
     fp.write(r"-P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ")
     fp.write(r"${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a ")
-    fp.write(r" -f filelist.f -o ${OUTPUT} -l sim.log"+" ./"+ name + "TB.sv\n")
+    fp.write(r" -f filelist.f  -l sim.log"+" ./"+ name + "TB.sv\n")
     str = "VERDI:\n\tverdi -f file_list.f "+r"-ssf ${OUTPUT}.fsdb -nologo  -l v.log " + "\n"
     fp.write(str)
     # str = "SIM:\n\t"+r"./${OUTPUT}  -ucli -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
-    str = "SIM:\n\t"+r"./${OUTPUT}  -gui=verdi -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
+    str = "SIM:\n\t"+r"./simv  -gui=verdi -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
     fp.write(str)
     str = "CLEAN:\n\t"+ "rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf"
     fp.write(str)
