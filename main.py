@@ -9,4 +9,4 @@ import sys
 # fc.makefile_src_gen(targetpath,TB)
 #     # tb_inst(path,targetpath,"uart_byte_tx")
 # fc.filelist_gen(SourcePath,TB)
-fc.simflow('../','../sim/','aes_shiftrows')
+fc.simflow('../','../sim/','Mix_Columns_Enc')
