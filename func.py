@@ -117,13 +117,13 @@ def makefile_src_gen(target_path,name):
     str = "VERDI:\n\tverdi -f file_list.f "+r"-ssf ${OUTPUT}.fsdb -nologo  -l v.log " + "\n"
     fp.write(str)
     # str = "SIM:\n\t"+r"./${OUTPUT}  -ucli -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
-    str = "SIM:\n\t"+r"./simv  -gui=verdi -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
+    str = "SIM:\n\t"+r"./simv  -gui=verdi -i" +  " ./run.scr  + fsdbfile+"+r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
     fp.write(str)
     str = "CLEAN:\n\t"+ "rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf"
     fp.write(str)
     fp.close()
     fp = open("run.scr","w")
-    str = "global env\nfsdbDumpfile "+'"$env(name).fsdb"\n'+'fsdbDumpvars 0 "$env(name)" \nrun 10000ns'
+    str = "global env\n#fsdbDumpfile "+'"$env(name).fsdb"\n'+'fsdbDumpvars 0 "$env(name)" \nrun 10000ns'
     fp.write(str)
     fp.close()
 
