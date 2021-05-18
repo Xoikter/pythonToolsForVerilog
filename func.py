@@ -17,10 +17,10 @@ def find_port(filename):
     # result = 
     str = fd.read()
     str_temp = re.sub("\/\*[\s\S]*?\*\/","",str)
-    str_temp = re.sub(r'//.*$',"",str_temp)
+    str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub("function[\s\S]*?endfunction","",str_temp)
     str_temp = re.sub("task[\s\S]*?endtask","",str_temp)
-    result = re.findall('(input|output)\s+(wire|reg)?\s*(\[.*?\])?\s*(\w+)',str_temp)
+    result = re.findall('(input|output)(?!\w)\s*(wire|reg)?\s*(\[.*?\])?\s*(\w+)',str_temp)
     for res in result:
         # print(res)
         portTemp = [res[0],res[1],res[2],res[3]]
