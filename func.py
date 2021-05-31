@@ -37,7 +37,9 @@ def find_module(path):
     fp = open(path,"r",errors="ignore")
     str = fp.read()
     str_temp = re.sub("\/\*[\s\S]*?\*\/","",str)
-    str_temp = re.sub(r'//.*$',"",str_temp)
+    # str_temp = re.sub(r'//.*$',"",str_temp)
+    str_temp = re.sub('//[\s\S]*?\n',"",str_temp)
+    
     modules = []
     result = re.findall('(\w+)\s+(\w+)\s*\(',str_temp)
     for item in result:
@@ -117,11 +119,12 @@ def makefile_src_gen(target_path,name):
     str = "VERDI:\n\tverdi -f file_list.f "+r"-ssf ${OUTPUT}.fsdb -nologo  -l v.log " + "\n"
     fp.write(str)
     # str = "SIM:\n\t"+r"./${OUTPUT}  -ucli -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
-    str = "SIM:\n\t"+r"./simv  -gui=verdi -i" +  " ./run.scr  + fsdbfile+"+r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
+    str = "SIM:\n\t"+r"./simv  -gui=verdi -i" +  " ./run.scr  +fsdbfile+"+r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
     fp.write(str)
     str = "CLEAN:\n\t"+ "rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf\n"
     fp.write(str)
     str = "TEST: VCS SIM"
+    fp.write(str)
     fp.close()
     fp = open("run.scr","w")
     str = "global env\n#fsdbDumpfile "+'"$env(name).fsdb"\n'+'fsdbDumpvars 0 "$env(name)" \nrun 10000ns'
