@@ -18,11 +18,11 @@ argue = input("cmd:")
 
 if(argue == "inst"):
     print(sys.argv[1])
-    fc.file_inst('../code/',sys.argv[1])
+    fc.file_inst('../',sys.argv[1])
 elif (argue == "tb_gen") :
-    fc.tb_inst('../code','../sim',sys.argv[1])
+    fc.tb_inst('../','../sim',sys.argv[1])
 elif (argue == 'simflow') :
     fc.simflow('../','../sim/',sys.argv[1])
 elif (argue == 'filelist_gen') :
     targetpath = fc.make_sim_dic('../sim/',sys.argv[1])
-    fc.filelist_gen('../code',targetpath,sys.argv[1])
+    fc.filelist_gen('../',targetpath,sys.argv[1])
