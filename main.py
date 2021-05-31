@@ -17,7 +17,7 @@ import sys
 argue = input("cmd:")
 
 if(argue == "inst"):
-    print(sys.argv[1])
+    # print(sys.argv[1])
     fc.file_inst('../',sys.argv[1])
 elif (argue == "tb_gen") :
     fc.tb_inst('../','../sim',sys.argv[1])
