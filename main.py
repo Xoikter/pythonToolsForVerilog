@@ -16,13 +16,15 @@ import sys
 
 argue = input("cmd:")
 
-if(argue == "inst"):
+
+
+if(argue == "i"):
     # print(sys.argv[1])
     fc.file_inst('../',sys.argv[1])
-elif (argue == "tb_gen") :
+elif (argue == "t") :
     fc.tb_inst('../','../sim',sys.argv[1])
-elif (argue == 'simflow') :
+elif (argue == 's') :
     fc.simflow('../','../sim/',sys.argv[1])
-elif (argue == 'filelist_gen') :
+elif (argue == 'f') :
     targetpath = fc.make_sim_dic('../sim/',sys.argv[1])
     fc.filelist_gen('../',targetpath,sys.argv[1])
