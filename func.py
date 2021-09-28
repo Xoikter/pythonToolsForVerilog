@@ -19,9 +19,9 @@ def find_port(filename):
     str_temp = re.sub("\/\*[\s\S]*?\*\/","",str)
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//[\s\S]*?\n',"",str_temp)
-    str_temp = re.sub("function[\s\S]*?endfunction","",str_temp)
-    str_temp = re.sub("task[\s\S]*?endtask","",str_temp)
-    result = re.findall('(input|output)(?!\w)\s*(wire|reg)?\s*(\[.*?\])?\s*(\w+)',str_temp)
+    str_temp = re.sub("\bfunction\b[\s\S]*?\bendfunction\b","",str_temp)
+    str_temp = re.sub("\btask\b[\s\S]*?\bendtask\b","",str_temp)
+    result = re.findall('\b(input|output)\b(?!\w)\s*(wire|reg)?\s*(\[.*?\])?\s*(\w+)',str_temp)
     for res in result:
         # print(res)
         portTemp = [res[0],res[1],res[2],res[3]]
@@ -54,13 +54,32 @@ def find_module(path):
     # print(result)
 def find_file(start, name):
     # print(start)
+    out_path = ""
     for relpath, dirs, files in os.walk(start):
         for File in files:
-            # print(File)
-            if(re.match(name + '.s?v$',File) != None):
-                full_path = os.path.join(relpath, File)
-                # print(full_path)
-                return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+            if(re.match('.+\.s?v',File) != None):
+                 fp = open(os.path.join(relpath, File),"r",errors="ignore")
+                 str = fp.read()
+                 str_temp = re.sub("\/\*[\s\S]*?\*\/","",str)
+                 # str_temp = re.sub(r'//.*$',"",str_temp)
+                 str_temp = re.sub('//[\s\S]*?\n',"",str_temp)
+                 # print(File)
+                 # if(re.match(name + '.s?v$',File) != None):
+                 if(re.re.search('\b(module|interface|class|program)\b\s*\b'+name+'\b',str_temp) != None):
+                    full_path = os.path.join(relpath, File)
+                    if out_path == "":
+                        out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+                    else:
+                        print("find mutidefine\n")
+                        print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + "Y")
+                        print(out_path + "N")
+                        sel = input("select:")
+                        if sel == "Y":
+                            out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+
+                     # print(full_path)
+                    # return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+    return out_path
 
 def filelist_gen(source_path,target_path,name):
     os.chdir(os.path.dirname(__file__)) 
