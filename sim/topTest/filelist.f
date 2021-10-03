@@ -1,10 +1,2 @@
-/home/IC/xsc/RTL_PRO/RISC_V/core/ram.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/ifu_predict.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/decode.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/ifu.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/exu_bjp.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/dpath.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/alu.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/regfile.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/exu.v
-/home/IC/xsc/RTL_PRO/RISC_V/core/lsu.v
+E:/xsc/pro/git_pro/pythonToolsForVerilog/sim/topTest/filelist_defines
+E:/xsc/pro/git_pro/pythonToolsForVerilog/sim/topTest/filelist_modules
