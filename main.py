@@ -18,7 +18,7 @@ argue = input("cmd:")
 
 if (argue == "i"):
     # print(sys.argv[1])
-    fc.file_inst('../', sys.argv[1])
+    fc.file_inst(['E:/xsc/pro/git_pro/pythonToolsForVerilog/code/'], sys.argv[1])
 elif (argue == "t"):
     fc.tb_inst('../', '../sim', sys.argv[1])
 elif (argue == 's'):

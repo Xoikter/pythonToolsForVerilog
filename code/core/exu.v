@@ -18,6 +18,7 @@ module exu(
     output o_datavld,
     input  i_datavld);
 reg [`INSTR_WIDTH - 1 : 0] instr_i;
+
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n)
         instr_i <= 0;

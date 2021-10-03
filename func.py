@@ -18,32 +18,101 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
            'tranif1', 'tri',
            'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
            'wor', 'xnor', 'xor']
-path = "/home/IC/xsc"
+# path = "/home/IC/xsc"
 filename = "fifo_ctr"
 
 
-def find_port(filename):
+def find_port(filename,name):
     ports = []
+    parameters = []
     fd = open(filename, errors='ignore')
     # result = 
     str = fd.read()
     str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-    str_temp = re.sub("\bfunction\b[\s\S]*?\bendfunction\b", "", str_temp)
-    str_temp = re.sub("\btask\b[\s\S]*?\bendtask\b", "", str_temp)
-    result = re.findall('\b(input|output)\b(?!\w)\s*(wire|reg)?\s*(\[.*?\])?\s*(\w+)', str_temp)
+    str_temp = re.sub("\\bfunction\\b[\s\S]*?\bendfunction\\b", "", str_temp)
+    str_temp = re.search("\\bmodule\\b\s*\\b" + name + "\\b.*?endmodule", str_temp, flags=re.S).group()
+    str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
+    str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
+    str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
+    result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)', str_port, flags=re.S)
+    res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)(\s*=)',str_port,flags=re.S)
+    for res in res_para:
+        para_temp = res[0]
+        parameters.append(para_temp)
     for res in result:
-        # print(res)
         portTemp = [res[0], res[1], res[2], res[3]]
         ports.append(portTemp)
+    str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
+    result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
+    res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S);
+    for res in res_para:
+        res_temp1 = re.split("\s*,\s*",res)
+        for item in res_temp1:
+            res_temp2 = re.split('\s*=\s*',item)
+            parameters.append(res_temp2[0])
+
+    # parameters_temp = re.findall("\\bparameters")
+    for res in result:
+        # print(res)
+        res_temp = re.split("\s*,\s*", res[3])
+        for item in res_temp:
+            portTemp = [res[0], res[1], res[2], item]
+            ports.append(portTemp)
+        # portTemp = [res[0], res[1], res[2], res[3]]
+        # ports.append(portTemp)
     # for line in fd.readlines():
     #     result = re.findall('(input|output)\s+(wire|reg)?\s*(\[.*?\])?\s+(\w+)',line,re.M)
     #     if(len(result) != 0):
     #         portTemp = [result[0][0],result[0][1],result[0][2],result[0][3]]
     #         ports.append(portTemp)
     # print(ports)
-    return ports
+    return [ports, parameters]
+
+
+def find_define(path):
+    fp = open(path, "r", errors="ignore")
+    string = fp.read()
+    str_temp = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
+    # str_temp = re.sub(r'//.*',"",str_temp)
+    str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+    defines = []
+    result = re.findall("`(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)", str_temp)
+    for item in result:
+        if item not in keyword:
+            defines.append(item)
+    return defines
+
+
+def find_define_file(path, define_word):
+    out_path = ""
+    for start in path:
+        for relpath, dirs, files in os.walk(start):
+            for File in files:
+                if re.match('.+\.s?v', File) is not None:
+                    fp = open(os.path.join(relpath, File), "r", errors="ignore")
+                    str = fp.read()
+                    str_temp = re.sub("\/\*[\s\S]*?\*\/", "", str)
+                    # str_temp = re.sub(r'//.*$',"",str_temp)
+                    str_temp = re.sub('//[\s\S]*?\n', "", str_temp)
+                    # print(File)
+                    # if(re.match(name + '.s?v$',File) != None):
+                    if re.search('`define\s*(\\b'+define_word+'\\b)', str_temp) is not None:
+                        full_path = os.path.join(relpath, File)
+                        if out_path == "":
+                            out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+                        else:
+                            print("find mutidefine\n")
+                            print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + "Y")
+                            print(out_path + "N")
+                            sel = input("select:")
+                            if sel == "Y":
+                                out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+
+                        # print(full_path)
+                        # return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+    return out_path
 
 
 def find_module(path):
@@ -55,7 +124,7 @@ def find_module(path):
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 
     modules = []
-    result = re.findall('(\w+)\s+(\w+)\s*\(', str_temp)
+    result = re.findall('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(', str_temp)
     for item in result:
         if (item[0] not in keyword) and (item[1] not in keyword):
             # print(item)
@@ -73,15 +142,16 @@ def find_file(starts, name):
     for start in starts:
         for relpath, dirs, files in os.walk(start):
             for File in files:
-                if re.match('.+\.s?v', File) is not None:
+                if re.match('.+\.s?v$', File) is not None:
                     fp = open(os.path.join(relpath, File), "r", errors="ignore")
                     str = fp.read()
-                    str_temp = re.sub("\/\*[\s\S]*?\*\/", "", str)
-                    # str_temp = re.sub(r'//.*$',"",str_temp)
-                    str_temp = re.sub('//[\s\S]*?\n', "", str_temp)
+                    str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
+                    # str_temp = re.sub(r'//.*',"",str_temp)
+                    str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+
                     # print(File)
                     # if(re.match(name + '.s?v$',File) != None):
-                    if re.search('\b(module|interface|class|program)\b\s*\b' + name + '\b', str_temp) is not None:
+                    if re.search('\\b(module|interface|class|program)\\b\s*' + name + '\\b', str_temp) is not None:
                         full_path = os.path.join(relpath, File)
                         if out_path == "":
                             out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
@@ -98,9 +168,16 @@ def find_file(starts, name):
     return out_path
 
 
-def filelist_gen(source_path, target_path, name):
+def filelist_gen(source_path, target_path, name, flags):
     os.chdir(os.path.dirname(__file__))
     path = find_file(source_path, name)
+    defines = find_define(path)
+    lists_root = []
+    for item in defines:
+        define_files = find_define_file(source_path, item)
+        if define_files not in lists_root:
+            lists_root.append(define_files)
+
     # print(path)
     # print(name)
     lists = find_module(path)
@@ -116,6 +193,11 @@ def filelist_gen(source_path, target_path, name):
             modules = []
             if list not in list_pass:
                 dic = find_file(source_path, list)
+                defines_temp = find_define(path)
+                for item in defines:
+                    define_files = find_define_file(source_path, item)
+                    if define_files not in lists_root:
+                        lists_root.append(define_files)
                 # print(dic)
                 modules = find_module(dic)
                 # print(modules)
@@ -134,12 +216,28 @@ def filelist_gen(source_path, target_path, name):
             if list not in list_pass:
                 list_pass.append(list)
         lists = list_temp
+
+
     os.chdir(target_path)
-    fp = open("filelist.f", "w")
-    os.chdir(os.path.dirname(__file__))
-    for list in lists:
-        fp.write(find_file(source_path, list) + "\n")
-    fp.close()
+    if flags == 1 or flags == 3:
+        os.chdir(target_path)
+        fq = open("filelist_defines.f", "w")
+        for item in lists_root:
+            fq.write(item + "\n")
+        fq.close()
+        # lists = lists_root + lists
+    if flags == 2 or flags == 3:
+        fp = open("filelist_modules.f", "w")
+        os.chdir(os.path.dirname(__file__))
+        for list in lists:
+            fp.write(find_file(source_path, list) + "\n")
+        fp.close()
+    if flags == 3:
+        os.chdir(target_path)
+        fj = open("filelist.f", "w")
+        fj.write(os.path.abspath(os.path.dirname("filelist_defines")).replace("\\", "/") +"/filelist_defines"+ "\n")
+        fj.write(os.path.abspath(os.path.dirname("filelist_modules")).replace("\\", "/") + '/filelist_modules' + "\n")
+        fj.close()
 
 
 def makefile_src_gen(target_path, name):
@@ -181,17 +279,32 @@ def file_inst(dic, name):
     fp.close()
     fp = open(path, "w+")
     for lineT in lines:
-        resTemp = re.search('(\w+)\s+(\w+)\s*\(/\*inst\*/\)', lineT)
-        if (resTemp != None):
-            fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
-            ports = find_port(find_file(dic, resTemp.group(1)))
+        resTemp = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)', lineT)
+        if resTemp is not None:
+            # fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
+            ports = find_port(find_file(dic, resTemp.group(1)),resTemp.group(1))
             lenStr = 0
-            for port in ports:
-                if (len(port[3]) > lenStr):
+            for port in ports[0]:
+                if len(port[3]) > lenStr:
                     lenStr = len(port[3])
+            for para in ports[1]:
+                if len(para) > lenStr:
+                    lenStr = len(para)
+            if len(ports[1]) != 0:
+                fp.write(resTemp.group(1) + " #(\n")
+                for para in ports[1]:
+                    if para == ports[1][len(ports[1]) - 1]:
+                        fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"())" + "\n")
+                    else:
+                        fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"()," + "\n")
+                fp.write(" " * len(resTemp.group(1)) + " " + resTemp.group(2) + " " + r"(" + "\n")
+            else:
+                fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
+
                     # print(lenStr)
-            for port in ports:
-                if (port == ports[len(ports) - 1]):
+
+            for port in ports[0]:
+                if port == ports[0][len(ports[0]) - 1]:
                     fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"());" + r"//" + port[
                         0] + " " * (8 - len(port[0])) + port[2] + "\n")
                 else:
@@ -206,7 +319,7 @@ def tb_inst(SourceDic, TargetDic, name):
     os.chdir(os.path.dirname(__file__))
     path = find_file(SourceDic, name)
     # print(path)
-    ports = find_port(path)
+    ports = find_port(path) #注意此处ports是一个二维的列表
     os.chdir(TargetDic)
     if not os.path.isfile(name + r"TB.sv"):
         fp = open(name + r"TB.sv", "w+")
@@ -216,17 +329,17 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write(name + " " + name + "Inst(\n")
         lenStr = 0
         for port in ports:
-            if (len(port[3]) > lenStr):
+            if len(port[3]) > lenStr:
                 lenStr = len(port[3])
                 # print(lenStr)
         for port in ports:
-            if (port == ports[len(ports) - 1]):
+            if port == ports[len(ports) - 1]:
                 fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
-                            lenStr - len(port[3])) + "));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[
+                        lenStr - len(port[3])) + "));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[
                              2] + "\n")
             else:
                 fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
-                            lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
+                        lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
                              2] + "\n")
 
         fp.write("initial begin\n")
@@ -267,8 +380,12 @@ def simflow(sourcePath, targetPath, name):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    SourcePath = "./code"
-    file_inst(SourcePath, 'test')
+    SourcePath = "./code/"
+    TargetPath = "./sim/"
+    # TargetPath = make_sim_dic(TargetPath, "top")
+    # filelist_gen([SourcePath], TargetPath, "top", 3)
+    file_inst(['E:/xsc/pro/git_pro/pythonToolsForVerilog/code/'], "top")
+    # file_inst(SourcePath, 'test')
     # targetpath = make_sim_dic("Top")
     # makefile_src_gen(targetpath,"Top")
     # filelist_gen(path,targetpath,"uart_byte_txTB")
