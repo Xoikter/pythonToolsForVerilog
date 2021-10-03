@@ -168,7 +168,7 @@ def find_file(starts, name):
     return out_path
 
 
-def filelist_gen(source_path, target_path, name, flags):
+def filelist_gen(source_path, target_path, name, flags,flag1):
     os.chdir(os.path.dirname(__file__))
     path = find_file(source_path, name)
     defines = find_define(path)
@@ -224,6 +224,8 @@ def filelist_gen(source_path, target_path, name, flags):
         fq = open("filelist_defines.f", "w")
         for item in lists_root:
             fq.write(item + "\n")
+        if flag1== 1:
+            fq.write(path + "\n")
         fq.close()
         # lists = lists_root + lists
     if flags == 2 or flags == 3:
@@ -231,6 +233,8 @@ def filelist_gen(source_path, target_path, name, flags):
         os.chdir(os.path.dirname(__file__))
         for list in lists:
             fp.write(find_file(source_path, list) + "\n")
+        if flag1 == 1:
+            fp.write(path + "\n")
         fp.close()
     if flags == 3:
         os.chdir(target_path)
@@ -382,9 +386,9 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     SourcePath = "./code/"
     TargetPath = "./sim/"
-    # TargetPath = make_sim_dic(TargetPath, "top")
+    TargetPath = make_sim_dic(TargetPath, "VFU_Int_top")
     # filelist_gen([SourcePath], TargetPath, "top", 3)
-    file_inst(['E:/xsc/pro/git_pro/pythonToolsForVerilog/code/'], "top")
+    filelist_gen(['E:/xsc/pro/git_pro/pythonToolsForVerilog/code/'],TargetPath, "VFU_Int_top",3, 0)
     # file_inst(SourcePath, 'test')
     # targetpath = make_sim_dic("Top")
     # makefile_src_gen(targetpath,"Top")
