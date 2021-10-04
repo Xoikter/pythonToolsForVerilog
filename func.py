@@ -1,6 +1,6 @@
 import os
 import re
-
+import uvm_gen as ug
 # path = "../verilog_python"
 keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos', 'deassign',
            'default',
@@ -17,9 +17,15 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
            'strength', 'strong0', 'strong1', 'supply0', 'supply1', 'table', 'task', 'time', 'tran', 'tranif0',
            'tranif1', 'tri',
            'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
-           'wor', 'xnor', 'xor']
+           'wor', 'xnor', 'xor','extends','uvm_report_server']
 # path = "/home/IC/xsc"
 filename = "fifo_ctr"
+
+
+
+
+
+
 
 
 def find_port(filename,name):
@@ -124,7 +130,7 @@ def find_module(path):
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 
     modules = []
-    result = re.findall('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(', str_temp)
+    result = re.findall('(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\(.*?\))?\s*;', str_temp,flags=re.S)
     for item in result:
         if (item[0] not in keyword) and (item[1] not in keyword):
             # print(item)
@@ -219,6 +225,22 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
 
 
     os.chdir(target_path)
+    if flags == 0 | flags == 5:
+        fo = open("filelist_uvm_base.f","w")
+        for item in lists:
+            fo.write(item+"\n")
+        fo.write(path + "\n")
+        fo.close()
+    if flags == 5:
+        fl = open("flielist_uvm_case.f","w")
+        fl.close()
+        fl = open("filelist_uvm.f","w")
+        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+        fl.close()
+
+
+
     if flags == 1 or flags == 3:
         os.chdir(target_path)
         fq = open("filelist_defines.f", "w")
@@ -239,8 +261,9 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
     if flags == 3:
         os.chdir(target_path)
         fj = open("filelist.f", "w")
-        fj.write(os.path.abspath(os.path.dirname("filelist_defines")).replace("\\", "/") +"/filelist_defines"+ "\n")
-        fj.write(os.path.abspath(os.path.dirname("filelist_modules")).replace("\\", "/") + '/filelist_modules' + "\n")
+        fj.write(os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+        fj.write(os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
+        fj.write(os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
         fj.close()
 
 
@@ -323,31 +346,68 @@ def tb_inst(SourceDic, TargetDic, name):
     os.chdir(os.path.dirname(__file__))
     path = find_file(SourceDic, name)
     # print(path)
-    ports = find_port(path) #注意此处ports是一个二维的列表
+    ports = find_port(path,name) #注意此处ports是一个二维的列表
     os.chdir(TargetDic)
     if not os.path.isfile(name + r"TB.sv"):
         fp = open(name + r"TB.sv", "w+")
         fp.write("module " + name + "TB;\n")
-        for port in ports:
-            fp.write("logic " + port[2] + (0 if len(port[2]) == 0 else 1) * " " + port[3] + ";\n")
+        fp.write(name+"_interface if;\n")
         fp.write(name + " " + name + "Inst(\n")
+        
         lenStr = 0
-        for port in ports:
+        for port in ports[0]:
             if len(port[3]) > lenStr:
                 lenStr = len(port[3])
+        for para in ports[1]:
+            if len(para) > lenStr:
+                lenStr = len(para)
+        if len(ports[1]) != 0:
+            fp.write(name + " #(\n")
+            for para in ports[1]:
+                if para == ports[1][len(ports[1]) - 1]:
+                    fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"())" + "\n")
+                else:
+                    fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"()," + "\n")
+            fp.write(" " * len(name) + " " + name+"_inst" + " " + r"(" + "\n")
+        else:
+            fp.write(name + " " + name+"_inst" + " " + r"(" + "\n")
+
                 # print(lenStr)
-        for port in ports:
-            if port == ports[len(ports) - 1]:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
-                        lenStr - len(port[3])) + "));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[
-                             2] + "\n")
+
+        for port in ports[0]:
+            if port == ports[0][len(ports[0]) - 1]:
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+                        lenStr - len(port[3])) + "));" + r"//" + port[
+                    0] + " " * (8 - len(port[0])) + port[2] + "\n")
             else:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
-                        lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
-                             2] + "\n")
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+                        lenStr - len(port[3])) + ") ," + r"//" + port[
+                    0] + " " * (8 - len(port[0])) + port[2] + "\n")
+
+
+
+
+        # for port in ports:
+        #     if len(port[3]) > lenStr:
+        #         lenStr = len(port[3])
+        #         # print(lenStr)
+        # for port in ports:
+        #     if port == ports[len(ports) - 1]:
+        #         fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+        #                 lenStr - len(port[3])) + "));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[
+        #                      2] + "\n")
+        #     else:
+        #         fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+        #                 lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
+        #                      2] + "\n")
 
         fp.write("initial begin\n")
         fp.write("\n")
+        fp.write("end\n")
+        fp.write("initial begin\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_if)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_if)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_if)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", if);\n")
         fp.write("end\n")
         fp.write("\n\n\n\n\nendmodule\n")
         fp.close()
@@ -361,15 +421,150 @@ def make_sim_dic(targetPath, name):
     # str = "../sim/"
     str = targetPath
     if not os.path.isdir(str):
+        print("creat "+targetPath + "/path")
         os.makedirs(str)
     if not os.path.isdir(str + name + "Test"):
+        print("creat "+targetPath + "sim/"+name+"Test path")
         os.makedirs(str + name + "Test")
     return os.path.normpath(os.path.abspath(str + name + r"Test/")).replace("\\", "/")
+
+
+
+def interface_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    file_path = find_file(Source_path,name)
+    ports = find_port(file_path,name)
+    interface_path = make_sim_dic(TargetPath,name) 
+    os.chdir(interface_path)
+    fj = open(name+"_interface_port.sv","w")
+    fj.write("interface "+name+"_interfac_port;\n" )
+    if flag==1:
+        fq = open(name+"_interface_inner.sv","w")
+        fp = open(name+"_interface.sv","w")
+        fp.write("interface "+name+"_interface;\n" )
+        fp.write(name+"_interface_port if_o;\n")
+        fp.write(name+"_interface_inner if_i;\n")
+        fp.write("\n\n\n\nendinterface")
+        fq.write("interface "+name+"_interface_inner;\n" )
+        fq.write("\n\n\n\nendinterface")
+        fq.close()
+    for port in ports[0]:
+        fj.write("logic " + port[2] + (0 if len(port[2]) == 0 else 1) * " " + port[3] + ";\n")
+    fj.write("\n\n\n\nendinterface")
+    fj.close()
+
+def transaction_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_transaction.sv","w")
+    fp.write("class "+name+"_transaction extends uvm_sequence_item;\n")
+    fp.write("\n\n\nconstraint {\n\n\n}\n")
+    fp.write("function new(string name = \""+name+"_transaction\");\nsuper.new();\nendfunction\n")
+    fp.close()
+
+
+def sequencer_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_sequencer.sv","w")
+    fp.write("class "+name+"_sequencer extends uvm_sequence #("+ name +"_transaction);\n")
+    fp.write("    function new(string name, uvm_component parent);\n        super.new(name, parent);\n    endfunction ")
+    fp.write("    `uvm_component_utils("+name+"_sequencer)")
+    fp.close()
+
+def scoreboard_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_scoreboard.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_scoreboard.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def monitor_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_monitor.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_monitor.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def model_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_model.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_model.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def env_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_env.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_env.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def drive_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_driver.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_driver.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def case_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_case0.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_case0.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def agent_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/my_agent.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_agent.sv","w")
+    fp.write(write_str)
+    fp.close()
+
+def base_test_gen(Source_path,TargetPath,name,flag):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    write_str = re.sub("my",name,open("./uvm/base_test.sv","r").read())
+    path = make_sim_dic(TargetPath,name)
+    os.chdir(path)
+    fp = open(name+"_base_test.sv","w")
+    fp.write(write_str)
+    fp.close()
 
 
 def sim_gen(dic, name):
     TargetPath = make_sim_dic(name)
     tb_inst(dic, TargetPath, name)
+
+#   flag_tb指示是否为sim文件，flag_tb1:1-重新生成base_test filelist; 5-重新生成三个uvmfilelist flag_dicmake为是否创造路径，flags指示：1,3写define_filelist;2,3写module_filelist;3写filelist； 
+#   flag1指示是否写入本文件路径 
+
+
+def filelist_regen(flag_tb,flag_tb1,flag_dicmake,flags,flag1,sourcePath,targetPath,name):
+    search_path = sourcePath
+    if flag_tb == 1:
+        filelist_gen([TargetPath],TargetPath,name+"_base_test",flag_tb1,1)
+    path = find_file(search_path,name)
+    if flag_dicmake==1:
+        real_targetPath = make_sim_dic(targetPath, name)
+    else:
+        real_targetPath = os.path.dicname(path)
+    filelist_gen(search_path,real_targetPath,name,flags,flag1)
 
 
 def simflow(sourcePath, targetPath, name):
@@ -377,18 +572,39 @@ def simflow(sourcePath, targetPath, name):
     # SourcePath = "../code/"
     targetpath = make_sim_dic(targetPath, name)
     TB = tb_inst(sourcePath, targetpath, name)
-    makefile_src_gen(targetpath, name)
-    # tb_inst(path,targetpath,"uart_byte_tx")
-    filelist_gen(sourcePath, targetpath, TB)
+    # makefile_src_gen(targetpath, name)
+    # # tb_inst(path,targetpath,"uart_byte_tx")
+    # filelist_gen(sourcePath, targetpath, TB)
+    flag = 1
+    base_test_gen(sourcePath,targetPath,name,flag)
+    agent_gen(sourcePath,targetPath,name,flag)
+    case_gen(sourcePath,targetPath,name,flag)
+    drive_gen(sourcePath,targetPath,name,flag)
+    env_gen(sourcePath,targetPath,name,flag)
+    interface_gen(sourcePath,targetPath,name,flag)
+    model_gen(sourcePath,targetPath,name,flag)
+    monitor_gen(sourcePath,targetPath,name,flag)
+    scoreboard_gen(sourcePath,targetPath,name,flag)
+    sequencer_gen(sourcePath,targetPath,name,flag)
+    transaction_gen(sourcePath,targetPath,name,flag)
+    filelist_regen(1,1,5,3,0,sourcePath,targetPath,name)
+
+
+
+
+
 
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    SourcePath = "./code/"
+    SourcePath = ["./code/"]
     TargetPath = "./sim/"
-    TargetPath = make_sim_dic(TargetPath, "VFU_Int_top")
+    name = "top"
+    # TargetPath = make_sim_dic(TargetPath, name)
+
+    simflow(SourcePath,TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
-    filelist_gen(['E:/xsc/pro/git_pro/pythonToolsForVerilog/code/'],TargetPath, "VFU_Int_top",3, 0)
+    # filelist_gen(SourcePath,TargetPath, name,3, 0)
     # file_inst(SourcePath, 'test')
     # targetpath = make_sim_dic("Top")
     # makefile_src_gen(targetpath,"Top")
