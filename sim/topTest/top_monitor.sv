@@ -1,6 +1,6 @@
 class top_monitor extends uvm_monitor;
 
-   virtual top_if vif;
+   virtual top_interface vif;
 
    uvm_analysis_port #(top_transaction)  ap;
    

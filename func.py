@@ -17,7 +17,9 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
            'strength', 'strong0', 'strong1', 'supply0', 'supply1', 'table', 'task', 'time', 'tran', 'tranif0',
            'tranif1', 'tri',
            'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
-           'wor', 'xnor', 'xor','extends','uvm_report_server']
+           'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
+           ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
+           'logic','genvar']
 # path = "/home/IC/xsc"
 filename = "fifo_ctr"
 
@@ -227,16 +229,19 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
     os.chdir(target_path)
     if flags == 0 | flags == 5:
         fo = open("filelist_uvm_base.f","w")
+        os.chdir(os.path.dirname(__file__))
         for item in lists:
-            fo.write(item+"\n")
+            fo.write(find_file(source_path, item) + "\n")
         fo.write(path + "\n")
         fo.close()
     if flags == 5:
+        os.chdir(target_path)
         fl = open("flielist_uvm_case.f","w")
         fl.close()
         fl = open("filelist_uvm.f","w")
-        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
-        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+        os.chdir(os.path.dirname(__file__))
+        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f' + "\n")
+        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f' + "\n")
         fl.close()
 
 
@@ -244,6 +249,7 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
     if flags == 1 or flags == 3:
         os.chdir(target_path)
         fq = open("filelist_defines.f", "w")
+        os.chdir(os.path.dirname(__file__))
         for item in lists_root:
             fq.write(item + "\n")
         if flag1== 1:
@@ -251,6 +257,7 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         fq.close()
         # lists = lists_root + lists
     if flags == 2 or flags == 3:
+        os.chdir(target_path)
         fp = open("filelist_modules.f", "w")
         os.chdir(os.path.dirname(__file__))
         for list in lists:
@@ -268,14 +275,15 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
 
 
 def makefile_src_gen(target_path, name):
-    os.chdir(target_path)
+    path = make_sim_dic(target_path,name)
+    os.chdir(path)
     # str = "vcs +v2k -timescale=1ns/1ps -debug_all -rdynamic\n"
     fp = open("makefile", "w")
     fp.write("OUTPUT = " + name + "TB\n")
     fp.write("export name = ${OUTPUT}\n")
     fp.write("VCS:\n")
     # fp.write("\tvcs -full64 +v2k -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
-    fp.write("\tvcs -full64 +v2k -sverilog -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
+    fp.write("\tvcs  +acc +vpi  -full64 +v2k -sverilog  $\{UVM_HOME\}/src/dpi/uvm_dpi.cc -CFLAGS -DVCS -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
     fp.write(r"-P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ")
     fp.write(r"${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a ")
     fp.write(r" -f filelist.f  -l sim.log" + " ./" + name + "TB.sv\n")
@@ -284,13 +292,17 @@ def makefile_src_gen(target_path, name):
     # str = "SIM:\n\t"+r"./${OUTPUT}  -ucli -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
     str = "SIM:\n\t" + r"./simv  -gui=verdi -i" + " ./run.scr  +fsdbfile+" + r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
     fp.write(str)
+    str = "SIM_NO_GUI:\n\t" + r"./simv  +UVM_TESTNAME=$1  -l sim.log" + "\n"
+    fp.write(str)
     str = "CLEAN:\n\t" + "rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf\n"
     fp.write(str)
     str = "TEST: VCS SIM"
     fp.write(str)
+    str = "CASE: VCS SIM_NO_GUI"
+    fp.write(str)
     fp.close()
     fp = open("run.scr", "w")
-    str = "global env\n#fsdbDumpfile " + '"$env(name).fsdb"\n' + 'fsdbDumpvars 0 "$env(name)" \nrun 10000ns'
+    str = "global env\n#fsdbDumpfile " + '"$env(name).fsdb"\n' + 'fsdbDumpvars 0 "$env(name)" \nrun'
     fp.write(str)
     fp.close()
 
@@ -350,8 +362,10 @@ def tb_inst(SourceDic, TargetDic, name):
     os.chdir(TargetDic)
     if not os.path.isfile(name + r"TB.sv"):
         fp = open(name + r"TB.sv", "w+")
+        fp.write("`include \"uvm_macros.svh\"\n")
+        fp.write("import uvm_pkg::*;\n")
         fp.write("module " + name + "TB;\n")
-        fp.write(name+"_interface if;\n")
+        fp.write(name+"_interface "+name+"_if;\n")
         fp.write(name + " " + name + "Inst(\n")
         
         lenStr = 0
@@ -405,9 +419,9 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write("\n")
         fp.write("end\n")
         fp.write("initial begin\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_if)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_if)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_if)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", "+name+"_if);\n")
         fp.write("end\n")
         fp.write("\n\n\n\n\nendmodule\n")
         fp.close()
@@ -437,7 +451,7 @@ def interface_gen(Source_path,TargetPath,name,flag):
     interface_path = make_sim_dic(TargetPath,name) 
     os.chdir(interface_path)
     fj = open(name+"_interface_port.sv","w")
-    fj.write("interface "+name+"_interfac_port;\n" )
+    fj.write("interface "+name+"_interface_port;\n" )
     if flag==1:
         fq = open(name+"_interface_inner.sv","w")
         fp = open(name+"_interface.sv","w")
@@ -556,14 +570,16 @@ def sim_gen(dic, name):
 
 
 def filelist_regen(flag_tb,flag_tb1,flag_dicmake,flags,flag1,sourcePath,targetPath,name):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     search_path = sourcePath
-    if flag_tb == 1:
-        filelist_gen([TargetPath],TargetPath,name+"_base_test",flag_tb1,1)
     path = find_file(search_path,name)
     if flag_dicmake==1:
         real_targetPath = make_sim_dic(targetPath, name)
     else:
-        real_targetPath = os.path.dicname(path)
+        real_targetPath = os.path.dirname(path)
+    if flag_tb == 1:
+        filelist_gen([targetPath],real_targetPath,name+"_base_test",flag_tb1,1)
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     filelist_gen(search_path,real_targetPath,name,flags,flag1)
 
 
@@ -576,6 +592,7 @@ def simflow(sourcePath, targetPath, name):
     # # tb_inst(path,targetpath,"uart_byte_tx")
     # filelist_gen(sourcePath, targetpath, TB)
     flag = 1
+    makefile_src_gen(targetPath,name)
     base_test_gen(sourcePath,targetPath,name,flag)
     agent_gen(sourcePath,targetPath,name,flag)
     case_gen(sourcePath,targetPath,name,flag)
@@ -587,7 +604,7 @@ def simflow(sourcePath, targetPath, name):
     scoreboard_gen(sourcePath,targetPath,name,flag)
     sequencer_gen(sourcePath,targetPath,name,flag)
     transaction_gen(sourcePath,targetPath,name,flag)
-    filelist_regen(1,1,5,3,0,sourcePath,targetPath,name)
+    filelist_regen(1,5,1,3,1,sourcePath,targetPath,name)
 
 
 

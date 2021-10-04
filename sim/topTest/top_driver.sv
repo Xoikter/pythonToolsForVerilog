@@ -1,6 +1,6 @@
 class top_driver extends uvm_driver#(top_transaction);
 
-   virtual top_if vif;
+   virtual top_interface vif;
 
    `uvm_component_utils(top_driver)
    function new(string name = "top_driver", uvm_component parent = null);

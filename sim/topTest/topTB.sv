@@ -1,5 +1,5 @@
 module topTB;
-top_interface if;
+top_interface top_if;
 top topInst(
 top top_inst (
         .clk    (if.ifo.clk  ) ,//input   
@@ -8,9 +8,9 @@ initial begin
 
 end
 initial begin
-   uvm_config_db#(virtual top_if)::set(null, "uvm_test_top.env.i_agt.drv", "vif", if);
-   uvm_config_db#(virtual top_if)::set(null, "uvm_test_top.env.o_agt.drv", "vif", if);
-   uvm_config_db#(virtual top_if)::set(null, "uvm_test_top.env.o_agt.drv", "vif", if);
+   uvm_config_db#(virtual top_interface)::set(null, "uvm_test_top.env.i_agt.drv", "vif", top_if);
+   uvm_config_db#(virtual top_interface)::set(null, "uvm_test_top.env.o_agt.drv", "vif", top_if);
+   uvm_config_db#(virtual top_interface)::set(null, "uvm_test_top.env.o_agt.drv", "vif", top_if);
 end
 
 

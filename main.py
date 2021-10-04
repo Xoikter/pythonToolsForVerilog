@@ -13,16 +13,18 @@ import sys
 
 # fc.simflow('../','../sim/','Mix_Columns_Enc')
 
+SourcePath = ["./code/"]
+TargetPath = "./sim/"
 
 argue = input("cmd:")
 
 if (argue == "i"):
     # print(sys.argv[1])
-    fc.file_inst(['E:/xsc/pro/git_pro/pythonToolsForVerilog/code/'], sys.argv[1])
+    fc.file_inst(SourcePath, sys.argv[1])
 elif (argue == "t"):
-    fc.tb_inst('../', '../sim', sys.argv[1])
+    fc.tb_inst(SourcePath, TargetPath, sys.argv[1])
 elif (argue == 's'):
-    fc.simflow('../', '../sim/', sys.argv[1])
+    fc.simflow(SourcePath, TargetPath, sys.argv[1])
 elif (argue == 'f'):
-    targetpath = fc.make_sim_dic('../sim/', sys.argv[1])
-    fc.filelist_gen('../', targetpath, sys.argv[1])
+    fc.filelist_regen(1,0,1,3,1,SourcePath,TargetPath,sys.argv[1])
+

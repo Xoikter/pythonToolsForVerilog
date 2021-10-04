@@ -1,6 +1,6 @@
 class my_monitor extends uvm_monitor;
 
-   virtual my_if vif;
+   virtual my_interface vif;
 
    uvm_analysis_port #(my_transaction)  ap;
    
