@@ -22,14 +22,11 @@ endfunction
 
 task my_model::main_phase(uvm_phase phase);
    my_transaction tr;
-   my_transaction new_tr;
+   my_transaction old_tr;
    super.main_phase(phase);
    while(1) begin
-      port.get(tr);
-      new_tr = new("new_tr");
-      new_tr.copy(tr);
-      `uvm_info("my_model", "get one transaction, copy and print it:", UVM_LOW)
-      new_tr.print();
-      ap.write(new_tr);
+      port.get(old_tr);
+      tr = new("tr");
+      ap.write(tr);
    end
 endtask

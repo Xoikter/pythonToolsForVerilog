@@ -27,4 +27,5 @@ elif (argue == 's'):
     fc.simflow(SourcePath, TargetPath, sys.argv[1])
 elif (argue == 'f'):
     fc.filelist_regen(1,0,1,3,1,SourcePath,TargetPath,sys.argv[1])
+    fc.interface_gen(SourcePath,TargetPath,sys.argv[1],0)
 

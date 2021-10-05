@@ -44,8 +44,8 @@ def find_port(filename,name):
     str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
     str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
     str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
-    result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)', str_port, flags=re.S)
-    res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)(\s*=)',str_port,flags=re.S)
+    result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
+    res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
     for res in res_para:
         para_temp = res[0]
         parameters.append(para_temp)
@@ -54,7 +54,7 @@ def find_port(filename,name):
         ports.append(portTemp)
     str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
     result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
-    res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S);
+    res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
     for res in res_para:
         res_temp1 = re.split("\s*,\s*",res)
         for item in res_temp1:
@@ -86,7 +86,7 @@ def find_define(path):
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
     defines = []
-    result = re.findall("`(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)", str_temp)
+    result = re.findall("`(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)", str_temp)
     for item in result:
         if item not in keyword:
             defines.append(item)
@@ -123,7 +123,7 @@ def find_define_file(path, define_word):
     return out_path
 
 
-def find_module(path):
+def find_module(path,flag):
     # print(path)
     fp = open(path, "r", errors="ignore")
     str = fp.read()
@@ -132,6 +132,13 @@ def find_module(path):
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 
     modules = []
+    if flag == 1 or flag == 5:
+        result = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
+        for item in result:
+            if(item not in keyword):
+                modules.append(item)
+
+
     result = re.findall('(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\(.*?\))?\s*;', str_temp,flags=re.S)
     for item in result:
         if (item[0] not in keyword) and (item[1] not in keyword):
@@ -188,7 +195,7 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
 
     # print(path)
     # print(name)
-    lists = find_module(path)
+    lists = find_module(path,flags)
     # print(lists)
     flag = 1
     list_pass = []
@@ -199,31 +206,60 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         for list in lists:
             # print(list)
             modules = []
-            if list not in list_pass:
-                dic = find_file(source_path, list)
-                defines_temp = find_define(path)
-                for item in defines:
-                    define_files = find_define_file(source_path, item)
-                    if define_files not in lists_root:
-                        lists_root.append(define_files)
-                # print(dic)
-                modules = find_module(dic)
-                # print(modules)
-                if len(modules) != 0:
-                    flag = 1
-                    # print(flag)
-                    for module in modules:
-                        if module not in lists:
-                            list_temp.append(module)
-
-                # if(len(modules) != 0):
-                #     flag = 1
-                #     list_temp.extend(modules)
             if list not in list_temp:
+                dic = find_file(source_path,list)
+                modules = find_module(dic,flags)            
+                # if len(modules) != 0:
+                #     flag = 1
+                for module in modules:
+                    if module not in list_temp:
+                        list_temp.append(module)
+                    if module not in lists:
+                        flag = 1
                 list_temp.append(list)
-            if list not in list_pass:
-                list_pass.append(list)
         lists = list_temp
+    for list in lists:
+        defines_temp = find_define(find_file(source_path,list))
+        for define in defines_temp:
+            define_file = find_define_file(source_path, define)
+            if define_file not in lists_root:
+                lists_root.append(define_file)
+
+
+
+
+
+
+
+
+
+
+
+        #     if list not in list_pass:
+        #         dic = find_file(source_path, list)
+        #         defines_temp = find_define(path)
+        #         for item in defines:
+        #             define_files = find_define_file(source_path, item)
+        #             if define_files not in lists_root:
+        #                 lists_root.append(define_files)
+        #         # print(dic)
+        #         modules = find_module(dic)
+        #         # print(modules)
+        #         if len(modules) != 0:
+        #             flag = 1
+        #             # print(flag)
+        #             for module in modules:
+        #                 if module not in lists:
+        #                     list_temp.append(module)
+
+        #         # if(len(modules) != 0):
+        #         #     flag = 1
+        #         #     list_temp.extend(modules)
+        #     if list not in list_temp:
+        #         list_temp.append(list)
+        #     if list not in list_pass:
+        #         list_pass.append(list)
+        # lists = list_temp
 
 
     os.chdir(target_path)
@@ -236,12 +272,14 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         fo.close()
     if flags == 5:
         os.chdir(target_path)
-        fl = open("flielist_uvm_case.f","w")
-        fl.close()
-        fl = open("filelist_uvm.f","w")
+        fl = open("filelist_uvm_case.f","w")
         os.chdir(os.path.dirname(__file__))
-        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f' + "\n")
-        fl.write(os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f' + "\n")
+        fl.write(find_file(source_path,"case0")+"\n")
+        fl.close()
+        os.chdir(target_path)
+        fl = open("filelist_uvm.f","w")
+        fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f' + "\n")
+        fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f' + "\n")
         fl.close()
 
 
@@ -252,7 +290,7 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         os.chdir(os.path.dirname(__file__))
         for item in lists_root:
             fq.write(item + "\n")
-        if flag1== 1:
+        if flag1== 1 and flags != 3:
             fq.write(path + "\n")
         fq.close()
         # lists = lists_root + lists
@@ -268,9 +306,9 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
     if flags == 3:
         os.chdir(target_path)
         fj = open("filelist.f", "w")
-        fj.write(os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
-        fj.write(os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
-        fj.write(os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
+        fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+        fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
+        fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
         fj.close()
 
 
@@ -283,20 +321,20 @@ def makefile_src_gen(target_path, name):
     fp.write("export name = ${OUTPUT}\n")
     fp.write("VCS:\n")
     # fp.write("\tvcs -full64 +v2k -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
-    fp.write("\tvcs  +acc +vpi  -full64 +v2k -sverilog  $\{UVM_HOME\}/src/dpi/uvm_dpi.cc -CFLAGS -DVCS -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
+    fp.write("\tvcs  +acc +vpi  -full64 +v2k -sverilog +incdir+"+r"${UVM_HOME}/src  ${UVM_HOME}/src/uvm_pkg.sv ${UVM_HOME}/src/dpi/uvm_dpi.cc -CFLAGS -DVCS -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
     fp.write(r"-P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ")
     fp.write(r"${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a ")
     fp.write(r" -f filelist.f  -l sim.log" + " ./" + name + "TB.sv\n")
     str = "VERDI:\n\tverdi -f file_list.f " + r"-ssf ${OUTPUT}.fsdb -nologo  -l v.log " + "\n"
     fp.write(str)
     # str = "SIM:\n\t"+r"./${OUTPUT}  -ucli -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
-    str = "SIM:\n\t" + r"./simv  -gui=verdi -i" + " ./run.scr  +fsdbfile+" + r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
+    str = "SIM:\n\t" + r"./simv  +UVM_TESTNAME=case0 -gui=verdi -i  "+ " ./run.scr  +fsdbfile+" + r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
     fp.write(str)
-    str = "SIM_NO_GUI:\n\t" + r"./simv  +UVM_TESTNAME=$1  -l sim.log" + "\n"
+    str = "SIM_NO_GUI:\n\t" + r"./simv  +UVM_TESTNAME=case0  -l sim.log" + "\n"
     fp.write(str)
     str = "CLEAN:\n\t" + "rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf\n"
     fp.write(str)
-    str = "TEST: VCS SIM"
+    str = "TEST: VCS SIM\n"
     fp.write(str)
     str = "CASE: VCS SIM_NO_GUI"
     fp.write(str)
@@ -365,8 +403,8 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write("`include \"uvm_macros.svh\"\n")
         fp.write("import uvm_pkg::*;\n")
         fp.write("module " + name + "TB;\n")
-        fp.write(name+"_interface "+name+"_if;\n")
-        fp.write(name + " " + name + "Inst(\n")
+        fp.write(name+"_interface "+name+"_if();\n")
+        # fp.write(name + " " + name + "Inst(\n")
         
         lenStr = 0
         for port in ports[0]:
@@ -390,11 +428,11 @@ def tb_inst(SourceDic, TargetDic, name):
 
         for port in ports[0]:
             if port == ports[0][len(ports[0]) - 1]:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if.ifo." + port[3] + " " * (
                         lenStr - len(port[3])) + "));" + r"//" + port[
                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
             else:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if.ifo." + port[3] + " " * (
                         lenStr - len(port[3])) + ") ," + r"//" + port[
                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
 
@@ -418,10 +456,17 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write("initial begin\n")
         fp.write("\n")
         fp.write("end\n")
+
+
+        fp.write("initial begin\n")
+        fp.write("   run_test();\n")
+        fp.write("end\n")
+
+
         fp.write("initial begin\n")
         fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.o_agt.drv\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", "+name+"_if);\n")
         fp.write("end\n")
         fp.write("\n\n\n\n\nendmodule\n")
         fp.close()
@@ -456,8 +501,8 @@ def interface_gen(Source_path,TargetPath,name,flag):
         fq = open(name+"_interface_inner.sv","w")
         fp = open(name+"_interface.sv","w")
         fp.write("interface "+name+"_interface;\n" )
-        fp.write(name+"_interface_port if_o;\n")
-        fp.write(name+"_interface_inner if_i;\n")
+        fp.write(name+"_interface_port ifo();\n")
+        fp.write(name+"_interface_inner ifi();\n")
         fp.write("\n\n\n\nendinterface")
         fq.write("interface "+name+"_interface_inner;\n" )
         fq.write("\n\n\n\nendinterface")
@@ -472,9 +517,12 @@ def transaction_gen(Source_path,TargetPath,name,flag):
     path = make_sim_dic(TargetPath,name)
     os.chdir(path)
     fp = open(name+"_transaction.sv","w")
+    fp.write("import uvm_pkg::*;\n")
     fp.write("class "+name+"_transaction extends uvm_sequence_item;\n")
-    fp.write("\n\n\nconstraint {\n\n\n}\n")
+    fp.write("\n\n\nconstraint con{\n\n\n}\n")
+    fp.write("`uvm_object_utils("+name+"_transaction)\n")
     fp.write("function new(string name = \""+name+"_transaction\");\nsuper.new();\nendfunction\n")
+    fp.write("endclass\n")
     fp.close()
 
 
@@ -483,9 +531,10 @@ def sequencer_gen(Source_path,TargetPath,name,flag):
     path = make_sim_dic(TargetPath,name)
     os.chdir(path)
     fp = open(name+"_sequencer.sv","w")
-    fp.write("class "+name+"_sequencer extends uvm_sequence #("+ name +"_transaction);\n")
-    fp.write("    function new(string name, uvm_component parent);\n        super.new(name, parent);\n    endfunction ")
-    fp.write("    `uvm_component_utils("+name+"_sequencer)")
+    fp.write("class "+name+"_sequencer extends uvm_sequencer #("+ name +"_transaction);\n")
+    fp.write("    function new(string name, uvm_component parent);\n        super.new(name, parent);\n    endfunction \n")
+    fp.write("    `uvm_component_utils("+name+"_sequencer)\n")
+    fp.write("endclass\n")
     fp.close()
 
 def scoreboard_gen(Source_path,TargetPath,name,flag):
