@@ -125,6 +125,7 @@ def find_define_file(path, define_word):
 
 def find_module(path,flag):
     # print(path)
+    # print(flag)
     fp = open(path, "r", errors="ignore")
     str = fp.read()
     str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
@@ -132,7 +133,7 @@ def find_module(path,flag):
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 
     modules = []
-    if flag == 1 or flag == 5:
+    if flag == 0 or flag == 5:
         result = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
         for item in result:
             if(item not in keyword):
@@ -263,7 +264,7 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
 
 
     os.chdir(target_path)
-    if flags == 0 | flags == 5:
+    if flags == 0 or flags == 5:
         fo = open("filelist_uvm_base.f","w")
         os.chdir(os.path.dirname(__file__))
         for item in lists:
