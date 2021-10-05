@@ -1,0 +1,10 @@
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_transaction.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_sequencer.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_interface.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_driver.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_monitor.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_agent.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_model.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_scoreboard.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_env.sv
+/home/IC/xsc/pythonToolsForVerilog/sim/testTest/test_base_test.sv

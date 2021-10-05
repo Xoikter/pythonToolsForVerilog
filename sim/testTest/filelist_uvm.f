@@ -1,0 +1,2 @@
+-f /home/IC/xsc/pythonToolsForVerilog/sim/testTest/filelist_uvm_base.f
+-f /home/IC/xsc/pythonToolsForVerilog/sim/testTest/filelist_uvm_case.f

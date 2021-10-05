@@ -2,7 +2,7 @@
 
 module uart_byte_txTB;
 
-  reg Clk;
+  reg clk;
   reg Rst_n;
   reg [7:0]data_byte;
   reg send_en;
@@ -13,7 +13,7 @@ module uart_byte_txTB;
   wire uart_state;
   
   uart_byte_tx uart_byte_tx(
-    .Clk(Clk),
+    .clk(clk),
     .Rst_n(Rst_n),
     .data_byte(data_byte),
     .send_en(send_en),
@@ -24,8 +24,8 @@ module uart_byte_txTB;
     .uart_state(uart_state)
   );
   
-  initial Clk = 1;
-  always#(`clk_period/2)Clk = ~Clk;
+  initial clk = 1;
+  always#(`clk_period/2)clk = ~clk;
   
   initial begin
     Rst_n = 1'b0;

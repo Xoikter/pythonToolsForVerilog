@@ -1,0 +1,3 @@
+-f /home/IC/xsc/pythonToolsForVerilog/sim/testTest/filelist_uvm.f
+-f /home/IC/xsc/pythonToolsForVerilog/sim/testTest/filelist_defines.f
+-f /home/IC/xsc/pythonToolsForVerilog/sim/testTest/filelist_modules.f
