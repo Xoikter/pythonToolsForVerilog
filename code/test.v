@@ -1,24 +1,12 @@
-fifo_ctr fifo_ctr_inst (
-        .clk_wr   () ,//input   
-        .clk_rd   () ,//input   
-        .rst_n    () ,//input   
-        .w_valid  () ,//input   
-        .r_valid  () ,//input   
-        .w_data   () ,//input   [`data_width-1:0]
-        .r_data   () ,//output  [`data_width-1:0]
-        .full     () ,//output  
-        .empty    ());//output  
-
-
-fifo_ctr fifo_ctr_inst (
-        .clk_wr   () ,//input   
-        .clk_rd   () ,//input   
-        .rst_n    () ,//input   
-        .w_valid  () ,//input   
-        .r_valid  () ,//input   
-        .w_data   () ,//input   [`data_width-1:0]
-        .r_data   () ,//output  [`data_width-1:0]
-        .full     () ,//output  
-        .empty    ());//output  
-
-
+module test(
+        input clk,
+        // output reg vld,
+        input [3:0] a,
+        input [3:0] b,
+        output [4:0]c
+);
+       assign  c = a + b;
+//        always @(posedge clk) begin
+//               vld <= 1; 
+//        end
+endmodule
