@@ -9,7 +9,7 @@ class test_case0_sequence extends uvm_sequence #(test_transaction);
 
       if(starting_phase != null) 
          starting_phase.raise_objection(this);
-      repeat(100) begin
+      repeat(10) begin
          `uvm_do(m_trans)
       end
 

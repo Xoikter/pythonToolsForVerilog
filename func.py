@@ -405,6 +405,8 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write("import uvm_pkg::*;\n")
         fp.write("module " + name + "TB;\n")
         fp.write(name+"_interface "+name+"_if();\n")
+        fp.write("logic clk;\n")
+        fp.write("logic rst_n;\n")
         # fp.write(name + " " + name + "Inst(\n")
         
         lenStr = 0
@@ -455,9 +457,17 @@ def tb_inst(SourceDic, TargetDic, name):
         #                      2] + "\n")
 
         fp.write("initial begin\n")
+        fp.write("clk = 0;\n")
+        fp.write("rst_n = 0;\n")
+        fp.write("#8 rst_n = 0;\n")
         fp.write("\n")
-        fp.write("end\n")
+        fp.write("end\n\n\n")
 
+        fp.write("always #5 clk = ~clk;\n\n")
+
+
+        fp.write("always@ * begin\n")
+        fp.write("\n\n\nend\n\n")
 
         fp.write("initial begin\n")
         fp.write("   run_test();\n")
