@@ -157,6 +157,8 @@ def find_module(path,flag):
 #     result = re.findall(str5, str,flags=re.S)
     str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*)\s*\)\s*"
     str2 = "\s*\((?:[^\(\)]*?\s*,)*[^\(\)]*?\)\s*"
+    # str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\((?:(?!\\b(?:end|if|;|else|assign)\\b).)*\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\((?:(?!\\b(?:end|if|;|else|assign)\\b).)*\)\s*)\s*\)\s*"
+    # str2 = "\s*\((?:(?:(?!\\b(?:end|if|;|else|assign)\\b).)*\s*,)*(?:(?!\\b(?:end|if|;|else|assign)\\b).)*\)\s*"
 # str2 = "\((?:(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*),)*(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\)"
     str3 = "\s*(?:\s*#\s*(?:"+str1 +"|" + str2 + "))?\s*"
     str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
