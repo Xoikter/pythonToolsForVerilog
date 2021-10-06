@@ -23,7 +23,8 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
 # path = "/home/IC/xsc"
 filename = "fifo_ctr"
 
-filemap = []
+filemap = {}
+definemap = {}
 
 
 
@@ -95,6 +96,9 @@ def find_define(path):
 
 def find_define_file(path, define_word):
     out_path = ""
+    if define_word in definemap:
+        return definemap[define_word]
+ 
     for start in path:
         for relpath, dirs, files in os.walk(start):
             for File in files:
@@ -105,9 +109,19 @@ def find_define_file(path, define_word):
                     # str_temp = re.sub(r'//.*$',"",str_temp)
                     str_temp = re.sub('//[\s\S]*?\n', "", str_temp)
                     # print(File)
+
+                    full_path = os.path.join(relpath, File)
                     # if(re.match(name + '.s?v$',File) != None):
+                    res_temp = re.findall("`define\s*([\S]*)\s*",str_temp)
+                    for item in res_temp:
+                        if item  not in definemap:
+                            definemap[item] = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+                        
+                
+
+
                     if re.search('`define\s*(\\b'+define_word+'\\b)', str_temp) is not None:
-                        full_path = os.path.join(relpath, File)
+                    # for 
                         if out_path == "":
                             out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
                         else:
@@ -117,7 +131,7 @@ def find_define_file(path, define_word):
                             sel = input("select:")
                             if sel == "Y":
                                 out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
-
+                        # return out_path
                         # print(full_path)
                         # return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
     return out_path
@@ -131,6 +145,8 @@ def find_module(path,flag):
     str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+    str_temp = re.sub('if\s*\(', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('case\s*\(', " ; ", str_temp, flags=re.S)
 
     modules = []
     if flag == 0 or flag == 5:
@@ -185,9 +201,11 @@ def find_module(path,flag):
 def find_file(starts, name):
     # print(start)
     out_path = ""
-    for item in filemap:
-        if name == item[0]:
-            return item[1]
+    # for item in filemap:
+    #     if name == item[0]:
+    #         return item[1]
+    if name in filemap:
+        return filemap[name]
     for start in starts:
         for relpath, dirs, files in os.walk(start):
             for File in files:
@@ -201,17 +219,18 @@ def find_file(starts, name):
                     full_path = os.path.join(relpath, File)
                     res_temp =  re.findall('\\b(module|interface|class|program)\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\\b', str_temp)
                     for item in res_temp:
-                        flag_file = 0
-                        for mod in filemap:
-                            if mod[0] == item[1]:
-                                flag_file = 1
-                        if flag_file == 0:
-                            filemap.append([item[1],os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")])
-                    for item in res_temp:
-                        if name == item[1]:
+                        # flag_file = 0
+                        if item[1] not in filemap:
+                            # if mod[0] == item[1]:
+                                # flag_file = 1
+                        # if flag_file == 0:
+                            # filemap.append([item[1],os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")])
+                            filemap[item[1]] = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+                    # for item in res_temp:
+                    #     if name == item[1]:
                     # print(File)
                     # if(re.match(name + '.s?v$',File) != None):
-                    # if re.search('\\b(module|interface|class|program)\\b\s*' + name + '\\b', str_temp) is not None:
+                    if re.search('\\b(module|interface|class|program)\\b\s*' + name + '\\b', str_temp) is not None:
                             # full_path = os.path.join(relpath, File)
                             if out_path == "":
                                 out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
