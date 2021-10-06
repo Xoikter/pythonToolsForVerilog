@@ -19,11 +19,11 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
            'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
            'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
            ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
-           'logic','genvar']
+           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port']
 # path = "/home/IC/xsc"
 filename = "fifo_ctr"
 
-
+filemap = []
 
 
 
@@ -39,7 +39,7 @@ def find_port(filename,name):
     str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-    str_temp = re.sub("\\bfunction\\b[\s\S]*?\bendfunction\\b", "", str_temp)
+    str_temp = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", str_temp)
     str_temp = re.search("\\bmodule\\b\s*\\b" + name + "\\b.*?endmodule", str_temp, flags=re.S).group()
     str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
     str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
@@ -139,8 +139,36 @@ def find_module(path,flag):
             if(item not in keyword):
                 modules.append(item)
 
-
-    result = re.findall('(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\(.*?\))?\s*;', str_temp,flags=re.S)
+    # str_re1 = ""
+    # str1 = "\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\((?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\),)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\((?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\))\s*\)"
+    # str1 = "\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\(.*?\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\(.*?\)\s*)\s*\)"
+    # str2 = "\((?:.*?\s*,)*.*?\)"
+    # # str2 = "\((?:(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*),)*(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\)"
+    # str3 = "(?:\s*#\s*(?:"+str1 +"|" + str2 + "))?\s*"
+    # str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
+    # str5 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str4
+    # result = re.findall(str5, str,flags=re.S)
+#     str1 = "\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*)\s*\)"
+#     str2 = "\((?:[^\(\)]*?\s*,)*[^\(\)]*?\)\s*"
+# # str2 = "\((?:(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*),)*(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\)"
+#     str3 = "(?:\s*#\s*(?:"+str1 +"|" + str2 + "))?\s*"
+#     str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
+#     str5 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str4
+#     result = re.findall(str5, str,flags=re.S)
+    str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*)\s*\)\s*"
+    str2 = "\s*\((?:[^\(\)]*?\s*,)*[^\(\)]*?\)\s*"
+# str2 = "\((?:(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*),)*(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\)"
+    str3 = "\s*(?:\s*#\s*(?:"+str1 +"|" + str2 + "))?\s*"
+    str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
+    str5 = "\s*(?:"+str1 +"|" + str2 + ")?\s*;"
+    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str4
+    str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str5
+    
+    if flag == 0 or flag == 5:
+        result = re.findall(str7, str_temp,flags=re.S)
+    else:
+        result = re.findall(str6, str_temp,flags=re.S)
+    # result = re.findall('(?:;|end|endfunction|endtask|endclass|endinterface|endmodule)\s*(?:)(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\(.*?\))?\s*;', str_temp,flags=re.S)
     for item in result:
         if (item[0] not in keyword) and (item[1] not in keyword):
             # print(item)
@@ -155,6 +183,9 @@ def find_module(path,flag):
 def find_file(starts, name):
     # print(start)
     out_path = ""
+    for item in filemap:
+        if name == item[0]:
+            return item[1]
     for start in starts:
         for relpath, dirs, files in os.walk(start):
             for File in files:
@@ -165,34 +196,47 @@ def find_file(starts, name):
                     # str_temp = re.sub(r'//.*',"",str_temp)
                     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 
+                    full_path = os.path.join(relpath, File)
+                    res_temp =  re.findall('\\b(module|interface|class|program)\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\\b', str_temp)
+                    for item in res_temp:
+                        flag_file = 0
+                        for mod in filemap:
+                            if mod[0] == item[1]:
+                                flag_file = 1
+                        if flag_file == 0:
+                            filemap.append([item[1],os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")])
+                    for item in res_temp:
+                        if name == item[1]:
                     # print(File)
                     # if(re.match(name + '.s?v$',File) != None):
-                    if re.search('\\b(module|interface|class|program)\\b\s*' + name + '\\b', str_temp) is not None:
-                        full_path = os.path.join(relpath, File)
-                        if out_path == "":
-                            out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
-                        else:
-                            print("find mutidefine\n")
-                            print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + "Y")
-                            print(out_path + "N")
-                            sel = input("select:")
-                            if sel == "Y":
+                    # if re.search('\\b(module|interface|class|program)\\b\s*' + name + '\\b', str_temp) is not None:
+                            # full_path = os.path.join(relpath, File)
+                            if out_path == "":
                                 out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+                            else:
+                                print("find mutidefine\n")
+                                print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + "Y")
+                                print(out_path + "N")
+                                sel = input("select:")
+                                if sel == "Y":
+                                    out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
 
                         # print(full_path)
                         # return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
+    # filemap.append([name,out_path])
     return out_path
 
 
 def filelist_gen(source_path, target_path, name, flags,flag1):
     os.chdir(os.path.dirname(__file__))
     path = find_file(source_path, name)
-    defines = find_define(path)
-    lists_root = []
-    for item in defines:
-        define_files = find_define_file(source_path, item)
-        if define_files not in lists_root:
-            lists_root.append(define_files)
+    if flags == 1 or flags == 3:
+        defines = find_define(path)
+        lists_root = []
+        for item in defines:
+            define_files = find_define_file(source_path, item)
+            if define_files not in lists_root:
+                lists_root.append(define_files)
 
     # print(path)
     # print(name)
@@ -219,12 +263,13 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
                         flag = 1
                 list_temp.append(list)
         lists = list_temp
-    for list in lists:
-        defines_temp = find_define(find_file(source_path,list))
-        for define in defines_temp:
-            define_file = find_define_file(source_path, define)
-            if define_file not in lists_root:
-                lists_root.append(define_file)
+    if flags == 1 or flags == 3:
+        for list in lists:
+            defines_temp = find_define(find_file(source_path,list))
+            for define in defines_temp:
+                define_file = find_define_file(source_path, define)
+                if define_file not in lists_root:
+                    lists_root.append(define_file)
 
 
 
@@ -267,8 +312,13 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
     if flags == 0 or flags == 5:
         fo = open("filelist_uvm_base.f","w")
         os.chdir(os.path.dirname(__file__))
+        file_path_temp = []
         for item in lists:
-            fo.write(find_file(source_path, item) + "\n")
+            temp_path = find_file(source_path,item)
+            if temp_path not in file_path_temp:
+                file_path_temp.append(temp_path)
+        for item in file_path_temp:
+            fo.write(item + "\n")
         fo.write(path + "\n")
         fo.close()
     if flags == 5:
@@ -299,17 +349,26 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         os.chdir(target_path)
         fp = open("filelist_modules.f", "w")
         os.chdir(os.path.dirname(__file__))
-        for list in lists:
-            fp.write(find_file(source_path, list) + "\n")
+        # for list in lists:
+        #     fp.write(find_file(source_path, list) + "\n")
+        # if flag1 == 1:
+        #     fp.write(path + "\n")
+        file_path_temp = []
+        for item in lists:
+            temp_path = find_file(source_path,item)
+            if temp_path not in file_path_temp:
+                file_path_temp.append(temp_path)
+        for item in file_path_temp:
+            fp.write(item + "\n")
         if flag1 == 1:
             fp.write(path + "\n")
         fp.close()
     if flags == 3:
         os.chdir(target_path)
         fj = open("filelist.f", "w")
-        fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
         fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
         fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
+        fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
         fj.close()
 
 
@@ -494,7 +553,7 @@ def make_sim_dic(targetPath, name):
         print("creat "+targetPath + "/path")
         os.makedirs(str)
     if not os.path.isdir(str + name + "Test"):
-        print("creat "+targetPath + "sim/"+name+"Test path")
+        print("creat "+targetPath +name+"Test path")
         os.makedirs(str + name + "Test")
     return os.path.normpath(os.path.abspath(str + name + r"Test/")).replace("\\", "/")
 
@@ -674,9 +733,9 @@ def simflow(sourcePath, targetPath, name):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    SourcePath = ["./code/"]
-    TargetPath = "./sim/"
-    name = "top"
+    SourcePath = ["../rtl/"]
+    TargetPath = "../sim/"
+    name = "vpe_wrapper"
     # TargetPath = make_sim_dic(TargetPath, name)
 
     simflow(SourcePath,TargetPath,name)
