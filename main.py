@@ -13,8 +13,8 @@ import sys
 
 # fc.simflow('../','../sim/','Mix_Columns_Enc')
 
-SourcePath = ["./code/"]
-TargetPath = "./sim/"
+SourcePath = ["../code/"]
+TargetPath = "../sim/"
 
 argue = input("cmd:")
 
