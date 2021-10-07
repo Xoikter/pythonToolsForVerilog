@@ -19,7 +19,7 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
            'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
            'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
            ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
-           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port']
+           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum']
 # path = "/home/IC/xsc"
 filename = "fifo_ctr"
 
@@ -145,8 +145,11 @@ def find_module(path,flag):
     str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-    str_temp = re.sub('if\s*\(', " ; ", str_temp, flags=re.S)
-    str_temp = re.sub('case\s*\(', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bif\s*\(.*?\)', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bcase\s*\(.*?\)', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 
     modules = []
     if flag == 0 or flag == 5:
@@ -171,16 +174,21 @@ def find_module(path,flag):
 #     str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
 #     str5 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str4
 #     result = re.findall(str5, str,flags=re.S)
-    str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*)\s*\)\s*"
-    str2 = "\s*\((?:[^\(\)]*?\s*,)*[^\(\)]*?\)\s*"
-    # str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\((?:(?!\\b(?:end|if|;|else|assign)\\b).)*\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\((?:(?!\\b(?:end|if|;|else|assign)\\b).)*\)\s*)\s*\)\s*"
-    # str2 = "\s*\((?:(?:(?!\\b(?:end|if|;|else|assign)\\b).)*\s*,)*(?:(?!\\b(?:end|if|;|else|assign)\\b).)*\)\s*"
-# str2 = "\((?:(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*),)*(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\)"
-    str3 = "\s*(?:\s*#\s*(?:"+str1 +"|" + str2 + "))?\s*"
-    str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
-    str5 = "\s*(?:"+str1 +"|" + str2 + ")?\s*;"
-    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str4
-    str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str5
+    # str2 = "\s*\((?:(?:.*?)(?=,)\s*)*?(?:(?:.*?))(?=\)\s*)\s*\)\s*"
+    # str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\(.*?(?=\)\s*,)\)\s*,)*\s*(?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\(.*?(?=\)\s*\))\)\s*\))\s*\s*"
+
+
+    # str1 = "\s*\((?:\s*\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*,)*\s*(?:\.(?:\s*\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b\s*)\s*\([^\(\)]*?\)\s*)\s*\)\s*"
+    # str2 = "\s*\((?:[^\(\)]*?\s*,)*[^\(\)]*?\)\s*"
+    # str3 = "\s*(?:\s*#\s*(?:"+str1 +"|" + str2 + "))?\s*"
+    # str4 = "\s*(?:"+str1 +"|" + str2 + ")\s*;"
+    # str5 = "\s*(?:"+str1 +"|" + str2 + ")?\s*;"
+    # str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str4
+    # str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str5
+
+
+    str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*.*?;"
+    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:#\(.*\))?(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\(.*?\)\s*;"
     
     if flag == 0 or flag == 5:
         result = re.findall(str7, str_temp,flags=re.S)
