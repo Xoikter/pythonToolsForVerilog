@@ -149,6 +149,7 @@ def find_module(path,flag):
     str_temp = re.sub('\\bcase\s*\(.*?\)', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bgenerate.*?\\bendgenerate', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 
     modules = []
@@ -187,8 +188,8 @@ def find_module(path,flag):
     # str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str3 + "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*" + str5
 
 
-    str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*.*?;"
-    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:#\(.*\))?(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\(.*?\)\s*;"
+    str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
+    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:#\(.*\))?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\(.*?\)\s*;"
     
     if flag == 0 or flag == 5:
         result = re.findall(str7, str_temp,flags=re.S)
