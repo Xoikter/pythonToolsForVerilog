@@ -19,13 +19,14 @@ keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case'
            'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
            'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
            ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
-           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum']
+           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum','define','undef'
+           ,'ifdef','elsif','endif']
 # path = "/home/IC/xsc"
 filename = "fifo_ctr"
 
 filemap = {}
 definemap = {}
-
+except_module = ['assert_never_unknown']
 
 
 
@@ -102,7 +103,7 @@ def find_define_file(path, define_word):
     for start in path:
         for relpath, dirs, files in os.walk(start):
             for File in files:
-                if re.match('.+\.s?v', File) is not None:
+                if re.match('.+\.s?v$', File) is not None:
                     fp = open(os.path.join(relpath, File), "r", errors="ignore")
                     str = fp.read()
                     str_temp = re.sub("\/\*[\s\S]*?\*\/", "", str)
@@ -149,7 +150,8 @@ def find_module(path,flag):
     str_temp = re.sub('\\bcase\s*\(.*?\)', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-    str_temp = re.sub('\\bgenerate.*?\\bendgenerate', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
+    # str_temp = re.sub('\\bgenerate.*?\\bendgenerate', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 
     modules = []
@@ -189,15 +191,16 @@ def find_module(path,flag):
 
 
     str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
-    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:#\(.*\))?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\(.*?\)\s*;"
+    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\(.*?\))?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\(.*?\)\s*;"
     
     if flag == 0 or flag == 5:
         result = re.findall(str7, str_temp,flags=re.S)
     else:
         result = re.findall(str6, str_temp,flags=re.S)
+    
     # result = re.findall('(?:;|end|endfunction|endtask|endclass|endinterface|endmodule)\s*(?:)(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\(.*?\))?\s*;', str_temp,flags=re.S)
     for item in result:
-        if (item[0] not in keyword) and (item[1] not in keyword):
+        if (item[0] not in keyword) and (item[1] not in keyword) and (item[0] not in except_module):
             # print(item)
             modules.append(item[0])
 
@@ -765,7 +768,7 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     SourcePath = ["../rtl/"]
     TargetPath = "../sim/"
-    name = "vpe_wrapper"
+    name = "gmec_core"
     # TargetPath = make_sim_dic(TargetPath, name)
 
     simflow(SourcePath,TargetPath,name)

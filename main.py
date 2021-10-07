@@ -12,7 +12,8 @@ import sys
 # fc.filelist_gen(SourcePath,TB)
 
 # fc.simflow('../','../sim/','Mix_Columns_Enc')
-
+# fc.except_module.append('assert_never_unknown')
+fc.except_module = ['assert_never_unknown']
 SourcePath = ["../rtl/"]
 TargetPath = "../sim/"
 
