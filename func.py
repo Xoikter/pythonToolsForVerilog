@@ -26,7 +26,8 @@ filename = "fifo_ctr"
 
 filemap = {}
 definemap = {}
-except_module = ['assert_never_unknown']
+# except_module = ['assert_never_unknown']
+except_module = []
 
 
 
@@ -195,7 +196,7 @@ def find_module(path,flag):
 
     str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
     # str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\(.*?\))?\s*([a-zA-Z_`].*?)\s*\(\s*[`a-zA-Z0-9_.].*?\)\s*;"
-    str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\(.*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
+    str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
     
     if flag == 0 or flag == 5:
         result = re.findall(str7, str_temp,flags=re.S)
@@ -290,15 +291,18 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
             modules = []
             if list not in list_temp:
                 dic = find_file(source_path,list)
-                modules = find_module(dic,flags)            
+                if dic == "":
+                    print("error: module unfind = "+ list + "\n")
+                else:
+                    modules = find_module(dic,flags)            
                 # if len(modules) != 0:
                 #     flag = 1
-                for module in modules:
-                    if module not in list_temp:
-                        list_temp.append(module)
-                    if module not in lists:
-                        flag = 1
-                list_temp.append(list)
+                    for module in modules:
+                        if module not in list_temp:
+                            list_temp.append(module)
+                        if module not in lists:
+                            flag = 1
+                    list_temp.append(list)
         lists = list_temp
     if flags == 1 or flags == 3:
         for list in lists:
@@ -346,8 +350,14 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
 
 
     os.chdir(target_path)
+    name_temp = re.sub("_base_test$","",name)
+    if flags == 5:
+        fk = open(name_temp+"_package.sv","w")
+        fk.write("import uvm_pkg::*;\n")
+        fk.close()
     if flags == 0 or flags == 5:
         fo = open("filelist_uvm_base.f","w")
+        fo.write(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv' + "\n")
         os.chdir(os.path.dirname(__file__))
         file_path_temp = []
         for item in lists:
@@ -362,7 +372,6 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         os.chdir(target_path)
         fl = open("filelist_uvm_case.f","w")
         os.chdir(os.path.dirname(__file__))
-        name_temp = re.sub("_base_test$","",name)
         fl.write(find_file(source_path,name_temp+"_case0")+"\n")
         fl.close()
         os.chdir(target_path)
@@ -420,7 +429,7 @@ def makefile_src_gen(target_path, name):
     fp.write("export name = ${OUTPUT}\n")
     fp.write("VCS:\n")
     # fp.write("\tvcs -full64 +v2k -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
-    fp.write("\tvcs  +acc +vpi  -full64 +v2k -sverilog +incdir+"+r"${UVM_HOME}/src  ${UVM_HOME}/src/uvm_pkg.sv ${UVM_HOME}/src/dpi/uvm_dpi.cc -CFLAGS -DVCS -lca -kdb -timescale=1ns/1ps -debug_all -LDFLAGS -rdynamic  ")
+    fp.write("\tvcs  +acc +vpi  -full64 +v2k -sverilog +incdir+"+r"${UVM_HOME}/src  ${UVM_HOME}/src/uvm_pkg.sv ${UVM_HOME}/src/dpi/uvm_dpi.cc -CFLAGS -DVCS -lca -kdb -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -LDFLAGS -rdynamic  ")
     fp.write(r"-P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ")
     fp.write(r"${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a ")
     fp.write(r" -f filelist.f  -l sim.log" + " ./" + name + "TB.sv\n")
@@ -508,7 +517,7 @@ def tb_inst(SourceDic, TargetDic, name):
                 lenStr = len(port[3])
         fp = open(name + r"TB.sv", "w+")
         fp.write("`include \"uvm_macros.svh\"\n")
-        fp.write("import uvm_pkg::*;\n")
+        # fp.write("import uvm_pkg::*;\n")
         fp.write("module " + name + "TB;\n")
         for para_all in ports[2]:
             fp.write("parameter "+para_all+";\n")
@@ -544,11 +553,11 @@ def tb_inst(SourceDic, TargetDic, name):
 
         for port in ports[0]:
             if port == ports[0][len(ports[0]) - 1]:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if.ifo." + port[3] + " " * (
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if." + port[3] + " " * (
                         lenStr - len(port[3])) + "));" + r"//" + port[
                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
             else:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if.ifo." + port[3] + " " * (
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if." + port[3] + " " * (
                         lenStr - len(port[3])) + ") ," + r"//" + port[
                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
 
@@ -635,7 +644,7 @@ def interface_gen(Source_path,TargetPath,name,flag):
         fq.write("\n\n\n\nendinterface")
         fq.close()
     for para in ports[2]:
-        fj.write("paramter "+ para + ";\n")
+        fj.write("parameter "+ para + ";\n")
     for port in ports[0]:
         fj.write("logic " + port[2] + (0 if len(port[2]) == 0 else 1) * " " + port[3] + ";\n")
     fj.write("\n\n\n\nendinterface")
@@ -646,7 +655,7 @@ def transaction_gen(Source_path,TargetPath,name,flag):
     path = make_sim_dic(TargetPath,name)
     os.chdir(path)
     fp = open(name+"_transaction.sv","w")
-    fp.write("import uvm_pkg::*;\n")
+    # fp.write("import uvm_pkg::*;\n")
     fp.write("class "+name+"_transaction extends uvm_sequence_item;\n")
     fp.write("\n\n\nconstraint con{\n\n\n}\n")
     fp.write("`uvm_object_utils("+name+"_transaction)\n")
@@ -668,7 +677,10 @@ def sequencer_gen(Source_path,TargetPath,name,flag):
 
 def scoreboard_gen(Source_path,TargetPath,name,flag):
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    write_str = re.sub("my",name,open("./uvm/my_scoreboard.sv","r").read())
+    if flag == 1:
+        write_str = re.sub("my",name,open("./uvm/my_scoreboard_seq.sv","r").read())
+    else:
+        write_str = re.sub("my",name,open("./uvm/my_scoreboard_comb.sv","r").read())
     path = make_sim_dic(TargetPath,name)
     os.chdir(path)
     fp = open(name+"_scoreboard.sv","w")
@@ -761,7 +773,7 @@ def filelist_regen(flag_tb,flag_tb1,flag_dicmake,flags,flag1,sourcePath,targetPa
     filelist_gen(search_path,real_targetPath,name,flags,flag1)
 
 
-def simflow(sourcePath, targetPath, name):
+def simflow_seq(sourcePath, targetPath, name):
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     # SourcePath = "../code/"
     targetpath = make_sim_dic(targetPath, name)
@@ -787,6 +799,28 @@ def simflow(sourcePath, targetPath, name):
 
 
 
+def simflow_comb(sourcePath, targetPath, name):
+    os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
+    # SourcePath = "../code/"
+    targetpath = make_sim_dic(targetPath, name)
+    TB = tb_inst(sourcePath, targetpath, name)
+    # makefile_src_gen(targetpath, name)
+    # # tb_inst(path,targetpath,"uart_byte_tx")
+    # filelist_gen(sourcePath, targetpath, TB)
+    flag = 1
+    makefile_src_gen(targetPath,name)
+    base_test_gen(sourcePath,targetPath,name,flag)
+    agent_gen(sourcePath,targetPath,name,flag)
+    case_gen(sourcePath,targetPath,name,flag)
+    drive_gen(sourcePath,targetPath,name,flag)
+    env_gen(sourcePath,targetPath,name,flag)
+    interface_gen(sourcePath,targetPath,name,flag)
+    model_gen(sourcePath,targetPath,name,flag)
+    monitor_gen(sourcePath,targetPath,name,flag)
+    scoreboard_gen(sourcePath,targetPath,name,0)
+    sequencer_gen(sourcePath,targetPath,name,flag)
+    transaction_gen(sourcePath,targetPath,name,flag)
+    filelist_regen(1,5,1,3,1,sourcePath,targetPath,name)
 
 
 
@@ -797,7 +831,7 @@ if __name__ == '__main__':
     name = "gmec_core"
     # TargetPath = make_sim_dic(TargetPath, name)
 
-    simflow(SourcePath,TargetPath,name)
+    simflow_seq(SourcePath,TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
     # filelist_gen(SourcePath,TargetPath, name,3, 0)
     # file_inst(SourcePath, 'test')

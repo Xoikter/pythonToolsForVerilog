@@ -13,7 +13,7 @@ import sys
 
 # fc.simflow('../','../sim/','Mix_Columns_Enc')
 # fc.except_module.append('assert_never_unknown')
-fc.except_module = ['assert_never_unknown']
+fc.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
 SourcePath = ["../rtl/"]
 TargetPath = "../sim/"
 
@@ -24,8 +24,10 @@ if (argue == "i"):
     fc.file_inst(SourcePath, sys.argv[1])
 elif (argue == "t"):
     fc.tb_inst(SourcePath, TargetPath, sys.argv[1])
-elif (argue == 's'):
-    fc.simflow(SourcePath, TargetPath, sys.argv[1])
+elif (argue == 'ssf'):
+    fc.simflow_seq(SourcePath, TargetPath, sys.argv[1])
+elif (argue == 'csf'):
+    fc.simflow_comb(SourcePath, TargetPath, sys.argv[1])
 elif (argue == 'f'):
     fc.filelist_regen(1,0,1,2,1,SourcePath,TargetPath,sys.argv[1])
     fc.interface_gen(SourcePath,TargetPath,sys.argv[1],0)
