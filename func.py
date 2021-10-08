@@ -35,6 +35,7 @@ except_module = ['assert_never_unknown']
 def find_port(filename,name):
     ports = []
     parameters = []
+    parameters_all = []
     fd = open(filename, errors='ignore')
     # result = 
     str = fd.read()
@@ -59,6 +60,7 @@ def find_port(filename,name):
     res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
     for res in res_para:
         res_temp1 = re.split("\s*,\s*",res)
+        parameters_all.append(res)
         for item in res_temp1:
             res_temp2 = re.split('\s*=\s*',item)
             parameters.append(res_temp2[0])
@@ -78,7 +80,7 @@ def find_port(filename,name):
     #         portTemp = [result[0][0],result[0][1],result[0][2],result[0][3]]
     #         ports.append(portTemp)
     # print(ports)
-    return [ports, parameters]
+    return [ports, parameters,parameters_all]
 
 
 def find_define(path):
@@ -146,11 +148,12 @@ def find_module(path,flag):
     str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
     # str_temp = re.sub(r'//.*',"",str_temp)
     str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-    str_temp = re.sub('\\bif\s*\(.*?\)', " ; ", str_temp, flags=re.S)
-    str_temp = re.sub('\\bcase\s*\(.*?\)', " ; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+    str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
+    # str_temp = re.sub('\\bfor\\b\s*\(.*?\)', " ; ", str_temp)
     # str_temp = re.sub('\\bgenerate.*?\\bendgenerate', " ; ", str_temp, flags=re.S)
     str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 
@@ -191,7 +194,8 @@ def find_module(path,flag):
 
 
     str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
-    str6 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\(.*?\))?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\(.*?\)\s*;"
+    # str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\(.*?\))?\s*([a-zA-Z_`].*?)\s*\(\s*[`a-zA-Z0-9_.].*?\)\s*;"
+    str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\(.*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
     
     if flag == 0 or flag == 5:
         result = re.findall(str7, str_temp,flags=re.S)
@@ -301,7 +305,7 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
             defines_temp = find_define(find_file(source_path,list))
             for define in defines_temp:
                 define_file = find_define_file(source_path, define)
-                if define_file not in lists_root:
+                if define_file not in lists_root and define_file != "":
                     lists_root.append(define_file)
 
 
@@ -358,7 +362,8 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         os.chdir(target_path)
         fl = open("filelist_uvm_case.f","w")
         os.chdir(os.path.dirname(__file__))
-        fl.write(find_file(source_path,"case0")+"\n")
+        name_temp = re.sub("_base_test$","",name)
+        fl.write(find_file(source_path,name_temp+"_case0")+"\n")
         fl.close()
         os.chdir(target_path)
         fl = open("filelist_uvm.f","w")
@@ -368,15 +373,6 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
 
 
 
-    if flags == 1 or flags == 3:
-        os.chdir(target_path)
-        fq = open("filelist_defines.f", "w")
-        os.chdir(os.path.dirname(__file__))
-        for item in lists_root:
-            fq.write(item + "\n")
-        if flag1== 1 and flags != 3:
-            fq.write(path + "\n")
-        fq.close()
         # lists = lists_root + lists
     if flags == 2 or flags == 3:
         os.chdir(target_path)
@@ -396,6 +392,16 @@ def filelist_gen(source_path, target_path, name, flags,flag1):
         if flag1 == 1:
             fp.write(path + "\n")
         fp.close()
+    if flags == 1 or flags == 3:
+        os.chdir(target_path)
+        fq = open("filelist_defines.f", "w")
+        os.chdir(os.path.dirname(__file__))
+        for item in lists_root :
+            if  item not in file_path_temp:
+                fq.write(item + "\n")
+        if flag1== 1 and flags != 3:
+            fq.write(path + "\n")
+        fq.close()
     if flags == 3:
         os.chdir(target_path)
         fj = open("filelist.f", "w")
@@ -421,9 +427,9 @@ def makefile_src_gen(target_path, name):
     str = "VERDI:\n\tverdi -f file_list.f " + r"-ssf ${OUTPUT}.fsdb -nologo  -l v.log " + "\n"
     fp.write(str)
     # str = "SIM:\n\t"+r"./${OUTPUT}  -ucli -i" +  " ./run.scr  + fsdb + autoflush  -l sim.log" + "\n"
-    str = "SIM:\n\t" + r"./simv  +UVM_TESTNAME=case0 -gui=verdi -i  "+ " ./run.scr  +fsdbfile+" + r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
+    str = "SIM:\n\t" + r"./simv  +UVM_TESTNAME="+name+"_case0 -gui=verdi -i  "+ " ./run.scr  +fsdbfile+" + r"${OUTPUT}.fsdb" " + autoflush  -l sim.log" + "\n"
     fp.write(str)
-    str = "SIM_NO_GUI:\n\t" + r"./simv  +UVM_TESTNAME=case0  -l sim.log" + "\n"
+    str = "SIM_NO_GUI:\n\t" + r"./simv  +UVM_TESTNAME="+name+"_case0  -l sim.log" + "\n"
     fp.write(str)
     str = "CLEAN:\n\t" + "rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf\n"
     fp.write(str)
@@ -492,29 +498,44 @@ def tb_inst(SourceDic, TargetDic, name):
     ports = find_port(path,name) #注意此处ports是一个二维的列表
     os.chdir(TargetDic)
     if not os.path.isfile(name + r"TB.sv"):
+        lenStr = 0
+        for para in ports[1]:
+            if len(para) > lenStr:
+                lenStr = len(para)
+        lenPara = lenStr
+        for port in ports[0]:
+            if len(port[3]) > lenStr:
+                lenStr = len(port[3])
         fp = open(name + r"TB.sv", "w+")
         fp.write("`include \"uvm_macros.svh\"\n")
         fp.write("import uvm_pkg::*;\n")
         fp.write("module " + name + "TB;\n")
-        fp.write(name+"_interface "+name+"_if();\n")
+        for para_all in ports[2]:
+            fp.write("parameter "+para_all+";\n")
+        if len(ports[1]) != 0:           
+            fp.write(name + "_interface_port #(\n")
+            for para in ports[1]:
+                if para == ports[1][len(ports[1]) - 1]:
+                    fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r"))" + "\n")
+                else:
+                    fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
+            fp.write(" " * len(name + "_interface_port") + " " + name+"_if" + " " + r"();" + "\n")
+        else:
+            fp.write(name + "_interface_port" + name+"_if" + " " + r"();" + "\n")
+            # fp.write(name+"_interface_port "+name+"_if();\n")
+
+        fp.write(name+"_interface_inner "+name+"_ifi();\n")
         fp.write("logic clk;\n")
         fp.write("logic rst_n;\n")
         # fp.write(name + " " + name + "Inst(\n")
         
-        lenStr = 0
-        for port in ports[0]:
-            if len(port[3]) > lenStr:
-                lenStr = len(port[3])
-        for para in ports[1]:
-            if len(para) > lenStr:
-                lenStr = len(para)
         if len(ports[1]) != 0:
             fp.write(name + " #(\n")
             for para in ports[1]:
                 if para == ports[1][len(ports[1]) - 1]:
-                    fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"())" + "\n")
+                    fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r"))" + "\n")
                 else:
-                    fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"()," + "\n")
+                    fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
             fp.write(" " * len(name) + " " + name+"_inst" + " " + r"(" + "\n")
         else:
             fp.write(name + " " + name+"_inst" + " " + r"(" + "\n")
@@ -567,9 +588,12 @@ def tb_inst(SourceDic, TargetDic, name):
 
 
         fp.write("initial begin\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", "+name+"_if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", "+name+"_ifi);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", "+name+"_ifi);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", "+name+"_ifi);\n")
         fp.write("end\n")
         fp.write("\n\n\n\n\nendmodule\n")
         fp.close()
@@ -602,14 +626,16 @@ def interface_gen(Source_path,TargetPath,name,flag):
     fj.write("interface "+name+"_interface_port;\n" )
     if flag==1:
         fq = open(name+"_interface_inner.sv","w")
-        fp = open(name+"_interface.sv","w")
-        fp.write("interface "+name+"_interface;\n" )
-        fp.write(name+"_interface_port ifo();\n")
-        fp.write(name+"_interface_inner ifi();\n")
-        fp.write("\n\n\n\nendinterface")
+        # fp = open(name+"_interface.sv","w")
+        # fp.write("interface "+name+"_interface;\n" )
+        # fp.write(name+"_interface_port ifo();\n")
+        # fp.write(name+"_interface_inner ifi();\n")
+        # fp.write("\n\n\n\nendinterface")
         fq.write("interface "+name+"_interface_inner;\n" )
         fq.write("\n\n\n\nendinterface")
         fq.close()
+    for para in ports[2]:
+        fj.write("paramter "+ para + ";\n")
     for port in ports[0]:
         fj.write("logic " + port[2] + (0 if len(port[2]) == 0 else 1) * " " + port[3] + ";\n")
     fj.write("\n\n\n\nendinterface")

@@ -1,6 +1,7 @@
 class my_driver extends uvm_driver#(my_transaction);
 
-   virtual my_interface vif;
+   virtual my_interface_port vif;
+   virtual my_interface_inner vif_i;
 
    `uvm_component_utils(my_driver)
    function new(string name = "my_driver", uvm_component parent = null);
@@ -9,8 +10,10 @@ class my_driver extends uvm_driver#(my_transaction);
 
    virtual function void build_phase(uvm_phase phase);
       super.build_phase(phase);
-      if(!uvm_config_db#(virtual my_interface)::get(this, "", "vif", vif))
+      if(!uvm_config_db#(virtual my_interface_port)::get(this, "", "vif", vif))
          `uvm_fatal("my_driver", "virtual interface must be set for vif!!!")
+      if(!uvm_config_db#(virtual my_interface_inner)::get(this, "", "vif_i", vif_i))
+         `uvm_fatal("my_driver", "virtual interface must be set for vif_i!!!")
    endfunction
 
    extern task main_phase(uvm_phase phase);
