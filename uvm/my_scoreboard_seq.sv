@@ -1,5 +1,5 @@
 class my_scoreboard extends uvm_scoreboard;
-   // my_transaction  expect_queue[$];
+   my_transaction  expect_queue[$];
    uvm_blocking_get_port #(my_transaction)  exp_port;
    uvm_blocking_get_port #(my_transaction)  act_port;
    `uvm_component_utils(my_scoreboard)

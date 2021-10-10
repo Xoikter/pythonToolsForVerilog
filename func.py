@@ -581,7 +581,7 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write("initial begin\n")
         fp.write("clk = 0;\n")
         fp.write("rst_n = 0;\n")
-        fp.write("#8 rst_n = 0;\n")
+        fp.write("#8 rst_n = 1;\n")
         fp.write("\n")
         fp.write("end\n\n\n")
 
