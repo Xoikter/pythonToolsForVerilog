@@ -530,7 +530,7 @@ def tb_inst(SourceDic, TargetDic, name):
                     fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
             fp.write(" " * len(name + "_interface_port") + " " + name+"_if" + " " + r"();" + "\n")
         else:
-            fp.write(name + "_interface_port" + name+"_if" + " " + r"();" + "\n")
+            fp.write(name + "_interface_port"+ " " + name+"_if" + " " + r"();" + "\n")
             # fp.write(name+"_interface_port "+name+"_if();\n")
 
         fp.write(name+"_interface_inner "+name+"_ifi();\n")
