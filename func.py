@@ -528,12 +528,13 @@ def tb_inst(SourceDic, TargetDic, name):
                     fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r"))" + "\n")
                 else:
                     fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
-            fp.write(" " * len(name + "_interface_port") + " " + name+"_if" + " " + r"();" + "\n")
+            # fp.write(" " * len(name + "_interface_port") + " " + name+"_if" + " " + r"();" + "\n")
+            fp.write(" " * len(name + "_interface_port") + " " + "if" + " " + r"();" + "\n")
         else:
-            fp.write(name + "_interface_port"+ " " + name+"_if" + " " + r"();" + "\n")
+            fp.write(name + "_interface_port"+ " " + "if" + " " + r"();" + "\n")
             # fp.write(name+"_interface_port "+name+"_if();\n")
 
-        fp.write(name+"_interface_inner "+name+"_ifi();\n")
+        fp.write(name+"_interface_inner " + "ifi ();\n")
         fp.write("logic clk;\n")
         fp.write("logic rst_n;\n")
         # fp.write(name + " " + name + "Inst(\n")
@@ -597,12 +598,12 @@ def tb_inst(SourceDic, TargetDic, name):
 
 
         fp.write("initial begin\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", "+name+"_if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", "+name+"_ifi);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", "+name+"_ifi);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", "+name+"_ifi);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", " + "ifi);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", " + "ifi);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
         fp.write("end\n")
         fp.write("\n\n\n\n\nendmodule\n")
         fp.close()
