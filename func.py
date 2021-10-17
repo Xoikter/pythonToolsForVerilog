@@ -503,6 +503,7 @@ def file_inst(dic, path):
 def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
     os.chdir(os.path.dirname(__file__))
     TargetPath = make_sim_dic(TargetDic,name)
+    os.chdir(os.path.dirname(__file__))
     path = find_file(SourceDic, name)
     # print(path)
     ports = find_port(path,name) #注意此处ports是一个二维的列表
