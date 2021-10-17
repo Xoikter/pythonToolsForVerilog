@@ -1,6 +1,7 @@
 class my_driver extends uvm_driver#(my_transaction);
 
-   virtual my_interface vif;
+   virtual my_interface_port vif;
+   virtual my_interface_inner vif_i;
 
    `uvm_component_utils(my_driver)
    function new(string name = "my_driver", uvm_component parent = null);
