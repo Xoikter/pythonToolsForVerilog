@@ -28,8 +28,10 @@ if (argue == "i"):
     fc.file_inst(SourcePath, sys.argv[1])
 elif (argue == "t"):
     fc.tb_inst(SourcePath, TargetPath, sys.argv[1])
-elif (argue == 's'):
-    fc.simflow(SourcePath, TargetPath, sys.argv[1])
+elif (argue == 'ssf'):
+    fc.simflow_seq(SourcePath, TargetPath, sys.argv[1])
+elif (argue == 'csf'):
+    fc.simflow_comb(SourcePath, TargetPath, sys.argv[1])
 elif (argue == 'f'):
     fc.filelist_regen(1,0,1,2,1,SourcePath,TargetPath,sys.argv[1])
     fc.interface_gen(SourcePath,TargetPath,sys.argv[1],0)
