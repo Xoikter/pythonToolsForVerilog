@@ -14,8 +14,11 @@ import sys
 # fc.simflow('../','../sim/','Mix_Columns_Enc')
 # fc.except_module.append('assert_never_unknown')
 fc.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
-SourcePath = ["../rtl/"]
-TargetPath = "../sim/"
+SourcePath = ["./code/"]
+TargetPath = "./sim/"
+full_path_temp = os.path.join(sys.argv[2],sys.argv[3])
+full_path = os.path.normpath(os.path.abspath(full_path_temp)).replace("\\", "/")
+# print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/"))
 
 argue = input("cmd:")
 
@@ -31,4 +34,5 @@ elif (argue == 'csf'):
 elif (argue == 'f'):
     fc.filelist_regen(1,0,1,2,1,SourcePath,TargetPath,sys.argv[1])
     fc.interface_gen(SourcePath,TargetPath,sys.argv[1],0)
+    fc.tb_inst(SourcePath,TargetPath,sys.argv[1],1)
 

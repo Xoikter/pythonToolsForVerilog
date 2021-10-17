@@ -453,9 +453,9 @@ def makefile_src_gen(target_path, name):
     fp.close()
 
 
-def file_inst(dic, name):
+def file_inst(dic, path):
     os.chdir(os.path.dirname(__file__))
-    path = find_file(dic, name)
+    # path = find_file(dic, name)
     fp = open(path, "r+", errors='ignore')
     lines = fp.readlines()
     fp.close()
@@ -500,12 +500,35 @@ def file_inst(dic, name):
     fp.close()
 
 
-def tb_inst(SourceDic, TargetDic, name):
+def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
     os.chdir(os.path.dirname(__file__))
+    TargetPath = make_sim_dic(TargetDic,name)
     path = find_file(SourceDic, name)
     # print(path)
     ports = find_port(path,name) #注意此处ports是一个二维的列表
-    os.chdir(TargetDic)
+    # if(flag == 1):
+        
+    #     fr = open(path, "r+", errors='ignore')
+    #     modules = find_module(path,2)
+    #     lines = fr.readlines()
+    #     string_file = fr.read()
+    #     fr.close()
+    #     fr = open(path + '.bak', 'w', errors='ignore')
+    #     fr.writelines(lines)
+    #     fr.close()
+    #     for module in modules:
+    #         path_file = find_file(SourceDic,module)
+    #         if(path_file != ""):
+    #             ports = find_port(path_file,module)
+        
+    #     fr = open(path,"w+")
+
+
+
+
+
+
+    os.chdir(TargetPath)
     if not os.path.isfile(name + r"TB.sv"):
         lenStr = 0
         for para in ports[1]:
@@ -529,14 +552,15 @@ def tb_inst(SourceDic, TargetDic, name):
                 else:
                     fp.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
             # fp.write(" " * len(name + "_interface_port") + " " + name+"_if" + " " + r"();" + "\n")
-            fp.write(" " * len(name + "_interface_port") + " " + "if" + " " + r"();" + "\n")
+            fp.write(" " * len(name + "_interface_port") + " " + "ifo" + " " + r"();" + "\n")
         else:
-            fp.write(name + "_interface_port"+ " " + "if" + " " + r"();" + "\n")
+            fp.write(name + "_interface_port"+ " " + "ifo" + " " + r"();" + "\n")
             # fp.write(name+"_interface_port "+name+"_if();\n")
 
         fp.write(name+"_interface_inner " + "ifi ();\n")
         fp.write("logic clk;\n")
         fp.write("logic rst_n;\n")
+        fp.write("logic rst_p;\n")
         # fp.write(name + " " + name + "Inst(\n")
         
         if len(ports[1]) != 0:
@@ -554,11 +578,11 @@ def tb_inst(SourceDic, TargetDic, name):
 
         for port in ports[0]:
             if port == ports[0][len(ports[0]) - 1]:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if." + port[3] + " " * (
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + "ifo." + port[3] + " " * (
                         lenStr - len(port[3])) + "));" + r"//" + port[
                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
             else:
-                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+name+"_if." + port[3] + " " * (
+                fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + "ifo." + port[3] + " " * (
                         lenStr - len(port[3])) + ") ," + r"//" + port[
                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
 
@@ -582,7 +606,10 @@ def tb_inst(SourceDic, TargetDic, name):
         fp.write("initial begin\n")
         fp.write("clk = 0;\n")
         fp.write("rst_n = 0;\n")
+        fp.write("rst_p = 1;\n")
         fp.write("#8 rst_n = 1;\n")
+        fp.write("#6 rst_p = 0;\n")
+
         fp.write("\n")
         fp.write("end\n\n\n")
 
@@ -590,6 +617,14 @@ def tb_inst(SourceDic, TargetDic, name):
 
 
         fp.write("always@ * begin\n")
+        if(flags == 0):
+            fp.write("ifo.clk <= clk;\n")
+            fp.write("ifo.rst_n <= rst_n;\n")
+        elif(flags == 1):
+            fp.write("ifo.clk <= clk;\n")
+            fp.write("ifo.rst <= rst_p;\n")
+
+
         fp.write("\n\n\nend\n\n")
 
         fp.write("initial begin\n")
@@ -598,17 +633,152 @@ def tb_inst(SourceDic, TargetDic, name):
 
 
         fp.write("initial begin\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "if);\n")
-        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "if);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "ifo);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "ifo);\n")
+        fp.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "ifo);\n")
         fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", " + "ifi);\n")
         fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", " + "ifi);\n")
         fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
         fp.write("end\n")
         fp.write("\n\n\n\n\nendmodule\n")
         fp.close()
+    elif flag == 1:
+        print("file exists file refresh\n")
+        os.chdir(TargetPath)
+        fo = open(name + r"TB.sv","r")
+        fi = open(name + r"TB.sv.bak","w+")
+        string_temp = fo.read()
+        fi.write(string_temp)
+        fi.close()
+        fo.close()
+        fo = open(name + r"TB.sv","w+")
+        print(string_temp)
+        res = re.findall("\\balways\\b\s*\@\s*\*\s*\\bbegin\\b\s*.*?end\\b",string_temp,flags=re.S)
+        print(res)
+        lenStr = 0
+        for para in ports[1]:
+            if len(para) > lenStr:
+                lenStr = len(para)
+        lenPara = lenStr
+        for port in ports[0]:
+            if len(port[3]) > lenStr:
+                lenStr = len(port[3])
+        fo = open(name + r"TB.sv", "w+")
+        fo.write("`include \"uvm_macros.svh\"\n")
+        # fo.write("import uvm_pkg::*;\n")
+        fo.write("module " + name + "TB;\n")
+        for para_all in ports[2]:
+            fo.write("parameter "+para_all+";\n")
+        if len(ports[1]) != 0:           
+            fo.write(name + "_interface_port #(\n")
+            for para in ports[1]:
+                if para == ports[1][len(ports[1]) - 1]:
+                    fo.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r"))" + "\n")
+                else:
+                    fo.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
+            # fo.write(" " * len(name + "_interface_port") + " " + name+"_if" + " " + r"();" + "\n")
+            fo.write(" " * len(name + "_interface_port") + " " + "ifo" + " " + r"();" + "\n")
+        else:
+            fo.write(name + "_interface_port"+ " " + "ifo" + " " + r"();" + "\n")
+            # fo.write(name+"_interface_port "+name+"_if();\n")
+
+        fo.write(name+"_interface_inner " + "ifi ();\n")
+        fo.write("logic clk;\n")
+        fo.write("logic rst_n;\n")
+        fo.write("logic rst_p;\n")
+        # fo.write(name + " " + name + "Inst(\n")
+        
+        if len(ports[1]) != 0:
+            fo.write(name + " #(\n")
+            for para in ports[1]:
+                if para == ports[1][len(ports[1]) - 1]:
+                    fo.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r"))" + "\n")
+                else:
+                    fo.write(" " * 8 + r"." + para+ " " * (lenPara + 2 - len(para)) + r"("+para+" "*(lenPara + 2 -len(para))+r")," + "\n")
+            fo.write(" " * len(name) + " " + name+"_inst" + " " + r"(" + "\n")
+        else:
+            fo.write(name + " " + name+"_inst" + " " + r"(" + "\n")
+
+                # print(lenStr)
+
+        for port in ports[0]:
+            if port == ports[0][len(ports[0]) - 1]:
+                fo.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + "ifo." + port[3] + " " * (
+                        lenStr - len(port[3])) + "));" + r"//" + port[
+                    0] + " " * (8 - len(port[0])) + port[2] + "\n")
+            else:
+                fo.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + "ifo." + port[3] + " " * (
+                        lenStr - len(port[3])) + ") ," + r"//" + port[
+                    0] + " " * (8 - len(port[0])) + port[2] + "\n")
+
+
+
+
+        # for port in ports:
+        #     if len(port[3]) > lenStr:
+        #         lenStr = len(port[3])
+        #         # print(lenStr)
+        # for port in ports:
+        #     if port == ports[len(ports) - 1]:
+        #         fo.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+        #                 lenStr - len(port[3])) + "));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[
+        #                      2] + "\n")
+        #     else:
+        #         fo.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(if.ifo." + port[3] + " " * (
+        #                 lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
+        #                      2] + "\n")
+
+        fo.write("\ninitial begin\n")
+        fo.write("clk = 0;\n")
+        fo.write("rst_n = 0;\n")
+        fo.write("rst_p = 1;\n")
+        fo.write("#8 rst_n = 1;\n")
+        fo.write("#6 rst_p = 0;\n")
+        fo.write("\n")
+        fo.write("end\n\n\n")
+
+        fo.write("always #5 clk = ~clk;\n\n")
+
+
+        # fo.write("always@ * begin\n")
+        # if(flags == 0):
+        #     fo.write("ifo.clk <= clk;\n")
+        #     fo.write("ifo.rst_n <= rst_n;\n")
+        # elif(flags == 1):
+        #     fo.write("ifo.clk <= clk;\n")
+        #     fo.write("ifo.rst <= rst_p;\n")
+
+
+        # fo.write("\n\n\nend\n\n")
+        for res_temp in res:
+            fo.write(res_temp + "\n\n")
+
+
+        fo.write("initial begin\n")
+        fo.write("   run_test();\n")
+        fo.write("end\n")
+
+
+        fo.write("initial begin\n")
+        fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "ifo);\n")
+        fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "ifo);\n")
+        fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "ifo);\n")
+        fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", " + "ifi);\n")
+        fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", " + "ifi);\n")
+        fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
+        fo.write("end\n")
+        fo.write("\n\n\n\n\nendmodule\n")
+        fo.close()
     else:
-        print("file exists")
+        print("file exist, gen stop")
+
+
+
+
+
+
+
+
     return name + r"TB"
 
 
@@ -779,7 +949,7 @@ def simflow_seq(sourcePath, targetPath, name):
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     # SourcePath = "../code/"
     targetpath = make_sim_dic(targetPath, name)
-    TB = tb_inst(sourcePath, targetpath, name)
+    TB = tb_inst(sourcePath, targetPath, name)
     # makefile_src_gen(targetpath, name)
     # # tb_inst(path,targetpath,"uart_byte_tx")
     # filelist_gen(sourcePath, targetpath, TB)

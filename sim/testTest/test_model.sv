@@ -27,7 +27,6 @@ task test_model::main_phase(uvm_phase phase);
    while(1) begin
       port.get(old_tr);
       tr = new("tr");
-      tr.c = old_tr.a + old_tr.b;
       ap.write(tr);
    end
 endtask

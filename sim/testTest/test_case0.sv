@@ -22,17 +22,17 @@ class test_case0_sequence extends uvm_sequence #(test_transaction);
 endclass
 
 
-class case0 extends test_base_test;
+class test_case0 extends test_base_test;
 
-   function new(string name = "case0", uvm_component parent = null);
+   function new(string name = "test_case0", uvm_component parent = null);
       super.new(name,parent);
    endfunction 
    extern virtual function void build_phase(uvm_phase phase); 
-   `uvm_component_utils(case0)
+   `uvm_component_utils(test_case0)
 endclass
 
 
-function void case0::build_phase(uvm_phase phase);
+function void test_case0::build_phase(uvm_phase phase);
    super.build_phase(phase);
 
    uvm_config_db#(uvm_object_wrapper)::set(this, 
