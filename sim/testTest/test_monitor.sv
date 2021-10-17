@@ -16,7 +16,7 @@ class test_monitor extends uvm_monitor;
       if(!uvm_config_db#(virtual test_interface_port)::get(this, "", "vif", vif))
          `uvm_fatal("test_monitor", "virtual interface must be set for vif!!!")
       if(!uvm_config_db#(virtual test_interface_inner)::get(this, "", "vif_i", vif_i))
-         `uvm_fatal("test_driver", "virtual interface must be set for vif_i!!!")
+         `uvm_fatal("test_monitor", "virtual interface must be set for vif_i!!!")
       ap = new("ap", this);      
       if(get_config_int("is_active", active)) is_active = uvm_active_passive_enum'(active);
    endfunction

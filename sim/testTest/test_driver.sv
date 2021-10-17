@@ -10,8 +10,11 @@ class test_driver extends uvm_driver#(test_transaction);
 
    virtual function void build_phase(uvm_phase phase);
       super.build_phase(phase);
-      if(!uvm_config_db#(virtual test_interface)::get(this, "", "vif", vif))
+      if(!uvm_config_db#(virtual test_interface_port)::get(this, "", "vif", vif))
          `uvm_fatal("test_driver", "virtual interface must be set for vif!!!")
+      if(!uvm_config_db#(virtual test_interface_inner)::get(this, "", "vif_i", vif_i))
+         `uvm_fatal("test_driver", "virtual interface must be set for vif_i!!!")
+
    endfunction
 
    extern task main_phase(uvm_phase phase);

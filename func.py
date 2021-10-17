@@ -604,6 +604,8 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         #                 lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
         #                      2] + "\n")
 
+        fp.write("always #5 clk = ~clk;\n\n")
+
         fp.write("initial begin\n")
         fp.write("clk = 0;\n")
         fp.write("rst_n = 0;\n")
@@ -627,7 +629,6 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         fp.write("   run_test();\n")
         fp.write("end\n\n")
 
-        fp.write("always #5 clk = ~clk;\n\n")
 
 
 
@@ -742,10 +743,10 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         # fo.write("#6 rst_p = 0;\n")
         # fo.write("\n")
         # fo.write("end\n\n\n")
+        fo.write("always #5 clk = ~clk;\n\n")
         for res_temp in res:
             fo.write(res_temp + "\n\n")
 
-        fo.write("always #5 clk = ~clk;\n\n")
 
 
         # fo.write("always@ * begin\n")
@@ -765,15 +766,15 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         # fo.write("end\n")
 
 
-        fo.write("initial begin\n")
-        fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "ifo);\n")
-        fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "ifo);\n")
-        fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "ifo);\n")
-        fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", " + "ifi);\n")
-        fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", " + "ifi);\n")
-        fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
-        fo.write("end\n")
-        fo.write("\n\n\n\n\nendmodule\n")
+        # fo.write("initial begin\n")
+        # fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "ifo);\n")
+        # fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "ifo);\n")
+        # fo.write("   uvm_config_db#(virtual "+name+"_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "ifo);\n")
+        # fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", " + "ifi);\n")
+        # fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", " + "ifi);\n")
+        # fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
+        # fo.write("end\n")
+        fo.write("\n\n\n\nendmodule\n")
         fo.close()
     else:
         print("file exist, gen stop")
