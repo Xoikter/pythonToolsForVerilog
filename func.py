@@ -976,7 +976,7 @@ def simflow_comb(sourcePath, targetPath, name):
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
     # SourcePath = "../code/"
     targetpath = make_sim_dic(targetPath, name)
-    TB = tb_inst(sourcePath, targetpath, name)
+    TB = tb_inst(sourcePath, targetPath, name)
     # makefile_src_gen(targetpath, name)
     # # tb_inst(path,targetpath,"uart_byte_tx")
     # filelist_gen(sourcePath, targetpath, TB)
