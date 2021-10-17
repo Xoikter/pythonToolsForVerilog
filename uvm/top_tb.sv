@@ -29,9 +29,9 @@ my_if output_if(clk, rst_n);
 dut my_dut(.clk(clk),
            .rst_n(rst_n),
            .rxd(input_if.data),
-           .rx_dv(input_if.valid),
+           .rx_dv(input_if.clk),
            .txd(output_if.data),
-           .tx_en(output_if.valid));
+           .tx_en(output_if.clk));
 
 initial begin
    clk = 0;

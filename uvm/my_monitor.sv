@@ -1,6 +1,7 @@
 class my_monitor extends uvm_monitor;
 
-   virtual my_interface vif;
+   virtual my_interface_port vif;
+   virtual my_interface_inner vif_i;
    uvm_active_passive_enum is_active = UVM_ACTIVE;
    uvm_analysis_port #(my_transaction)  ap;
    
@@ -12,8 +13,10 @@ class my_monitor extends uvm_monitor;
    virtual function void build_phase(uvm_phase phase);
       int active;
       super.build_phase(phase);
-      if(!uvm_config_db#(virtual my_interface)::get(this, "", "vif", vif))
+      if(!uvm_config_db#(virtual my_interface_port)::get(this, "", "vif", vif))
          `uvm_fatal("my_monitor", "virtual interface must be set for vif!!!")
+      if(!uvm_config_db#(virtual my_interface_inner)::get(this, "", "vif_i", vif_i))
+         `uvm_fatal("my_driver", "virtual interface must be set for vif_i!!!")
       ap = new("ap", this);      
       if(get_config_int("is_active", active)) is_active = uvm_active_passive_enum'(active);
    endfunction
@@ -27,16 +30,15 @@ task my_monitor::main_phase(uvm_phase phase);
    while(1) begin
       tr = new("tr");
       collect_one_pkt(tr);
+      ap.write(tr);
    end
 endtask
 
 task my_monitor::collect_one_pkt(my_transaction tr);
       if(is_active == UVM_ACTIVE) begin
-         ap.write(tr);
 
       end
       else begin
-         ap.write(tr);
 
       end
 

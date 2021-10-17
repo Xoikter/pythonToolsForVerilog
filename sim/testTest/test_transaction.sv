@@ -5,8 +5,13 @@ rand bit [4:0] c;
 
 
 constraint con{
+<<<<<<< HEAD
 a > 5;
 b <8;
+=======
+a == 5;
+b == 8;
+>>>>>>> 51f05884d12d5605490827a74c95fc41601c853c
 
 }
 `uvm_object_utils(test_transaction)

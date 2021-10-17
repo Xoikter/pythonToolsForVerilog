@@ -25,12 +25,16 @@ endclass
 task test_monitor::main_phase(uvm_phase phase);
    test_transaction tr;
    while(1) begin
+<<<<<<< HEAD
       tr = new("tr");
+=======
+>>>>>>> 51f05884d12d5605490827a74c95fc41601c853c
       collect_one_pkt(tr);
    end
 endtask
 
 task test_monitor::collect_one_pkt(test_transaction tr);
+<<<<<<< HEAD
       @(posedge vif.ifo.clk)
       if(is_active == UVM_ACTIVE) begin
         tr.a = vif.ifo.a; 
@@ -44,6 +48,27 @@ task test_monitor::collect_one_pkt(test_transaction tr);
          tr.c = vif.ifo.c;
          $display("o  c = %d\d",tr.c);
          ap.write(tr);
+=======
+      @(posedge vif.clk)
+      tr = new("tr");
+      if(is_active == UVM_ACTIVE) begin
+         if(vif.vld) begin
+        tr.a = vif.a; 
+        tr.b = vif.b; 
+        $display("i  x = %d\d",tr.a);
+        $display("i  b = %d\d",tr.b);
+         ap.write(tr);
+         end
+
+      end
+      else begin
+         // if(vif.ifo.clk) begin
+         if(vif.vld) begin
+         tr.c = vif.c;
+         $display("o  c = %d\d",tr.c);
+         ap.write(tr);
+         end
+>>>>>>> 51f05884d12d5605490827a74c95fc41601c853c
 
       end
 

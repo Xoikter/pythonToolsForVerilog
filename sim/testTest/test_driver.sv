@@ -26,12 +26,22 @@ task test_driver::main_phase(uvm_phase phase);
 endtask
 
 task test_driver::drive_one_pkt(test_transaction tr);
+<<<<<<< HEAD
    `uvm_info("test_driver", "begin to drive one pkt", UVM_LOW);
    @(posedge vif.ifo.clk)
    vif.ifo.a <= tr.a;
    vif.ifo.b <= tr.b;
 
    `uvm_info("test_driver", "end drive one pkt", UVM_LOW);
+=======
+   // `uvm_info("test_driver", "begin to drive one pkt", UVM_LOW);
+   @(posedge vif.clk)
+   vif.vld <=1;
+   vif.a <= tr.a;
+   vif.b <= tr.b;
+
+   // `uvm_info("test_driver", "end drive one pkt", UVM_LOW);
+>>>>>>> 51f05884d12d5605490827a74c95fc41601c853c
 endtask
 
 
