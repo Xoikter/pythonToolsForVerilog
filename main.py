@@ -14,8 +14,8 @@ import sys
 # fc.simflow('../','../sim/','Mix_Columns_Enc')
 # fc.except_module.append('assert_never_unknown')
 fc.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
-SourcePath = ["./code/"]
-TargetPath = "./sim/"
+SourcePath = ["../rtl/"]
+TargetPath = "../sim/"
 full_path_temp = os.path.join(sys.argv[2],sys.argv[3])
 full_path = os.path.normpath(os.path.abspath(full_path_temp)).replace("\\", "/")
 # print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/"))
