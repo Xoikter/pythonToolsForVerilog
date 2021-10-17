@@ -3,7 +3,9 @@ module test(
         // input vld,
         input [3:0] a,
         input [3:0] b,
-        output [4:0]c
+        output [4:0]c,
+        output l,
+        input as
 );
        assign  c = a + b;
 //        always @(posedge clk) begin

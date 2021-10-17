@@ -6,9 +6,12 @@ logic clk;
 logic rst_n;
 logic rst_p;
 test test_inst (
-        .a  (ifo.a) ,//input   [3:0]
-        .b  (ifo.b) ,//input   [3:0]
-        .c  (ifo.c));//output  [4:0]
+        .a   (ifo.a ) ,//input   [3:0]
+        .b   (ifo.b ) ,//input   [3:0]
+        .c   (ifo.c ) ,//output  [4:0]
+        .l   (ifo.l ) ,//output  
+        .as  (ifo.as));//input   
+
 initial begin
 clk = 0;
 rst_n = 0;
@@ -24,10 +27,11 @@ always #5 clk = ~clk;
 always@ * begin
 ifo.clk <= clk;
 ifo.rst_n <= rst_n;
-asdasd
+dadasdsadas;
 
 
 end
+
 initial begin
    run_test();
 end

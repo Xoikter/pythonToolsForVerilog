@@ -1,0 +1,2 @@
+-f /home/IC/xsc/gmec/pythonToolsForVerilog/sim/fifo_ctrTest/filelist_uvm_base.f
+-f /home/IC/xsc/gmec/pythonToolsForVerilog/sim/fifo_ctrTest/filelist_uvm_case.f
