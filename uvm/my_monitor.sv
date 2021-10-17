@@ -24,11 +24,21 @@ endclass
 
 task my_monitor::main_phase(uvm_phase phase);
    my_transaction tr;
-   while(1) begin
+   //------------forever------//
+   // while(1) begin
+   //    tr = new("tr");
+   //    collect_one_pkt(tr);
+   //    ap.write(tr);
+   // end
+
+   //------------repeat-------//
+   repeat(1) begin
       tr = new("tr");
       collect_one_pkt(tr);
       ap.write(tr);
    end
+
+
 endtask
 
 task my_monitor::collect_one_pkt(my_transaction tr);

@@ -25,16 +25,15 @@ task test_scoreboard::main_phase(uvm_phase phase);
  
    super.main_phase(phase);
    fork 
-      // while (1) begin
-      //    exp_port.get(get_expect);
-      //    expect_queue.push_back(get_expect);
-      // end
+      while (1) begin
+         exp_port.get(get_expect);
+         expect_queue.push_back(get_expect);
+      end
       while (1) begin
          act_port.get(get_actual);
-         exp_port.get(get_expect);
-         // if(expect_queue.size() > 0) begin
-            // tmp_tran = expect_queue.pop_front();
-            result = get_actual.c == get_expect.c;
+         if(expect_queue.size() > 0) begin
+            tmp_tran = expect_queue.pop_front();
+            result = get_actual.compare(tmp_tran);
             if(result) begin 
                `uvm_info("test_scoreboard", "Compare SUCCESSFULLY", UVM_LOW);
             end
@@ -42,9 +41,9 @@ task test_scoreboard::main_phase(uvm_phase phase);
                `uvm_error("test_scoreboard", "Compare FAILED");
             end
          end
-         // else begin
-         //    `uvm_error("test_scoreboard", "Received from DUT, while Expect Queue is empty");
-         // end 
-      // end
+         else begin
+            `uvm_error("test_scoreboard", "Received from DUT, while Expect Queue is empty");
+         end 
+      end
    join
 endtask

@@ -1,6 +1,7 @@
 class test_monitor extends uvm_monitor;
 
-   virtual test_interface vif;
+   virtual test_interface_port vif;
+   virtual test_interface_inner vif_i;
    uvm_active_passive_enum is_active = UVM_ACTIVE;
    uvm_analysis_port #(test_transaction)  ap;
    
@@ -12,8 +13,10 @@ class test_monitor extends uvm_monitor;
    virtual function void build_phase(uvm_phase phase);
       int active;
       super.build_phase(phase);
-      if(!uvm_config_db#(virtual test_interface)::get(this, "", "vif", vif))
+      if(!uvm_config_db#(virtual test_interface_port)::get(this, "", "vif", vif))
          `uvm_fatal("test_monitor", "virtual interface must be set for vif!!!")
+      if(!uvm_config_db#(virtual test_interface_inner)::get(this, "", "vif_i", vif_i))
+         `uvm_fatal("test_driver", "virtual interface must be set for vif_i!!!")
       ap = new("ap", this);      
       if(get_config_int("is_active", active)) is_active = uvm_active_passive_enum'(active);
    endfunction
@@ -24,31 +27,28 @@ endclass
 
 task test_monitor::main_phase(uvm_phase phase);
    test_transaction tr;
-   while(1) begin
+   //------------forever------//
+   // while(1) begin
+   //    tr = new("tr");
+   //    collect_one_pkt(tr);
+   //    ap.write(tr);
+   // end
+
+   //------------repeat-------//
+   repeat(1) begin
+      tr = new("tr");
       collect_one_pkt(tr);
+      ap.write(tr);
    end
+
+
 endtask
 
 task test_monitor::collect_one_pkt(test_transaction tr);
-      @(posedge vif.clk)
-      tr = new("tr");
       if(is_active == UVM_ACTIVE) begin
-         if(vif.vld) begin
-        tr.a = vif.a; 
-        tr.b = vif.b; 
-        $display("i  x = %d\d",tr.a);
-        $display("i  b = %d\d",tr.b);
-         ap.write(tr);
-         end
 
       end
       else begin
-         // if(vif.ifo.clk) begin
-         if(vif.vld) begin
-         tr.c = vif.c;
-         $display("o  c = %d\d",tr.c);
-         ap.write(tr);
-         end
 
       end
 
