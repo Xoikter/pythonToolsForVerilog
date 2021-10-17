@@ -1,0 +1,3 @@
+-f /mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/filelist_uvm.f
+-f /mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/filelist_defines.f
+-f /mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/filelist_modules.f

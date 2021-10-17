@@ -1,0 +1,12 @@
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_transaction.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_sequencer.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_interface_port.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_interface_inner.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_interface.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_driver.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_monitor.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_agent.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_model.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_scoreboard.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_env.sv
+/mnt/hgfs/xsc/pro/git_pro/pythonToolsForVerilog/sim/testTest/test_base_test.sv
