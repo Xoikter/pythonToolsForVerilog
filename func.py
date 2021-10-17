@@ -612,10 +612,7 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         fp.write("#6 rst_p = 0;\n")
 
         fp.write("\n")
-        fp.write("end\n\n\n")
-
-        fp.write("always #5 clk = ~clk;\n\n")
-
+        fp.write("end\n\n")
 
         fp.write("always@ * begin\n")
         if(flags == 0):
@@ -624,13 +621,18 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         elif(flags == 1):
             fp.write("ifo.clk <= clk;\n")
             fp.write("ifo.rst <= rst_p;\n")
-
-
-        fp.write("\n\n\nend\n\n")
+        fp.write("\nend\n\n")
 
         fp.write("initial begin\n")
         fp.write("   run_test();\n")
-        fp.write("end\n")
+        fp.write("end\n\n")
+
+        fp.write("always #5 clk = ~clk;\n\n")
+
+
+
+
+
 
 
         fp.write("initial begin\n")
@@ -654,7 +656,8 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         fo.close()
         fo = open(name + r"TB.sv","w+")
         # print(string_temp)
-        res = re.findall("\\balways\\b\s*\@\s*\*\s*\\bbegin\\b\s*.*?end\\b",string_temp,flags=re.S)
+        res_para = re.findall("\\blogic\\b.*?;",string_temp,flags=re.S)
+        res = re.findall("(?:\\binitial\\b|\\balways\\b\s*\@\s*\*)\s*\\bbegin\\b\s*.*?end\\b",string_temp,flags=re.S)
         # print(res)
         lenStr = 0
         for para in ports[1]:
@@ -684,9 +687,11 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
             # fo.write(name+"_interface_port "+name+"_if();\n")
 
         fo.write(name+"_interface_inner " + "ifi ();\n")
-        fo.write("logic clk;\n")
-        fo.write("logic rst_n;\n")
-        fo.write("logic rst_p;\n")
+        # fo.write("logic clk;\n")
+        # fo.write("logic rst_n;\n")
+        # fo.write("logic rst_p;\n")
+        for res_para_temp in res_para:
+            fo.write(res_para_temp + "\n")
         # fo.write(name + " " + name + "Inst(\n")
         
         if len(ports[1]) != 0:
@@ -729,14 +734,16 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         #                 lenStr - len(port[3])) + ") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[
         #                      2] + "\n")
 
-        fo.write("\ninitial begin\n")
-        fo.write("clk = 0;\n")
-        fo.write("rst_n = 0;\n")
-        fo.write("rst_p = 1;\n")
-        fo.write("#8 rst_n = 1;\n")
-        fo.write("#6 rst_p = 0;\n")
-        fo.write("\n")
-        fo.write("end\n\n\n")
+        # fo.write("\ninitial begin\n")
+        # fo.write("clk = 0;\n")
+        # fo.write("rst_n = 0;\n")
+        # fo.write("rst_p = 1;\n")
+        # fo.write("#8 rst_n = 1;\n")
+        # fo.write("#6 rst_p = 0;\n")
+        # fo.write("\n")
+        # fo.write("end\n\n\n")
+        for res_temp in res:
+            fo.write(res_temp + "\n\n")
 
         fo.write("always #5 clk = ~clk;\n\n")
 
@@ -751,13 +758,11 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
 
 
         # fo.write("\n\n\nend\n\n")
-        for res_temp in res:
-            fo.write(res_temp + "\n\n")
 
 
-        fo.write("initial begin\n")
-        fo.write("   run_test();\n")
-        fo.write("end\n")
+        # fo.write("initial begin\n")
+        # fo.write("   run_test();\n")
+        # fo.write("end\n")
 
 
         fo.write("initial begin\n")
