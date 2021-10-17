@@ -22,6 +22,7 @@ full_path = os.path.normpath(os.path.abspath(full_path_temp)).replace("\\", "/")
 
 argue = input("cmd:")
 
+
 if (argue == "i"):
     # print(sys.argv[1])
     fc.file_inst(SourcePath, sys.argv[1])
