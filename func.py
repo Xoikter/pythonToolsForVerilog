@@ -653,9 +653,9 @@ def tb_inst(SourceDic, TargetDic, name  ,flag = 0, flags = 0):
         fi.close()
         fo.close()
         fo = open(name + r"TB.sv","w+")
-        print(string_temp)
+        # print(string_temp)
         res = re.findall("\\balways\\b\s*\@\s*\*\s*\\bbegin\\b\s*.*?end\\b",string_temp,flags=re.S)
-        print(res)
+        # print(res)
         lenStr = 0
         for para in ports[1]:
             if len(para) > lenStr:
