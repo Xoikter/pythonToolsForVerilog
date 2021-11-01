@@ -56,3 +56,4 @@ simv*
 *.dat 
 *.conf
 *.json
+*.pyc
