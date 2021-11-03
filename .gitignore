@@ -57,3 +57,4 @@ simv*
 *.conf
 *.json
 *.pyc
+config.txt
