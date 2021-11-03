@@ -12,7 +12,7 @@ if not os.path.isfile("config.txt"):
     print("config file create")
     fd = open("./config.txt","w+")
     fd.write("SourcePath = [];\n")
-    fd.write("TargetPath = "";\n")
+    fd.write("TargetPath = \"\";\n")
     fd.write("except module = [];\n")
     fd.close
 else:
