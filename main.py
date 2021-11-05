@@ -51,7 +51,7 @@ else:
 
     if (argue == "i"):
         # print(sys.argv[1])
-        fc.file_inst(SourcePath, sys.argv[1])
+        fc.file_inst(SourcePath, full_path)
     elif (argue == "t"):
         fc.tb_inst(SourcePath, TargetPath, sys.argv[1])
     elif (argue == 'ssf'):
