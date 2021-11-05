@@ -42,7 +42,7 @@ else:
     fc.except_module = except_module
     # SourcePath = SourcePath
     # TargetPath = TargetPath
-    full_path_temp = os.path.join(sys.argv[2],sys.argv[3])
+    full_path_temp = os.path.join(sys.argv[3],sys.argv[2])
     full_path = os.path.normpath(os.path.abspath(full_path_temp)).replace("\\", "/")
     # print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/"))
 
