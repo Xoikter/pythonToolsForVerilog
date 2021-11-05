@@ -453,7 +453,7 @@ def makefile_src_gen(target_path, name):
     fp.close()
 
 
-def file_inst(dic, path):
+def file_inst(dic, path, flags=1):
     os.chdir(os.path.dirname(__file__))
     # path = find_file(dic, name)
     fp = open(path, "r+", errors='ignore')
@@ -478,10 +478,17 @@ def file_inst(dic, path):
             if len(ports[1]) != 0:
                 fp.write(resTemp.group(1) + " #(\n")
                 for para in ports[1]:
-                    if para == ports[1][len(ports[1]) - 1]:
-                        fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"())" + "\n")
+                    if flags==1:
+                        if para == ports[1][len(ports[1]) - 1]:
+                            fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"())" + "\n")
+                        else:
+                            fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"()," + "\n")
                     else:
-                        fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"()," + "\n")
+                        if para == ports[1][len(ports[1]) - 1]:
+                            fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"(" + para+ " " * (lenStr + 2 - len(para))  + r"))" + "\n")
+                        else:
+                            fp.write(" " * 8 + r"." + para+ " " * (lenStr + 2 - len(para)) + r"(" + para+ " " * (lenStr + 2 - len(para))  + r")," + "\n")
+
                 fp.write(" " * len(resTemp.group(1)) + " " + resTemp.group(2) + " " + r"(" + "\n")
             else:
                 fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
@@ -489,12 +496,17 @@ def file_inst(dic, path):
                     # print(lenStr)
 
             for port in ports[0]:
-                if port == ports[0][len(ports[0]) - 1]:
-                    fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"());" + r"//" + port[
-                        0] + " " * (8 - len(port[0])) + port[2] + "\n")
+                if flags==1:
+                    if port == ports[0][len(ports[0]) - 1]:
+                        fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"());" + r"//" + port[0] + " " * (8 - len(port[0])) + port[2] + "\n")
+                    else:
+                        fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"() ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[2] + "\n")
                 else:
-                    fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"() ," + r"//" + port[
-                        0] + " " * (8 - len(port[0])) + port[2] + "\n")
+                    if port == ports[0][len(ports[0]) - 1]:
+                        fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+ port[3] + " " * (lenStr + 2 - len(port[3]))  + r"));" + r"//" + port[0] + " " * (8 - len(port[0])) + port[2] + "\n")
+                    else:
+                        fp.write(" " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"("+ port[3] + " " * (lenStr + 2 - len(port[3]))  + r") ," + r"//" + port[0] + " " * (8 - len(port[0])) + port[2] + "\n")
+
         else:
             fp.write(lineT)
     fp.close()
