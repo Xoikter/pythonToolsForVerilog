@@ -20,13 +20,11 @@ module uart_byte_tx(
   output reg Tx_Done;
   output reg uart_state;
   
-  reg bps_clk;  //波特率时钟
+  reg bps_clk;  
   
-  reg [15:0]div_cnt;//分频计数器
+  reg [15:0]div_cnt;
   
-  reg [15:0]bps_DR;//分频计数最大值
-  
-  reg [3:0]bps_cnt;//波特率时钟计数器
+  reg [15:0]bps_DR;
   
   reg [7:0]r_data_byte;
   
