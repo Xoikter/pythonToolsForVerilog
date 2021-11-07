@@ -131,7 +131,7 @@ class File_analyse:
 		res = pattern.findall(string)
 		con = {}
 		for item in res:
-			con.update({item[0]:item[1]})
+			con.update({item[1]:{"type":item[0],"width":0}})
 		return con
 	def find_module_inst(self,stringIn:str):
 		out = {}
@@ -150,11 +150,13 @@ class File_analyse:
 		string = re.sub("\\bwire.*?;","",string,flags=re.S)
 		pattern = re.compile("(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(\([^;]*?\))\s*;",flags=re.S)
 		res = pattern.findall(string)
+		module = []
 		for item in res:
 			con = self.connect_tool(item[3])
 			out.update({item[2]:{"type":item[0],"con":con}})
+			module.append(item[0])
 		# print(res)
-		return out
+		return [out,module]
 
 
 	def text_used(self,stringIn:str):
