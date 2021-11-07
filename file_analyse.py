@@ -123,21 +123,18 @@ class File_analyse:
 	def connect_tool(self,stringIn:str):
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
-		pattern = re.compile("\.\s*([a-zA-Z_`]*)\s*\(\s*(.*?)\s*\)",flags=re.S)
+		pattern = re.compile("\.\s*([a-zA-Z0-9_`]*)\s*\(\s*(.*?)\s*\)",flags=re.S)
 		# pattern_all = re.compile("\.\s*[a-zA-Z_`]*\s*\(.*?\)",flags=re.S)
 		# string_temp = pattern_all.sub("",string)
-		string_temp = re.sub("\.\s*(?:[a-zA-Z_`]*)\s*\(\s*(?:.*?)\s*\)","",string,flags=re.S)
-		# string_temp = re.sub("[,;()\s]","",string_temp)
+		string_temp = re.sub("\.\s*(?:[a-zA-Z0-9_`]*)\s*\(\s*(?:.*?)\s*\)","",string,flags=re.S)
+		string_temp = re.sub("[,;\(\)\s]","",string_temp)
 		res = pattern.findall(string)
 		con = {}
 		for item in res:
 			con.update({item[0]:item[1]})
 		return con
-
-		
-
 	def find_module_inst(self,stringIn:str):
-		res = {}
+		out = {}
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
@@ -155,8 +152,49 @@ class File_analyse:
 		res = pattern.findall(string)
 		for item in res:
 			con = self.connect_tool(item[3])
-			res.update({item[2]:{"type":item[0],"con":con}})
-		print(res)
+			out.update({item[2]:{"type":item[0],"con":con}})
+		# print(res)
+		return out
+
+
+	def text_used(self,stringIn:str):
+		stringOut = ""
+		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		string = re.sub('//.*?\n', "", string, flags=re.S)
+		# string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
+		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
+		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
+		string = re.sub("\[.*?\]", "", string, flags=re.S)
+		string = re.sub("`[a-zA-Z0-9_]*?\\b"," ",string,flags=re.S)
+		#find  = right
+		string = string.replace("==="," ")
+		string = string.replace("=="," ")
+
+		func = re.findall("\\bfunction\\b\s*(.*)?\s*(?:;\()",string,flags=re.S)
+		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
+		res_right = re.findall("=.*?;",string,flags=re.S)
+		for item in res_right:
+			stringOut = stringOut + " " + item.replace("="," ")
+		res_if = re.findall("\\bif\\b\s*\((.*?)\)",string,flags=re.S)
+		for item in res_if:
+			stringOut = stringOut + " " + item
+
+		res_case = re.findall("\\bcase(?:z|x)?\\b\s*\((.*?)\)",string,flags=re.S)
+		for item in res_case:
+			stringOut = stringOut + " " + item
+		res_func = []
+		for item in func:
+			res_func.append(re.findall("\\b"+item+ "\\b\s*\((.*?)\)"))
+		for item in res_func:
+			stringOut = stringOut + " " + item
+		res_always = re.findall("\\balways@?\((.*?)\)",string,flags=re.S)
+		for item in res_always:
+			string_local = re.sub("(posedge|negedge|or)"," ",item,flags=re.S)
+			stringOut = stringOut + " " +string_local 
+		return stringOut
+
+
+
 
 
 		
