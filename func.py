@@ -154,14 +154,15 @@ class Verilog_tools:
         str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
 
         if flag == 0 or flag == 5:
-            result = re.findall(str7, str_temp,flags=re.S)
+            # result = re.findall(str7, str_temp,flags=re.S)
+            result = Fa.find_module_uvm(str)
         else:
             # result = re.findall(str6, str_temp,flags=re.S)
-            return   Fa.find_module_inst(str)[1]
+            result = Fa.find_module_inst(str)[1]
 
 
         for item in result:
-            if (item[0] not in self.keyword) and (item[1] not in self.keyword) and (item[0] not in self.except_module):
+            if (item[0] not in self.keyword) and (item[1] not in self.keyword) and (item[0] not in modules) and (item[0] not in self.except_module):
                 modules.append(item[0])
 
         return modules

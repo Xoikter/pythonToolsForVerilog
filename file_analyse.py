@@ -3,6 +3,25 @@ import os
 from sys import flags
 class File_analyse:
 	def __init__(self,strRow) -> None:
+            self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos', 'deassign',
+           'default',
+           'defparam', 'disable', 'edge', 'else', 'end', 'endcase', 'endmodule', 'endfunction', 'endprimitive',
+           'endspecify',
+           'endtable', 'endtask', 'event', 'for', 'force', 'forever', 'fork', 'function', 'highz0', 'highz1', 'if',
+           'initial',
+           'inout', 'input', 'integer', 'join', 'large', 'macromodule', 'medium', 'module', 'nand', 'negedge', 'nmos',
+           'nor', 'not', 'notif0',
+           'notifl', 'or', 'output', 'parameter', 'pmos', 'posedge', 'primitive', 'pull0', 'pull1', 'pullup',
+           'pulldown', 'rcmos',
+           'reg', 'releses', 'repeat', 'mmos', 'rpmos', 'rtran', 'rtranif0', 'rtranif1', 'scalared', 'small', 'specify',
+           'specparam',
+           'strength', 'strong0', 'strong1', 'supply0', 'supply1', 'table', 'task', 'time', 'tran', 'tranif0',
+           'tranif1', 'tri',
+           'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
+           'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
+           ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
+           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum','define','undef'
+           ,'ifdef','elsif','endif']
 	    self.res = {}
 	    self.strRow = strRow
 	#     self.module_name = []
@@ -154,9 +173,31 @@ class File_analyse:
 		for item in res:
 			con = self.connect_tool(item[3])
 			out.update({item[2]:{"type":item[0],"con":con}})
-			module.append(item[0])
+			module.append([item[0],item[2]])
 		# print(res)
 		return [out,module]
+
+	def find_module_uvm(self,stringIn:str):
+		out = []
+        	str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+        	str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
+        	str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
+		transtion_tmp = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
+
+            	for item in transtion_tmp:
+            	    if(item not in self.keyword):
+            	        out.append([item,"----"])
+		module_result = re.findall( "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;", str_temp,flags=re.S)
+            	for item in module_result:
+            	    if(item[0] not in self.keyword):
+            	        out.append(item)
+
+
 
 
 	def text_used(self,stringIn:str):
