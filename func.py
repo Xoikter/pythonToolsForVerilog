@@ -1,6 +1,6 @@
 import os
 import re
-import uvm_gen as ug
+# import uvm_gen as ug
 from file_analyse import File_analyse as Fa
 # path = "../verilog_python"
 class Verilog_tools:
@@ -42,50 +42,51 @@ class Verilog_tools:
         parameters_all = []
         fd = open(filename, errors='ignore')
         str = fd.read()
-        str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
-        str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        str_temp = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", str_temp)
-        str_temp = re.search("\\bmodule\\b\s*\\b" + name + "\\b.*?endmodule", str_temp, flags=re.S).group()
-        str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
-        str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
-        str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
-        result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
-        res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
-        for res in res_para:
-            para_temp = res[0]
-            parameters.append(para_temp)
-        for res in result:
-            portTemp = [res[0], res[1], res[2], res[3]]
-            ports.append(portTemp)
-        str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
-        result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
-        res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
-        for res in res_para:
-            res_temp1 = re.split("\s*,\s*",res)
-            parameters_all.append(res)
-            for item in res_temp1:
-                res_temp2 = re.split('\s*=\s*',item)
-                parameters.append(res_temp2[0])
+        # str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
+        # str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+        # str_temp = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", str_temp)
+        # str_temp = re.search("\\bmodule\\b\s*\\b" + name + "\\b.*?endmodule", str_temp, flags=re.S).group()
+        # str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
+        # str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
+        # str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
+        # result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
+        # res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
+        # for res in res_para:
+        #     para_temp = res[0]
+        #     parameters.append(para_temp)
+        # for res in result:
+        #     portTemp = [res[0], res[1], res[2], res[3]]
+        #     ports.append(portTemp)
+        # str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
+        # result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
+        # res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
+        # for res in res_para:
+        #     res_temp1 = re.split("\s*,\s*",res)
+        #     parameters_all.append(res)
+        #     for item in res_temp1:
+        #         res_temp2 = re.split('\s*=\s*',item)
+        #         parameters.append(res_temp2[0])
 
-        for res in result:
-            res_temp = re.split("\s*,\s*", res[3])
-            for item in res_temp:
-                portTemp = [res[0], res[1], res[2], item]
-                ports.append(portTemp)
-        return [ports, parameters,parameters_all]
+        # for res in result:
+        #     res_temp = re.split("\s*,\s*", res[3])
+        #     for item in res_temp:
+        #         portTemp = [res[0], res[1], res[2], item]
+        #         ports.append(portTemp)
+        return Fa.find_port_parameter(str) 
 
 
     def find_define(self,path):
         fp = open(path, "r", errors="ignore")
         string = fp.read()
-        str_temp = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
-        str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        defines = []
-        result = re.findall("`(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)", str_temp)
-        for item in result:
-            if item not in self.keyword:
-                defines.append(item)
-        return defines
+        # str_temp = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
+        # str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+        # defines = []
+        # result = re.findall("`(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)", str_temp)
+        # for item in result:
+        #     if item not in self.keyword:
+        #         defines.append(item)
+
+        return Fa.find_define(string)
 
 
     def find_define_file(self,path, define_word):
@@ -99,14 +100,15 @@ class Verilog_tools:
                     if re.match('.+\.s?v$', File) is not None:
                         fp = open(os.path.join(relpath, File), "r", errors="ignore")
                         str = fp.read()
-                        str_temp = re.sub("\/\*[\s\S]*?\*\/", "", str)
+                        # str_temp = re.sub("\/\*[\s\S]*?\*\/", "", str)
                         # str_temp = re.sub(r'//.*$',"",str_temp)
-                        str_temp = re.sub('//[\s\S]*?\n', "", str_temp)
+                        # str_temp = re.sub('//[\s\S]*?\n', "", str_temp)
+                        res_temp = Fa.find_define_word(str) 
                         # print(File)
 
                         full_path = os.path.join(relpath, File)
                         # if(re.match(name + '.s?v$',File) != None):
-                        res_temp = re.findall("`define\s*([\S]*)\s*",str_temp)
+                        # res_temp = re.findall("`define\s*([\S]*)\s*",str_temp)
                         for item in res_temp:
                             if item  not in self.definemap:
                                 self.definemap[item] = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
@@ -114,7 +116,8 @@ class Verilog_tools:
 
 
 
-                        if re.search('`define\s*(\\b'+define_word+'\\b)', str_temp) is not None:
+                        # if re.search('`define\s*(\\b'+define_word+'\\b)', str_temp) is not None:
+                        if define_word in res_temp:
                         # for 
                             if out_path == "":
                                 out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
@@ -134,24 +137,24 @@ class Verilog_tools:
     def find_module(self,path,flag):
         fp = open(path, "r", errors="ignore")
         str = fp.read()
-        str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
-        str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-        str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-        str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-        str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-        str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
-        str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
+        # str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
+        # str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+        # str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+        # str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
+        # str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+        # str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+        # str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
+        # str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 
         modules = []
-        if flag == 0 or flag == 5:
-            result = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
-            for item in result:
-                if(item not in self.keyword):
-                    modules.append(item)
+        # if flag == 0 or flag == 5:
+        #     result = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
+        #     for item in result:
+        #         if(item not in self.keyword):
+        #             modules.append(item)
 
-        str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
-        str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
+        # str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
+        # str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
 
         if flag == 0 or flag == 5:
             # result = re.findall(str7, str_temp,flags=re.S)
@@ -226,6 +229,12 @@ class Verilog_tools:
                         print("error: module unfind = "+ list + "\n")
                     else:
                         modules = self.find_module(dic,flags)            
+                        defines_temp = self.find_define(dic)
+                        for define in defines_temp:
+                            define_file = self.find_define_file(source_path, define)
+                            if define_file not in lists_root and define_file != "":
+                                lists_root.append(define_file)
+                        
                         for module in modules:
                             if module not in list_temp:
                                 list_temp.append(module)
@@ -233,13 +242,13 @@ class Verilog_tools:
                                 flag = 1
                         list_temp.append(list)
             lists = list_temp
-        if flags == 1 or flags == 3:
-            for list in lists:
-                defines_temp = self.find_define(self.find_file(source_path,list))
-                for define in defines_temp:
-                    define_file = self.find_define_file(source_path, define)
-                    if define_file not in lists_root and define_file != "":
-                        lists_root.append(define_file)
+        # if flags == 1 or flags == 3:
+        #     for list in lists:
+        #         defines_temp = self.find_define(self.find_file(source_path,list))
+        #         for define in defines_temp:
+        #             define_file = self.find_define_file(source_path, define)
+        #             if define_file not in lists_root and define_file != "":
+        #                 lists_root.append(define_file)
         os.chdir(target_path)
         name_temp = re.sub("_base_test$","",name)
         if flags == 5:
@@ -905,8 +914,9 @@ if __name__ == '__main__':
     TargetPath = "../sim/"
     name = "gmec_core"
     # TargetPath = make_sim_dic(TargetPath, name)
+    vt = Verilog_tools ()
 
-    simflow_seq(SourcePath,TargetPath,name)
+    vt.simflow_seq(SourcePath,TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
     # filelist_gen(SourcePath,TargetPath, name,3, 0)
     # file_inst(SourcePath, 'test')

@@ -158,6 +158,7 @@ class File_analyse:
 		string = re.sub('//.*?\n', "", string, flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
 		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
+        	string = re.sub('\\bdefine.*', "", string)
 		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
 		string = re.sub("\\bcase[\s\S]*?\\bendcase\\b", ";", string)
 		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
@@ -165,36 +166,45 @@ class File_analyse:
 		string = re.sub("\\belse.*?;","",string,flags=re.S)
 		string = re.sub("\\bif.*?;",";",string,flags=re.S)
 		string = re.sub("\\balways.*?;","",string,flags=re.S)
+		string = re.sub("\\binitial.*?;","",string,flags=re.S)
 		string = re.sub("\\bassign.*?;","",string,flags=re.S)
 		string = re.sub("\\bwire.*?;","",string,flags=re.S)
 		pattern = re.compile("(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(\([^;]*?\))\s*;",flags=re.S)
 		res = pattern.findall(string)
 		module = []
 		for item in res:
-			con = self.connect_tool(item[3])
-			out.update({item[2]:{"type":item[0],"con":con}})
-			module.append([item[0],item[2]])
+			if item[1] not in self.keywords and item[0] not in self.keyword:
+				con = self.connect_tool(item[3])
+				out.update({item[2]:{"type":item[0],"con":con}})
+				module.append([item[0],item[2]])
 		# print(res)
 		return [out,module]
 
 	def find_module_uvm(self,stringIn:str):
 		out = []
-        	str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-        	str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
-        	str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
-		transtion_tmp = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
+		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		string = re.sub('//.*?\n', "", string, flags=re.S)
+        	string = re.sub('\\bextern.*?;', "", string, flags=re.S)
+        	string = re.sub('\\bdefine.*', "", string)
+		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
+		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
+		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
+		string = re.sub("\\bcase[\s\S]*?\\bendcase\\b", ";", string)
+		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
+		string = self.find_pair(string,"begin","end",";")[1]		
+		string = re.sub("\\belse.*?;","",string,flags=re.S)
+		string = re.sub("\\bif.*?;",";",string,flags=re.S)
+		string = re.sub("\\balways.*?;","",string,flags=re.S)
+		string = re.sub("\\binitial.*?;","",string,flags=re.S)
+		string = re.sub("\\bassign.*?;","",string,flags=re.S)
+		transtion_tmp = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",string,flags=re.S)
 
             	for item in transtion_tmp:
             	    if(item not in self.keyword):
             	        out.append([item,"----"])
-		module_result = re.findall( "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;", str_temp,flags=re.S)
+		module_result = re.findall( "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;", string,flags=re.S)
             	for item in module_result:
-            	    if(item[0] not in self.keyword):
+            	    if(item[0] not in self.keyword and item[1] not in self.keyword):
             	        out.append(item)
 
 
@@ -236,6 +246,30 @@ class File_analyse:
 			stringOut = stringOut + " " +string_local 
 		return stringOut
 
+
+	def find_define(self,stringIn:str):
+        	str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+        	str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
+		res = re.findall("`([_a-zA-Z][_a-zA-Z0-9]*)\\b",str_temp,flags=re.S)
+		out = []
+		for item in res:
+			if item not in self.keyword:
+				out.append(item)
+		return 	out
+	def find_define_word(self,stringIn:str):
+        	str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+        	str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+        	str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
+		return re.findall("`define\s*(.*?)\s*",str_temp,flags=re.S)
 
 
 
