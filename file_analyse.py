@@ -3,27 +3,27 @@ import os
 from sys import flags
 class File_analyse:
 	def __init__(self,strRow) -> None:
-            self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos', 'deassign',
-           'default',
-           'defparam', 'disable', 'edge', 'else', 'end', 'endcase', 'endmodule', 'endfunction', 'endprimitive',
-           'endspecify',
-           'endtable', 'endtask', 'event', 'for', 'force', 'forever', 'fork', 'function', 'highz0', 'highz1', 'if',
-           'initial',
-           'inout', 'input', 'integer', 'join', 'large', 'macromodule', 'medium', 'module', 'nand', 'negedge', 'nmos',
-           'nor', 'not', 'notif0',
-           'notifl', 'or', 'output', 'parameter', 'pmos', 'posedge', 'primitive', 'pull0', 'pull1', 'pullup',
-           'pulldown', 'rcmos',
-           'reg', 'releses', 'repeat', 'mmos', 'rpmos', 'rtran', 'rtranif0', 'rtranif1', 'scalared', 'small', 'specify',
-           'specparam',
-           'strength', 'strong0', 'strong1', 'supply0', 'supply1', 'table', 'task', 'time', 'tran', 'tranif0',
-           'tranif1', 'tri',
-           'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
-           'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
-           ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
-           'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum','define','undef'
-           ,'ifdef','elsif','endif']
-	    self.res = {}
-	    self.strRow = strRow
+		self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos', 'deassign',
+	   'default',
+	   'defparam', 'disable', 'edge', 'else', 'end', 'endcase', 'endmodule', 'endfunction', 'endprimitive',
+	   'endspecify',
+	   'endtable', 'endtask', 'event', 'for', 'force', 'forever', 'fork', 'function', 'highz0', 'highz1', 'if',
+	   'initial',
+	   'inout', 'input', 'integer', 'join', 'large', 'macromodule', 'medium', 'module', 'nand', 'negedge', 'nmos',
+	   'nor', 'not', 'notif0',
+	   'notifl', 'or', 'output', 'parameter', 'pmos', 'posedge', 'primitive', 'pull0', 'pull1', 'pullup',
+	   'pulldown', 'rcmos',
+	   'reg', 'releses', 'repeat', 'mmos', 'rpmos', 'rtran', 'rtranif0', 'rtranif1', 'scalared', 'small', 'specify',
+	   'specparam',
+	   'strength', 'strong0', 'strong1', 'supply0', 'supply1', 'table', 'task', 'time', 'tran', 'tranif0',
+	   'tranif1', 'tri',
+	   'tri0', 'tri1', 'triand', 'trior', 'trireg', 'vectored', 'wait', 'wand', 'weak0', 'weak1', 'while', 'wire',
+	   'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
+	   ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
+	   'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum','define','undef'
+	   ,'ifdef','elsif','endif',"uvm_object_utils_begin","uvm_object_utils_end"]
+		self.res={}
+		self.strRow = strRow
 	#     self.module_name = []
 	#     self.module_inst = []
 	#     self.defvar = []
@@ -158,22 +158,22 @@ class File_analyse:
 		string = re.sub('//.*?\n', "", string, flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
 		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
-        	string = re.sub('\\bdefine.*', "", string)
+		string = re.sub('\\bdefine.*', "", string)
 		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
-		string = re.sub("\\bcase[\s\S]*?\\bendcase\\b", ";", string)
+		string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
 		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
 		string = self.find_pair(string,"begin","end",";")[1]		
-		string = re.sub("\\belse.*?;","",string,flags=re.S)
-		string = re.sub("\\bif.*?;",";",string,flags=re.S)
-		string = re.sub("\\balways.*?;","",string,flags=re.S)
-		string = re.sub("\\binitial.*?;","",string,flags=re.S)
-		string = re.sub("\\bassign.*?;","",string,flags=re.S)
-		string = re.sub("\\bwire.*?;","",string,flags=re.S)
+		string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
+		string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\binitial\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\bassign\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\bwire\\b.*?;","",string,flags=re.S)
 		pattern = re.compile("(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(\([^;]*?\))\s*;",flags=re.S)
 		res = pattern.findall(string)
 		module = []
 		for item in res:
-			if item[1] not in self.keywords and item[0] not in self.keyword:
+			if item[1] not in self.keyword and item[0] not in self.keyword:
 				con = self.connect_tool(item[3])
 				out.update({item[2]:{"type":item[0],"con":con}})
 				module.append([item[0],item[2]])
@@ -184,28 +184,30 @@ class File_analyse:
 		out = []
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
-        	string = re.sub('\\bextern.*?;', "", string, flags=re.S)
-        	string = re.sub('\\bdefine.*', "", string)
+		string = re.sub('\\bextern.*?;', "", string, flags=re.S)
+		string = re.sub('\\bdefine.*', "", string)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
 		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
 		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
-		string = re.sub("\\bcase[\s\S]*?\\bendcase\\b", ";", string)
+		string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
 		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
 		string = self.find_pair(string,"begin","end",";")[1]		
-		string = re.sub("\\belse.*?;","",string,flags=re.S)
-		string = re.sub("\\bif.*?;",";",string,flags=re.S)
-		string = re.sub("\\balways.*?;","",string,flags=re.S)
-		string = re.sub("\\binitial.*?;","",string,flags=re.S)
-		string = re.sub("\\bassign.*?;","",string,flags=re.S)
+		string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
+		string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\binitial\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\bassign\\b.*?;","",string,flags=re.S)
+		string = re.sub("\\bwire\\b.*?;","",string,flags=re.S)
 		transtion_tmp = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",string,flags=re.S)
 
-            	for item in transtion_tmp:
-            	    if(item not in self.keyword):
-            	        out.append([item,"----"])
+		for item in transtion_tmp:
+			if(item not in self.keyword):
+				out.append([item,"----"])
 		module_result = re.findall( "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;", string,flags=re.S)
-            	for item in module_result:
+		for item in module_result:
             	    if(item[0] not in self.keyword and item[1] not in self.keyword):
             	        out.append(item)
+		return out
 
 
 
@@ -248,13 +250,13 @@ class File_analyse:
 
 
 	def find_define(self,stringIn:str):
-        	str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-        	str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
+		str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+		str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 		res = re.findall("`([_a-zA-Z][_a-zA-Z0-9]*)\\b",str_temp,flags=re.S)
 		out = []
 		for item in res:
@@ -262,14 +264,14 @@ class File_analyse:
 				out.append(item)
 		return 	out
 	def find_define_word(self,stringIn:str):
-        	str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-        	str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-        	str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
-		return re.findall("`define\s*(.*?)\s*",str_temp,flags=re.S)
+		str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+		str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
+		str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
+		return re.findall("`define\s*([\S]+)\s*",str_temp,flags=re.S)
 
 
 
