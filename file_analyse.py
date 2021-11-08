@@ -112,6 +112,8 @@ class File_analyse:
 	def find_port_parameter(self,stringIn:str):
 		str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", stringIn)
 		str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
+		str_temp = re.sub("\/\*.*?\*\/", "", str_temp, flags=re.S)
+		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 		str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
 		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
 		res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
@@ -156,6 +158,8 @@ class File_analyse:
 		out = {}
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
+		string = re.sub("\$.*?;","",string,flags=re.S)
+		string = re.sub("\".*?\"","",string,flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
 		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
 		string = re.sub('\\bdefine.*', "", string)
@@ -184,6 +188,8 @@ class File_analyse:
 		out = []
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
+		string = re.sub("\$.*?;","",string,flags=re.S)
+		string = re.sub("\".*?\"","",string,flags=re.S)
 		string = re.sub('\\bextern.*?;', "", string, flags=re.S)
 		string = re.sub('\\bdefine.*', "", string)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
