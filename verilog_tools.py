@@ -38,6 +38,7 @@ class Verilog_tools:
         self.fa = fa("")
 
     def test_map_initial(self):
+            os.chdir(os.path.dirname(__file__))
             for relpath, dirs, files in os.walk(self.TargetPath):
                 for File in files:
                     if re.match('.+\.s?v$', File) is not None:
@@ -56,9 +57,9 @@ class Verilog_tools:
                                     print("find mutidefine module\n")
                                     print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + " Y ")
                                     print(self.test_filemap[item[1]] + " N ")
-                                    sel = input("select:")
-                                    if sel == "Y":
-                                        self.test_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
+                                    # sel = input("select:")
+                                    # if sel == "Y":
+                                    #     self.test_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                             elif item[1]  not in self.test_filemap :
                                 self.test_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                         for item in define_temp:
@@ -66,13 +67,15 @@ class Verilog_tools:
                                     print("find mutidefine define_word\n" + item)
                                     print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + " Y ")
                                     print(self.test_definemap[item] + " N ")
-                                    sel = input("select:")
-                                    if sel == "Y":
-                                        self.test_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
+                                    # sel = input("select:")
+                                    # if sel == "Y":
+                                    #     self.test_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                             elif item not in self.test_definemap:
                                 self.test_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
 
     def rtl_map_initial(self):
+
+        os.chdir(os.path.dirname(__file__))
         for start in self.SourcePath:
             for relpath, dirs, files in os.walk(start):
                 for File in files:
@@ -99,9 +102,9 @@ class Verilog_tools:
                                     print("find mutidefine module\n")
                                     print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + " Y ")
                                     print(self.rtl_filemap[item[1]] + " N ")
-                                    sel = input("select:")
-                                    if sel == "Y":
-                                        self.rtl_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
+                                    # sel = input("select:")
+                                    # if sel == "Y":
+                                    #     self.rtl_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                             elif item[1] not in self.rtl_filemap:
                                     self.rtl_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                                         
@@ -110,9 +113,9 @@ class Verilog_tools:
                                     print("find mutidefine define_word\n")
                                     print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + " Y ")
                                     print(self.rtl_definemap[item] + " N ")
-                                    sel = input("select:")
-                                    if sel == "Y":
-                                        self.rtl_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
+                                    # sel = input("select:")
+                                    # if sel == "Y":
+                                    #     self.rtl_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                             elif item not in self.rtl_definemap:
                                 self.rtl_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                                 # self.filemap[item[1]] = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
