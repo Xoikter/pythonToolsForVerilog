@@ -39,6 +39,9 @@ class File_analyse:
 	## 		pair string list, string witch delete pair string 
 
 	def find_pair(self,stringIn:str,string_begin:str,string_end:str,replace_str:str):
+		string = re.sub("\\bif\\b\s*\(.*?\)",";",stringIn,flags=re.S)
+		string = re.sub("\\bcase(z|x)?\\b\s*\(.*?\)",";",string,flags=re.S)
+		return [[],string]
 		res = []
 		string = stringIn
 		lenth = len(string_end)
@@ -61,6 +64,11 @@ class File_analyse:
 			ptr_e = ptr_s
 			while(1):
 				# ptr_e = string.find(string_end,ptr_e + lenth)
+				match = pattern_end.search(string,ptr_e)
+				if match == None:
+					string = re.sub("\\bif\\b\s*\(.*?\)",";",stringIn,flags=re.S)
+					string = re.sub("\\bcase(z|x)?\\b\s*\(.*?\)",";",string,flags=re.S)
+					return [[],string]
 				ptr_e = pattern_end.search(string,ptr_e).end()
 				count_begin = len(re.findall("\\b"+string_begin+"\\b",string[ptr_s:ptr_e],flags=re.S))
 				count_end = len(re.findall("\\b"+string_end+"\\b",string[ptr_s:ptr_e],flags=re.S))
@@ -158,8 +166,8 @@ class File_analyse:
 		out = {}
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
-		string = re.sub("\$.*?;","",string,flags=re.S)
-		string = re.sub("\".*?\"","",string,flags=re.S)
+		string = re.sub("\$.*?;",";",string,flags=re.S)
+		string = re.sub("\".*?\"",";",string,flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
 		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
 		string = re.sub('\\bdefine.*', "", string)
@@ -167,6 +175,10 @@ class File_analyse:
 		string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
 		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
 		string = self.find_pair(string,"begin","end",";")[1]		
+		string = re.sub('`else\\b', " ", string)
+		string = re.sub('`ifdef\\b', " ", string)
+		string = re.sub('`endif\\b', " ", string)
+		string = re.sub('`elif\\b', " ", string)
 		string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
 		string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
 		string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
@@ -188,8 +200,8 @@ class File_analyse:
 		out = []
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
-		string = re.sub("\$.*?;","",string,flags=re.S)
-		string = re.sub("\".*?\"","",string,flags=re.S)
+		string = re.sub("\$.*?;",";",string,flags=re.S)
+		string = re.sub("\".*?\"",";",string,flags=re.S)
 		string = re.sub('\\bextern.*?;', "", string, flags=re.S)
 		string = re.sub('\\bdefine.*', "", string)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
@@ -198,6 +210,10 @@ class File_analyse:
 		string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
 		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
 		string = self.find_pair(string,"begin","end",";")[1]		
+		string = re.sub('`else\\b', " ", string)
+		string = re.sub('`ifdef\\b', " ", string)
+		string = re.sub('`endif\\b', " ", string)
+		string = re.sub('`elif\\b', " ", string)
 		string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
 		string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
 		string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
@@ -258,11 +274,6 @@ class File_analyse:
 	def find_define(self,stringIn:str):
 		str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-		str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 		res = re.findall("`([_a-zA-Z][_a-zA-Z0-9]*)\\b",str_temp,flags=re.S)
 		out = []
 		for item in res:
@@ -272,11 +283,6 @@ class File_analyse:
 	def find_define_word(self,stringIn:str):
 		str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-		str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-		str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 		return re.findall("`define\s*([\S]+)\s*",str_temp,flags=re.S)
 
 

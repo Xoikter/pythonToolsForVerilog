@@ -1,3 +1,4 @@
+from enum import Flag
 import os
 import re
 # import uvm_gen as ug
@@ -35,6 +36,7 @@ class Verilog_tools:
         self.mapGenFlag = False
         self.SourcePath = []
         self.TargetPath = ""
+        self.moduleFound = []
         self.fa = fa("")
 
     def test_map_initial(self):
@@ -127,6 +129,15 @@ class Verilog_tools:
     def map_initial(self):
         self.rtl_map_initial()
         self.test_map_initial()
+        fp = open("/home/IC/map.txt","w+")
+        for key in self.rtl_definemap:
+            fp.write(key + "\n")
+        fp.close()
+        fp = open("/home/IC/rtl_map.txt","w+")
+        for key in self.rtl_filemap:
+            fp.write(key + "\n")
+        fp.close()
+
         self.mapGenFlag = True
 
 
@@ -293,6 +304,39 @@ class Verilog_tools:
                                         out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
         return out_path
 
+    def dfs(self,lists:list,index:int,flags = 1) -> list:
+        # if index >= len(lists):
+        #     return []
+        for i in range(index,len(lists)):
+            if lists[i] in self.moduleFound:
+                return lists[index:i] + (self.dfs(lists,i+1,flags))
+            if flags == 1:
+                path = self.find_rtl_file(self.SourcePath,lists[ i ])
+            else:
+                path = self.find_test_file(self.TargetPath,lists[ i ])
+            list_temp = self.find_module(path,flags)
+            # defines_temp = self.find_define(path)
+            # for define in defines_temp:
+            #     if flags == 1:
+            #         if define not in define_words:
+            #             define_file = self.find_rtl_define_file(self.SourcePath, define)
+            #             if define_file not in lists_root and define_file != "":
+            #                 lists_root.append(define_file)
+            #             define_words.append(define)
+            #     else:
+            #         define_file = self.find_test_define_file(self.SourcePath, define)
+            self.moduleFound.append(lists[i])
+            if len(list_temp) != 0:
+                # if i == 0:
+                #     return [].append(self.dfs(list_temp, 0, flags)).append(lists[i]).append(self.dfs(lists,i + 1, flags))
+                # else:
+                list1 = lists[index:i]+ (self.dfs(list_temp, 0, flags))
+                list1.append(lists[i])
+                list3 = list1 + (self.dfs(lists,i + 1, flags))
+                return list3
+                return lists[0:i].append(self.dfs(list_temp, 0, flags)).append(lists[i]).append(self.dfs(lists,i + 1, flags))
+
+        return lists[index:len(lists)]
 
     def filelist_gen(self,source_path, target_path, name, flags,flag1):
         os.chdir(os.path.dirname(__file__))
@@ -333,38 +377,56 @@ class Verilog_tools:
         lists = self.find_module(path,flags)
         flag = 1
         list_pass = []
-        while flag == 1:
-            list_temp = []
-            flag = 0
-            for list in lists:
-                modules = []
-                if list not in list_temp:
-                    if flags == 1:
-                        dic = self.find_rtl_file(source_path,list)
-                    else:
-                        dic = self.find_test_file(source_path,list)
-                    if dic == "":
-                        print("error: module unfind = "+ list + "\n")
-                    else:
-                        modules = self.find_module(dic,flags)            
-                        defines_temp = self.find_define(dic)
-                        for define in defines_temp:
-                            if flags == 1:
-                                if define not in define_words:
-                                    define_file = self.find_rtl_define_file(source_path, define)
-                                    if define_file not in lists_root and define_file != "":
-                                        lists_root.append(define_file)
-                                    define_words.append(define)
-                            else:
-                                define_file = self.find_test_define_file(source_path, define)
+        # self.moduleFound.append("")
+        lists = self.dfs(lists,0,flags)
+        fp = open("/home/IC/log.txt","w+",errors="ignore")
+        for item in lists:
+            if flags == 1:
+                path_local = self.find_rtl_file(self.SourcePath,item)
+                print(path_local+"\n")
+                string = open(path_local,"r",errors="ignore").read()
+                define_temp = self.find_define(path_local)
+                for define in define_temp:
+                    fp.write(define +  "\n")
+                    if define not in define_words:
+                        fp.write(define + "\n")
+                        define_file = self.find_rtl_define_file(source_path, define)
+                        if define_file not in lists_root and define_file != "":
+                            lists_root.append(define_file)
+                        define_words.append(define)
+        fp.close()
+        # while flag == 1:
+        #     list_temp = []
+        #     flag = 0
+        #     for list in lists:
+        #         modules = []
+        #         if list not in list_temp:
+        #             if flags == 1:
+        #                 dic = self.find_rtl_file(source_path,list)
+        #             else:
+        #                 dic = self.find_test_file(source_path,list)
+        #             if dic == "":
+        #                 print("error: module unfind = "+ list + "\n")
+        #             else:
+        #                 modules = self.find_module(dic,flags)            
+        #                 defines_temp = self.find_define(dic)
+        #                 for define in defines_temp:
+        #                     if flags == 1:
+        #                         if define not in define_words:
+        #                             define_file = self.find_rtl_define_file(source_path, define)
+        #                             if define_file not in lists_root and define_file != "":
+        #                                 lists_root.append(define_file)
+        #                             define_words.append(define)
+        #                     else:
+        #                         define_file = self.find_test_define_file(source_path, define)
                         
-                        for module in modules:
-                            if module not in list_temp:
-                                list_temp.append(module)
-                            if module not in lists:
-                                flag = 1
-                        list_temp.append(list)
-            lists = list_temp
+        #                 for module in modules:
+        #                     if module not in list_temp:
+        #                         list_temp.append(module)
+        #                     if module not in lists:
+        #                         flag = 1
+        #                 list_temp.append(list)
+        #     lists = list_temp
         # if flags == 1 or flags == 3:
         #     for list in lists:
         #         defines_temp = self.find_define(self.find_file(source_path,list))

@@ -1,11 +1,16 @@
 from file_analyse import File_analyse
+import re
 if __name__=="__main__":
-	fp = open("./code/uart_byte_tx.v","r")
+	fp = open("/home/IC/xsc/gmec/rtl/aes/aes_misc_unit.v","r")
 	string_test = fp.read()
 	fp.close()
+	test_s = "begin end"
+	pattern = re.compile("begin")
+	stri = pattern.search(test_s).start()
 	fa = File_analyse(string_test)
-	# fa.find_pair(string_test,"{","}")
-	fa.text_used(string_test)
+	fa.find_module_inst(string_test)
+	# fa.(string_test)
+
 
 	fp = open("./out.v","w+")
 	fp.write(fa.find_varDefine(string_test)[1])
