@@ -436,11 +436,11 @@ class Verilog_tools:
         #                 lists_root.append(define_file)
         os.chdir(target_path)
         name_temp = re.sub("_base_test$","",name)
-        if flags is not 1:
+        if flags != 1:
             fk = open(name_temp+"_package.sv","w")
             fk.write("import uvm_pkg::*;\n")
             fk.close()
-        if flags is not 1 :
+        if flags != 1 :
             fo = open("filelist_uvm_base.f","w")
             fo.write(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv' + "\n")
             os.chdir(os.path.dirname(__file__))
