@@ -36,16 +36,18 @@ class File_analyse:
 		for item in str_temp:
 			res_temp =re.search("(`ifdef)\s*(\S*)\s*",item,flags=re.S) 
 			if res_temp is not None and res_temp.group(2)  in self.macro:
+
 				return(item.replace(res_temp.group()," "))
 			elif res_temp is not None:
-				string_out.replace(item," ")
+				string_out = string_out.replace(item," ")
 			res_temp =re.search("(`ifndef)\s*(\S*)\s*",item,flags=re.S) 
 			if res_temp is not None and res_temp.group(2) not   in self.macro:
 				return(item.replace(res_temp.group()," "))
-				string_out.replace(item," ")
+				string_out =  string_out.replace(item," ")
 			elif res_temp is not None:
-				string_out.replace(item," ")
-		string_out.replace(r'`endif'," ")
+				string_out = string_out.replace(item," ")
+		string_out = string_out.replace(r'`endif'," ")
+		string_out = string_out.replace(r'`else'," ")
 		return string_out
 
 
@@ -54,18 +56,31 @@ class File_analyse:
 
 
 	def define_op(self,stringIn:str):
-		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-		string = re.sub('//.*?\n', "", string, flags=re.S)
+		# string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		# string = re.sub('//.*?\n', "", string, flags=re.S)
+		string = stringIn
 		pattern = re.compile("`endif\\b",flags=re.S)
-		i_s = re.finditer("`(?:ifdef|ifndef)\\b")
-		if(len(i_s) == 0):
-			return
+		i_s = re.finditer("`(?:ifdef|ifndef)\\b",stringIn,flags=re.S)
+		if(i_s == None):
+			return stringIn
+		i_sp = 0
+		for item in i_s:
+			i_sp = item.start()
+		i_e = pattern.search(string,i_sp)
+		if i_e != None:
+			string_temp = string[i_sp:i_e.end()]
+			string_rep = self.def_tools(string_temp)
+			string = string.replace(string_temp,string_rep)
+			return self.define_op(string)
+		
+
 		for i in reversed(i_s):
 			i_e = pattern.search(string,i.end())
 			if i_e != None:
 				string_temp = string[i.start():i_e.end()]
 				string_rep = self.def_tools(string_temp)
-				string = string.replace(string[i.start():i_e.end()])
+				string = string.replace(string[i.start():i_e.end()],string_rep)
+				return self.define_op(string)
 		
 
 
