@@ -10,7 +10,7 @@ if __name__=="__main__":
 	stri = pattern.search(test_s).start()
 	fa = File_analyse(string_test)
 	fa.macro = ["xx"]
-	fa.def_tools(string_test)
+	fa.define_op(string_test)
 	# fa.(string_test)
 
 
