@@ -24,11 +24,62 @@ class File_analyse:
 	   ,'ifdef','elsif','endif',"uvm_object_utils_begin","uvm_object_utils_end"]
 		self.res={}
 		self.strRow = strRow
+		self.macro = []
 	#     self.module_name = []
 	#     self.module_inst = []
 	#     self.defvar = []
 	#     self.usedvar = []
 	#     self.
+	def def_tools(self,stringIn:str):
+		string_out = stringIn
+		str_temp = re.findall("((?:`ifdef|`else|`elsif).*?)(?=`else|`elsif|`endif)",stringIn,flags=re.S)
+		for item in str_temp:
+			res_temp =re.search("(`ifdef)\s*(\S*)\s*",item,flags=re.S) 
+			if res_temp is not None and res_temp.group(2)  in self.macro:
+				return(item.replace(res_temp.group()," "))
+			elif res_temp is not None:
+				string_out.replace(item," ")
+			res_temp =re.search("(`ifndef)\s*(\S*)\s*",item,flags=re.S) 
+			if res_temp is not None and res_temp.group(2) not   in self.macro:
+				return(item.replace(res_temp.group()," "))
+				string_out.replace(item," ")
+			elif res_temp is not None:
+				string_out.replace(item," ")
+		string_out.replace(r'`endif'," ")
+		return string_out
+
+
+				
+
+
+
+	def define_op(self,stringIn:str):
+		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		string = re.sub('//.*?\n', "", string, flags=re.S)
+		pattern = re.compile("`endif\\b",flags=re.S)
+		i_s = re.finditer("`(?:ifdef|ifndef)\\b")
+		if(len(i_s) == 0):
+			return
+		for i in reversed(i_s):
+			i_e = pattern.search(string,i.end())
+			if i_e != None:
+				string_temp = string[i.start():i_e.end()]
+				string_rep = self.def_tools(string_temp)
+				string = string.replace(string[i.start():i_e.end()])
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -37,7 +88,6 @@ class File_analyse:
 	## if pattern lenth == 1,regard it as symbol like {} (),else regard it as var
 	## return list :
 	## 		pair string list, string witch delete pair string 
-
 	def find_pair(self,stringIn:str,string_begin:str,string_end:str,replace_str:str):
 		string = re.sub("\\bif\\b\s*\(.*?\)",";",stringIn,flags=re.S)
 		string = re.sub("\\bcase(z|x)?\\b\s*\(.*?\)",";",string,flags=re.S)

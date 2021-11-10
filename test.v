@@ -103,6 +103,16 @@ wire [31:0] crc_next5;
 wire [31:0] crc_next6;
 wire [31:0] crc_next7;
 
+
+
+`ifdef xxxx
+ssssss
+`else 
+aaaaaaa
+`endif
+
+
+
 // internal datapath
 reg [63:0] m_axis_tdata_int;
 reg [7:0]  m_axis_tkeep_int;
