@@ -32,7 +32,7 @@ class File_analyse:
 	#     self.
 	def def_tools(self,stringIn:str):
 		string_out = stringIn
-		str_temp = re.findall("((?:`ifdef|`else|`elsif).*?)(?=`else|`elsif|`endif)",stringIn,flags=re.S)
+		str_temp = re.findall("((?:`ifdef|`ifndef|`else|`elsif).*?)(?=`else|`elsif|`endif)",stringIn,flags=re.S)
 		for item in str_temp:
 			res_temp =re.search("(`ifdef)\s*(\S*)\s*",item,flags=re.S) 
 			if res_temp is not None and res_temp.group(2)  in self.macro:
@@ -60,9 +60,10 @@ class File_analyse:
 		# string = re.sub('//.*?\n', "", string, flags=re.S)
 		string = stringIn
 		pattern = re.compile("`endif\\b",flags=re.S)
-		i_s = re.finditer("`(?:ifdef|ifndef)\\b",stringIn,flags=re.S)
-		if(i_s == None):
+		match = re.search("`(?:ifdef|ifndef)\\b",stringIn,flags=re.S)
+		if(match == None):
 			return stringIn
+		i_s = re.finditer("`(?:ifdef|ifndef)\\b",stringIn,flags=re.S)
 		i_sp = 0
 		for item in i_s:
 			i_sp = item.start()
@@ -72,6 +73,7 @@ class File_analyse:
 			string_rep = self.def_tools(string_temp)
 			string = string.replace(string_temp,string_rep)
 			return self.define_op(string)
+		return None
 		
 
 		for i in reversed(i_s):
