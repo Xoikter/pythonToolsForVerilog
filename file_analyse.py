@@ -1,6 +1,7 @@
 import re
 import os
 from sys import flags
+from typing import Pattern
 class File_analyse:
 	def __init__(self,strRow) -> None:
 		self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos', 'deassign',
@@ -148,6 +149,47 @@ class File_analyse:
 					# print(len(string))
 					break
 		return [res,string]
+	# def gene_tool(self,stringIn:str):
+	# 	string = stringIn
+	# 	pattern_for = re.compile("\\bgenerate\\b\s*for\\b",flags=re.S)
+	# 	pattern_if = re.compile("\\bgenerate\\b\s*if\\b",flags=re.S)
+	# 	pattern_case = re.compile("\\bgenerate\\b\s*case\\b",flags=re.S)
+	# 	pattern_begin = re.compile("\\begin\\",flags=re.S)
+	# 	string_out = ""
+	# 	p_s = 0
+	# 	if pattern_for(stringIn[p_s:]) != None:
+	# 		match = pattern_begin.search(string,p_s)
+	# 		if match != None:
+	# 			res = self.find_pair(string[p_s:],"begin","end","")[0]
+				
+
+
+
+
+	# def gene_op(self,stringIn:str):
+	# 	string = stringIn
+	# 	# string_temp = self.find_pair(string,"generate","endgenerate"," ")[0]
+	# 	match = re.search("\\bgenerate\\b",string,flags = re.S)
+	# 	if match == None:
+	# 		return stringIn
+	# 	ine = re.finditer("\\bgenerate\\b",string,flags=re.S)
+	# 	s_p = 0
+	# 	for item in ine:
+	# 		s_p = item.start()
+	# 	s_e = s_p
+	# 	pattern = re.compile("\\bendgenerate\\b",flags=re.S)
+	# 	match = pattern.search(string,s_p)
+	# 	if match == None:
+	# 		print("error")
+	# 		return None
+	# 	s_e = match.end()
+	# 	string_rep = self.gene_tool(string[s_p:s_e])
+	# 	string = string.replace(string[s_p:s_e],string_rep)
+	# 	return self.gene_op(string)
+
+		
+	# 	for item in string_temp:
+			
 	def varDefineTool(self,stringIn:str):
 		stringTemp = stringIn
 		string = re.sub("[.*?]","",stringIn,flags=re.S)
@@ -262,6 +304,33 @@ class File_analyse:
 				module.append([item[0],item[2]])
 		# print(res)
 		return [out,module]
+	def module_inst(self,stringIn:str):
+		string = stringIn
+		res = re.finditer("\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",stringIn,flags=re.S)
+		pattern_1 = re.compile("^\s*#",flags=re.S)
+		pattern_3 = re.compile("\s*\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",flags=re.S)
+		pattern_2 = re.compile("\s*\(",flags=re.S)
+		for item in res:
+			if item.group() not in self.keyword:
+				if re.search("^\s*#",string[item.end():],flags=re.S) != None:
+					match = pattern_2.search(string,item.end())
+					stack = []
+					index = 0
+					for i in range(match.start() ,len(string)):
+						if string[i] == "(":
+							stack.append("(")	
+						if string[i] == "(":
+							stack.pop()
+						if len(stack) == 0:
+							index = i
+							break
+					match = pattern_3.match(string,index + 1)
+					if  match != None and match.group() not in self.keyword:
+
+						return
+
+
+					
 
 	def find_module_uvm(self,stringIn:str):
 		out = []
