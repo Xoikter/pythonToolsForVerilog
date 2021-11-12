@@ -245,12 +245,12 @@ class Verilog_tools:
             result = self.fa.find_module_uvm(str)
         else:
             # result = re.findall(str6, str_temp,flags=re.S)
-            result = self.fa.find_module_inst(str)
+            result = self.fa.find_module_inst(str)[1]
 
 
         for item in result:
-            if (item[0] not in self.keyword) and (item[1] not in self.keyword) and (item[0] not in modules) and (item[0] not in self.except_module):
-                modules.append(item[0])
+            if (item not in self.except_module):
+                modules.append(item)
 
         return modules
 
@@ -383,7 +383,7 @@ class Verilog_tools:
         for item in lists:
             if flags == 1:
                 path_local = self.find_rtl_file(self.SourcePath,item)
-                print(path_local+"\n")
+                # print(path_local+"\n")
                 string = open(path_local,"r",errors="ignore").read()
                 define_temp = self.find_define(path_local)
                 for define in define_temp:

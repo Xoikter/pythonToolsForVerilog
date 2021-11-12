@@ -22,7 +22,7 @@ class File_analyse:
 	   'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
 	   ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
 	   'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum','define','undef'
-	   ,'ifdef','elsif','endif',"uvm_object_utils_begin","uvm_object_utils_end"]
+	   ,'ifdef','elsif','endif',"uvm_object_utils_begin","uvm_object_utils_end","`define"]
 		self.res={}
 		self.strRow = strRow
 		self.macro = []
@@ -306,21 +306,33 @@ class File_analyse:
 	# 	return [out,module]
 	def find_module_inst(self,stringIn:str):
 		string = stringIn
+		symbol = " \n\t"
 		string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
-		res = re.finditer("\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",string,flags=re.S)
+		res = re.finditer("\s*([`_a-zA-Z][_a-zA-Z0-9]*)\\b",string,flags=re.S)
 		pattern_1 = re.compile("\s*#",flags=re.S)
-		pattern_3 = re.compile("\s*(\\b[_a-zA-Z][_a-zA-Z0-9]*\\b)",flags=re.S)
+		pattern_3 = re.compile("\s*([`_a-zA-Z][_a-zA-Z0-9]*\\b)",flags=re.S)
 		pattern_2 = re.compile("\s*\(",flags=re.S)
 		out = {}
 		module = []
+		except_words = ["function","`define","task"]
 
 		for item in res:
 			module_name = ""
 			module_type = ""
 			module_connect = ""
+			word = ""
+			for i in range(0,item.start()):
+				if string[item.start() - i - 1] not in symbol:
+					word = string[item.start() - i - 1] + word
+				elif len(word) != 0:
+					break
+			if(word  in except_words):
+				continue
+	
 
-			if item.group() not in self.keyword:
+
+			if item.group(1) not in self.keyword:
 				match_p = pattern_1.match(string,item.end())
 				if match_p!= None:
 					match = pattern_2.match(string,match_p.end())
@@ -353,9 +365,9 @@ class File_analyse:
 							index = i + 1
 							break
 					con = self.connect_tool(string[match_connect.end() - 1:index])
-					out.update({match.group(1):{"type":item.group(),"con":con}})
-					if item.group() not in module:
-						module.append(item.group())
+					out.update({match.group(1):{"type":item.group(1),"con":con}})
+					if item.group(1) not in module:
+						module.append(item.group(1))
 				else:
 					stack = []
 					index = 0
@@ -376,52 +388,119 @@ class File_analyse:
 							index = i + 1
 							break
 					con = self.connect_tool(string[match_connect.start():index])
-					out.update({match.group(1):{"type":item.group(),"con":con}})
-					if item.group() not in module:
-						module.append(item.group())
+					out.update({match.group(1):{"type":item.group(1),"con":con}})
+					if item.group(1) not in module:
+						module.append(item.group(1))
 					
 					
 						
 
 		return [out, module]
+	def find_module_uvm(self,stringIn:str) :
+		string = stringIn
+		modules = []
+		except_words = ["function","`define","task"]
+		symbol = " \n\t"
+		out = {}
+		string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
+		string = re.sub('//.*?\n', "", string, flags=re.S)
+		res_transtion = re.findall("#\s*\(\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*\)",string,flags=re.S)
+		pattern_3 = re.compile("\s*(\\b[_a-zA-Z][_a-zA-Z0-9]*\\b)",flags=re.S)
+		pattern_2 = re.compile("\s*\(",flags=re.S)
+		pattern_end = re.compile("\s*;",flags=re.S)
+		for item in res_transtion:
+			if item not in modules and item not in self.keyword:
+				modules.append(item)
+		res = re.finditer("\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",string,flags=re.S)
+		for item in res:
+			module_name = ""
+			module_type = ""
+			module_connect = ""
+			word = ""
+			for i in range(0,item.start()):
+				if string[item.start() - i - 1] not in symbol:
+					word = string[item.start() - i - 1] + word
+				elif len(word) != 0:
+					break
+			if(word  in except_words):
+				continue
+
+			if item.group() not in self.keyword:
+				stack = []
+				index = 0
+				match = pattern_3.match(string,item.end())
+				if  match == None or match.group(1)  in self.keyword:
+					continue
+				if  match != None and match.group(1) not in self.keyword:
+					index = match.end()
+				match_end = pattern_end.match(string,index)
+				if match_end != None:
+					if match.group() not in self.keyword:
+						modules.append(item.group())
+					continue
+				match_connect = pattern_2.match(string,index)
+				if match_connect ==  None:
+					continue
+				for i in range(match_connect.start(), len(string)):
+					if string[i] == "(":
+						stack.append("(")	
+					if string[i] == ")":
+						stack.pop()
+					if len(stack) == 0:
+						index = i + 1
+						break
+				# con = self.connect_tool(string[match_connect.start():index])
+				match_end = pattern_end.match(string,index)
+				if match_end !=  None:
+					if item.group() not in modules:
+						modules.append(item.group())
+				# out.update({match.group(1):{"type":item.group(),"con":con}})
+				# if item.group() not in module:
+				# 	module.append(item.group())
+				
+				
+					
+
+		return modules
+
 
 
 					
 
-	def find_module_uvm(self,stringIn:str):
-		out = []
-		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-		string = re.sub('//.*?\n', "", string, flags=re.S)
-		string = re.sub("\$.*?;",";",string,flags=re.S)
-		string = re.sub("\".*?\"",";",string,flags=re.S)
-		string = re.sub('\\bextern.*?;', "", string, flags=re.S)
-		string = re.sub('\\bdefine.*', "", string)
-		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
-		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
-		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
-		string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
-		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
-		string = self.find_pair(string,"begin","end",";")[1]		
-		string = re.sub('`else\\b', " ", string)
-		string = re.sub('`ifdef\\b', " ", string)
-		string = re.sub('`endif\\b', " ", string)
-		string = re.sub('`elif\\b', " ", string)
-		string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
-		string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\binitial\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\bassign\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\bwire\\b.*?;","",string,flags=re.S)
-		transtion_tmp = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",string,flags=re.S)
+	# def find_module_uvm(self,stringIn:str):
+	# 	out = []
+	# 	string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+	# 	string = re.sub('//.*?\n', "", string, flags=re.S)
+	# 	string = re.sub("\$.*?;",";",string,flags=re.S)
+	# 	string = re.sub("\".*?\"",";",string,flags=re.S)
+	# 	string = re.sub('\\bextern.*?;', "", string, flags=re.S)
+	# 	string = re.sub('\\bdefine.*', "", string)
+	# 	string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
+	# 	string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
+	# 	string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
+	# 	string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
+	# 	string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
+	# 	string = self.find_pair(string,"begin","end",";")[1]		
+	# 	string = re.sub('`else\\b', " ", string)
+	# 	string = re.sub('`ifdef\\b', " ", string)
+	# 	string = re.sub('`endif\\b', " ", string)
+	# 	string = re.sub('`elif\\b', " ", string)
+	# 	string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
+	# 	string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\binitial\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\bassign\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\bwire\\b.*?;","",string,flags=re.S)
+	# 	transtion_tmp = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",string,flags=re.S)
 
-		for item in transtion_tmp:
-			if(item not in self.keyword):
-				out.append([item,"----"])
-		module_result = re.findall( "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;", string,flags=re.S)
-		for item in module_result:
-            	    if(item[0] not in self.keyword and item[1] not in self.keyword):
-            	        out.append(item)
-		return out
+	# 	for item in transtion_tmp:
+	# 		if(item not in self.keyword):
+	# 			out.append([item,"----"])
+	# 	module_result = re.findall( "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;", string,flags=re.S)
+	# 	for item in module_result:
+        #     	    if(item[0] not in self.keyword and item[1] not in self.keyword):
+        #     	        out.append(item)
+	# 	return out
 
 
 
