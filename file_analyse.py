@@ -271,46 +271,46 @@ class File_analyse:
 		for item in res:
 			con.update({item[1]:{"type":item[0],"width":0}})
 		return con
+	# def find_module_inst(self,stringIn:str):
+	# 	out = {}
+	# 	string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+	# 	string = re.sub('//.*?\n', "", string, flags=re.S)
+	# 	string = re.sub("\$.*?;",";",string,flags=re.S)
+	# 	string = re.sub("\".*?\"",";",string,flags=re.S)
+	# 	string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
+	# 	string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
+	# 	string = re.sub('\\bdefine.*', "", string)
+	# 	string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
+	# 	string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
+	# 	string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
+	# 	string = self.find_pair(string,"begin","end",";")[1]		
+	# 	string = re.sub('`else\\b', " ", string)
+	# 	string = re.sub('`ifdef\\b', " ", string)
+	# 	string = re.sub('`endif\\b', " ", string)
+	# 	string = re.sub('`elif\\b', " ", string)
+	# 	string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
+	# 	string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\binitial\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\bassign\\b.*?;","",string,flags=re.S)
+	# 	string = re.sub("\\bwire\\b.*?;","",string,flags=re.S)
+	# 	pattern = re.compile("(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(\([^;]*?\))\s*;",flags=re.S)
+	# 	res = pattern.findall(string)
+	# 	module = []
+	# 	for item in res:
+	# 		if item[1] not in self.keyword and item[0] not in self.keyword:
+	# 			con = self.connect_tool(item[3])
+	# 			out.update({item[2]:{"type":item[0],"con":con}})
+	# 			module.append([item[0],item[2]])
+	# 	# print(res)
+	# 	return [out,module]
 	def find_module_inst(self,stringIn:str):
-		out = {}
-		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-		string = re.sub('//.*?\n', "", string, flags=re.S)
-		string = re.sub("\$.*?;",";",string,flags=re.S)
-		string = re.sub("\".*?\"",";",string,flags=re.S)
-		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
-		string = re.sub("\\bmodule\\b[\s\S]*?;", "", string)
-		string = re.sub('\\bdefine.*', "", string)
-		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
-		string = re.sub("\\bcase\\b[\s\S]*?\\bendcase\\b", ";", string)
-		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
-		string = self.find_pair(string,"begin","end",";")[1]		
-		string = re.sub('`else\\b', " ", string)
-		string = re.sub('`ifdef\\b', " ", string)
-		string = re.sub('`endif\\b', " ", string)
-		string = re.sub('`elif\\b', " ", string)
-		string = re.sub("\\belse\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\bif\\b.*?;",";",string,flags=re.S)
-		string = re.sub("\\balways\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\binitial\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\bassign\\b.*?;","",string,flags=re.S)
-		string = re.sub("\\bwire\\b.*?;","",string,flags=re.S)
-		pattern = re.compile("(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(\([^;]*?\))\s*;",flags=re.S)
-		res = pattern.findall(string)
-		module = []
-		for item in res:
-			if item[1] not in self.keyword and item[0] not in self.keyword:
-				con = self.connect_tool(item[3])
-				out.update({item[2]:{"type":item[0],"con":con}})
-				module.append([item[0],item[2]])
-		# print(res)
-		return [out,module]
-	def module_inst(self,stringIn:str):
 		string = stringIn
 		string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
 		res = re.finditer("\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",string,flags=re.S)
 		pattern_1 = re.compile("\s*#",flags=re.S)
-		pattern_3 = re.compile("\s*\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",flags=re.S)
+		pattern_3 = re.compile("\s*(\\b[_a-zA-Z][_a-zA-Z0-9]*\\b)",flags=re.S)
 		pattern_2 = re.compile("\s*\(",flags=re.S)
 		out = {}
 		module = []
@@ -337,9 +337,9 @@ class File_analyse:
 							index = i + 1
 							break
 					match = pattern_3.match(string,index)
-					if  match == None or match.group()  in self.keyword:
+					if  match == None or match.group(1)  in self.keyword:
 						continue
-					if  match != None and match.group() not in self.keyword:
+					if  match != None and match.group(1) not in self.keyword:
 						index = match.end()
 					match_connect = pattern_2.match(string,index)
 					if match_connect ==  None:
@@ -353,15 +353,16 @@ class File_analyse:
 							index = i + 1
 							break
 					con = self.connect_tool(string[match_connect.end() - 1:index])
-					out.update({item[2]:{"type":item.group(),"con":con}})
-					module.append([item.group(),match.group()])
+					out.update({match.group(1):{"type":item.group(),"con":con}})
+					if item.group() not in module:
+						module.append(item.group())
 				else:
 					stack = []
 					index = 0
 					match = pattern_3.match(string,item.end())
-					if  match == None or match.group()  in self.keyword:
+					if  match == None or match.group(1)  in self.keyword:
 						continue
-					if  match != None and match.group() not in self.keyword:
+					if  match != None and match.group(1) not in self.keyword:
 						index = match.end()
 					match_connect = pattern_2.match(string,index)
 					if match_connect ==  None:
@@ -369,19 +370,20 @@ class File_analyse:
 					for i in range(match_connect.start(), len(string)):
 						if string[i] == "(":
 							stack.append("(")	
-						if string[i] == "(":
+						if string[i] == ")":
 							stack.pop()
 						if len(stack) == 0:
 							index = i + 1
 							break
-						con = self.connect_tool(string[match_connect.start():index])
-						out.update({item[2]:{"type":item.group(),"con":con}})
-						module.append([item.group(),match.group()])
+					con = self.connect_tool(string[match_connect.start():index])
+					out.update({match.group(1):{"type":item.group(),"con":con}})
+					if item.group() not in module:
+						module.append(item.group())
 					
 					
 						
 
-				return [out, module]
+		return [out, module]
 
 
 					

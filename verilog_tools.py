@@ -245,7 +245,7 @@ class Verilog_tools:
             result = self.fa.find_module_uvm(str)
         else:
             # result = re.findall(str6, str_temp,flags=re.S)
-            result = self.fa.find_module_inst(str)[1]
+            result = self.fa.find_module_inst(str)
 
 
         for item in result:

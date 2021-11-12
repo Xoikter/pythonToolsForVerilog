@@ -125,6 +125,7 @@ wire       m_axis_tready_int_early;
 assign s_axis_tready = s_axis_tready_reg;
 
 assign busy = busy_reg;
+adbs sadsadas(axis_eth_fcs_insert_64);
 
 lfsr #(
     .LFSR_WIDTH(32),
