@@ -379,7 +379,7 @@ class Verilog_tools:
         list_pass = []
         # self.moduleFound.append("")
         lists = self.dfs(lists,0,flags)
-        fp = open("/home/IC/log.txt","w+",errors="ignore")
+        # fp = open("/home/IC/log.txt","w+",errors="ignore")
         for item in lists:
             if flags == 1:
                 path_local = self.find_rtl_file(self.SourcePath,item)
@@ -387,14 +387,14 @@ class Verilog_tools:
                 string = open(path_local,"r",errors="ignore").read()
                 define_temp = self.find_define(path_local)
                 for define in define_temp:
-                    fp.write(define +  "\n")
+                    # fp.write(define +  "\n")
                     if define not in define_words:
-                        fp.write(define + "\n")
+                        # fp.write(define + "\n")
                         define_file = self.find_rtl_define_file(source_path, define)
                         if define_file not in lists_root and define_file != "":
                             lists_root.append(define_file)
                         define_words.append(define)
-        fp.close()
+        # fp.close()
         # while flag == 1:
         #     list_temp = []
         #     flag = 0
