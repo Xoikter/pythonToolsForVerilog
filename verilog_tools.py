@@ -129,14 +129,14 @@ class Verilog_tools:
     def map_initial(self):
         self.rtl_map_initial()
         self.test_map_initial()
-        fp = open("/home/IC/map.txt","w+")
-        for key in self.rtl_definemap:
-            fp.write(key + "\n")
-        fp.close()
-        fp = open("/home/IC/rtl_map.txt","w+")
-        for key in self.rtl_filemap:
-            fp.write(key + "\n")
-        fp.close()
+        # fp = open("/home/IC/map.txt","w+")
+        # for key in self.rtl_definemap:
+        #     fp.write(key + "\n")
+        # fp.close()
+        # fp = open("/home/IC/rtl_map.txt","w+")
+        # for key in self.rtl_filemap:
+        #     fp.write(key + "\n")
+        # fp.close()
 
         self.mapGenFlag = True
 
