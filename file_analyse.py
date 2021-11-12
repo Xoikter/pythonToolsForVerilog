@@ -306,28 +306,82 @@ class File_analyse:
 		return [out,module]
 	def module_inst(self,stringIn:str):
 		string = stringIn
-		res = re.finditer("\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",stringIn,flags=re.S)
-		pattern_1 = re.compile("^\s*#",flags=re.S)
+		string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
+		string = re.sub('//.*?\n', "", string, flags=re.S)
+		res = re.finditer("\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",string,flags=re.S)
+		pattern_1 = re.compile("\s*#",flags=re.S)
 		pattern_3 = re.compile("\s*\\b[_a-zA-Z][_a-zA-Z0-9]*\\b",flags=re.S)
 		pattern_2 = re.compile("\s*\(",flags=re.S)
+		out = {}
+		module = []
+
 		for item in res:
+			module_name = ""
+			module_type = ""
+			module_connect = ""
+
 			if item.group() not in self.keyword:
-				if re.search("^\s*#",string[item.end():],flags=re.S) != None:
-					match = pattern_2.search(string,item.end())
+				match_p = pattern_1.match(string,item.end())
+				if match_p!= None:
+					match = pattern_2.match(string,match_p.end())
+					if match == None:
+						continue
 					stack = []
 					index = 0
-					for i in range(match.start() ,len(string)):
+					for i in range(match.end() - 1 ,len(string)):
+						if string[i] == "(":
+							stack.append("(")	
+						if string[i] == ")":
+							stack.pop()
+						if len(stack) == 0:
+							index = i + 1
+							break
+					match = pattern_3.match(string,index)
+					if  match == None or match.group()  in self.keyword:
+						continue
+					if  match != None and match.group() not in self.keyword:
+						index = match.end()
+					match_connect = pattern_2.match(string,index)
+					if match_connect ==  None:
+						continue
+					for i in range(match_connect.end() - 1, len(string)):
+						if string[i] == "(":
+							stack.append("(")	
+						if string[i] == ")":
+							stack.pop()
+						if len(stack) == 0:
+							index = i + 1
+							break
+					con = self.connect_tool(string[match_connect.end() - 1:index])
+					out.update({item[2]:{"type":item.group(),"con":con}})
+					module.append([item.group(),match.group()])
+				else:
+					stack = []
+					index = 0
+					match = pattern_3.match(string,item.end())
+					if  match == None or match.group()  in self.keyword:
+						continue
+					if  match != None and match.group() not in self.keyword:
+						index = match.end()
+					match_connect = pattern_2.match(string,index)
+					if match_connect ==  None:
+						continue
+					for i in range(match_connect.start(), len(string)):
 						if string[i] == "(":
 							stack.append("(")	
 						if string[i] == "(":
 							stack.pop()
 						if len(stack) == 0:
-							index = i
+							index = i + 1
 							break
-					match = pattern_3.match(string,index + 1)
-					if  match != None and match.group() not in self.keyword:
+						con = self.connect_tool(string[match_connect.start():index])
+						out.update({item[2]:{"type":item.group(),"con":con}})
+						module.append([item.group(),match.group()])
+					
+					
+						
 
-						return
+				return [out, module]
 
 
 					
