@@ -1,8 +1,10 @@
 from file_analyse import File_analyse
 import re
+import os
 if __name__=="__main__":
-	fp = open("/home/IC/xsc/gmec/rtl/core/gmec_core.v","r")
-	# fp = open("./test.v","r")
+	os.chdir(os.path.dirname(__file__))
+	# fp = open("/home/IC/xsc/gmec/rtl/core/gmec_core.v","r")
+	fp = open("./test.v","r")
 	string_test = fp.read()
 	fp.close()
 	test_s = "begin      end"

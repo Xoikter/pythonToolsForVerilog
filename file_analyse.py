@@ -22,7 +22,7 @@ class File_analyse:
 	   'wor', 'xnor', 'xor','extends','uvm_report_server','int','void','virtual','new','uvm_analysis_port','super'
 	   ,'extern0',"uvm_component_utils","type_id",'bit','byte','unsiged','shortint','longint','timer','real','interface','class',
 	   'logic','genvar','uvm_tlm_analysis_fifo','uvm_blocking_get_port','constraint','import','uvm_active_passive_enum','define','undef'
-	   ,'ifdef','elsif','endif',"uvm_object_utils_begin","uvm_object_utils_end","`define"]
+	   ,'ifdef','elsif','endif',"uvm_object_utils_begin","uvm_object_utils_end","`define","`"]
 		self.res={}
 		self.strRow = strRow
 		self.macro = []
@@ -309,7 +309,7 @@ class File_analyse:
 		symbol = " \n\t"
 		string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
-		res = re.finditer("\s*([`_a-zA-Z][_a-zA-Z0-9]*)\\b",string,flags=re.S)
+		res = re.finditer("\s*([`_a-zA-Z][_a-zA-Z0-9]*)\\b\s*(?=#|[`_a-zA-Z][_a-zA-Z0-9]*\\b)",string,flags=re.S)
 		pattern_1 = re.compile("\s*#",flags=re.S)
 		pattern_3 = re.compile("\s*([`_a-zA-Z][_a-zA-Z0-9]*\\b)",flags=re.S)
 		pattern_2 = re.compile("\s*\(",flags=re.S)
@@ -322,24 +322,35 @@ class File_analyse:
 			module_type = ""
 			module_connect = ""
 			word = ""
-			for i in range(0,item.start()):
-				if string[item.start() - i - 1] not in symbol:
-					word = string[item.start() - i - 1] + word
-				elif len(word) != 0:
-					break
-			if(word  in except_words):
-				continue
+			# for i in range(0,item.start()):
+			# 	if string[item.start() - i - 1] not in symbol:
+			# 		word = string[item.start() - i - 1] + word
+			# 	elif len(word) != 0:
+			# 		break
+			# if(word  in except_words):
+			# 	continue
 	
 
 
 			if item.group(1) not in self.keyword:
+				for i in range(0,item.start()):
+					if string[item.start() - i - 1] not in symbol:
+						word = string[item.start() - i - 1] + word
+					elif len(word) != 0:
+						break
+				if(word  in except_words):
+					continue
 				match_p = pattern_1.match(string,item.end())
 				if match_p!= None:
 					match = pattern_2.match(string,match_p.end())
 					if match == None:
 						continue
+				# if item.group(2) == "#":
 					stack = []
 					index = 0
+					# match = pattern_2.match(string,match.end())
+					# if match == None:
+					# 	continue
 					for i in range(match.end() - 1 ,len(string)):
 						if string[i] == "(":
 							stack.append("(")	
@@ -373,10 +384,11 @@ class File_analyse:
 					index = 0
 					match = pattern_3.match(string,item.end())
 					if  match == None or match.group(1)  in self.keyword:
+					# if   item.group(2)  in self.keyword:
 						continue
-					if  match != None and match.group(1) not in self.keyword:
+					# if   item.group(1) not in self.keyword:
 						index = match.end()
-					match_connect = pattern_2.match(string,index)
+					match_connect = pattern_2.match(string,match.end())
 					if match_connect ==  None:
 						continue
 					for i in range(match_connect.start(), len(string)):
