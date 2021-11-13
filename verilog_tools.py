@@ -54,7 +54,7 @@ class Verilog_tools:
                         full_path = os.path.join(relpath, File)
                         real_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
                         module_temp =  re.findall('\\b(module|interface|class|program)\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\\b', str_temp)
-                        define_temp = self.fa.find_define_word(str) 
+                        define_temp = self.fa.find_define_word(str_temp) 
                         for item in module_temp:
                             # flag_file = 0
                             if ((item[1]  in self.test_filemap) and (real_path.strip() != self.test_filemap[item[1]].strip())):
@@ -96,12 +96,12 @@ class Verilog_tools:
                         # str_temp = re.sub(r'//.*',"",str_temp)
                         str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
                         str_temp = re.sub("\$.*?;","",str_temp,flags=re.S)
-                        str_temp = re.sub("\".*?\"","",str_temp,flags=re.S)
+                        # str_temp = re.sub("\".*?\"","",str_temp,flags=re.S)
 
                         full_path = os.path.join(relpath, File)
                         real_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
                         module_temp =  re.findall('\\b(module|interface|class|program)\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\\b', str_temp)
-                        define_temp = self.fa.find_define_word(str) 
+                        define_temp = self.fa.find_define_word(str_temp) 
                         for item in module_temp:
                             # flag_file = 0
                             if ((item[1]  in self.rtl_filemap) and (real_path.strip() is not self.rtl_filemap[item[1]].strip())):

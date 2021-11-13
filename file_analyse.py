@@ -259,14 +259,14 @@ class File_analyse:
 		        ports.append(portTemp)
 		return [ports, parameters,parameters_all]		
 	def connect_tool(self,stringIn:str):
-		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-		string = re.sub('//.*?\n', "", string, flags=re.S)
+		# string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		# string = re.sub('//.*?\n', "", string, flags=re.S)
 		pattern = re.compile("\.\s*([a-zA-Z0-9_`]*)\s*\(\s*(.*?)\s*\)",flags=re.S)
 		# pattern_all = re.compile("\.\s*[a-zA-Z_`]*\s*\(.*?\)",flags=re.S)
 		# string_temp = pattern_all.sub("",string)
-		string_temp = re.sub("\.\s*(?:[a-zA-Z0-9_`]*)\s*\(\s*(?:.*?)\s*\)","",string,flags=re.S)
-		string_temp = re.sub("[,;\(\)\s]","",string_temp)
-		res = pattern.findall(string)
+		# string_temp = re.sub("\.\s*(?:[a-zA-Z0-9_`]*)\s*\(\s*(?:.*?)\s*\)","",string,flags=re.S)
+		# string_temp = re.sub("[,;\(\)\s]","",string_temp)
+		res = pattern.findall(stringIn)
 		con = {}
 		for item in res:
 			con.update({item[1]:{"type":item[0],"width":0}})
@@ -552,9 +552,9 @@ class File_analyse:
 				out.append(item)
 		return 	out
 	def find_define_word(self,stringIn:str):
-		str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
-		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-		return re.findall("`define\s*([\S]+)\s*",str_temp,flags=re.S)
+		# str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
+		# str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+		return re.findall("`define\s*([\S]+)\s*",stringIn,flags=re.S)
 
 
 
