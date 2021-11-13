@@ -601,7 +601,6 @@ class Verilog_tools:
         fs.write(string)
         fs.close()
         fp.close()
-        fp = open(fullpath,"w")
         res = re.findall("\\bmodule.*?\\bendmodule\\b",string,flags=re.S)
         for item in res:
             string_rep = ""
@@ -669,12 +668,18 @@ class Verilog_tools:
                     break
             string_rep = string_rep + "\n\n" +string_tmp[index_r:] 
             string = string.replace(item,string_rep)
+            if len(string) == 0:
+                return False
 
             # fk = open(fullpath+"test","w+")
             # fk.write(string_rep)
             # fk.close()
+        if len(string) == 0:
+            return False
+        fp = open(fullpath,"w")
         fp.write(string)
         fp.close()
+        return True
             # fp.write(string_out[match.out])
 
                 

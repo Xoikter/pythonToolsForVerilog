@@ -59,6 +59,8 @@ if __name__ == '__main__':
             fc.file_inst(SourcePath, full_path,2)
         elif(argue == "i_o"):
             fc.file_inst(SourcePath, full_path,1)
+        elif(argue == "vd"):
+            fc.autodefine(full_path)
         elif (argue == "t"):
             fc.tb_inst(SourcePath, TargetPath, sys.argv[1])
         elif (argue == 'ssf'):
