@@ -148,7 +148,14 @@ class Verilog_tools:
         # parameters_all = []
         fd = open(filename, errors='ignore')
         str = fd.read()
-        return self.fa.find_port_parameter(str) 
+        string = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
+        string = re.sub('//.*?\n', "", string, flags=re.S)
+        match = re.search("\\bmodule\s*"+name+"\s*.*?\\bendmodule\\b",string,flags=re.S)
+        if match == None:
+            print("error")
+            return [[],[],[]]
+    
+        return self.fa.find_port_parameter(match.group()) 
 
 
     def find_define(self,path):
@@ -586,6 +593,82 @@ class Verilog_tools:
             else:
                 fp.write(lineT)
         fp.close()
+    def aotudefine(self,fullpath):
+        os.chdir(os.path.dirname(__file__))
+        fp = open(fullpath,"r")
+        string = fp.read()
+        fs = open(fullpath+"bak","w+")
+        fs.write(string)
+        fs.close()
+        fp.close()
+        fp = open(fullpath,"w")
+        res = re.findall("\\bmodule.*?\\bendmodule\\b",string,flags=re.S)
+        for item in res:
+            string_rep = ""
+            [vardefine,string_out] = self.fa.find_varDefine(item)
+            [ports ,paras ,para_all]= self.fa.find_port_parameter(item)
+            string_out = string_out.replace(para_all,"")
+            for port in ports:
+                var_name = port[3]
+                varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":0,"reWrite":True}
+                varAttr["type"] = "reg" if port[1] == "reg" else "wire"
+                varAttr["width"] = port[2]
+                varAttr["reWrite"] = False
+                vardefine.update({var_name:varAttr})
+            [detail_module,modules] = self.fa.find_module_inst(string)
+            text_used = self.fa.text_used(item)
+            port_use = {}
+            for module in modules:
+               path = self.find_rtl_file(self.SourcePath,module)
+               [ports_local,para_local,para_all_local] = self.find_port(path,module)
+               portAttr = {}
+               for item1 in ports_local:
+                   port_name = item1[3]
+                   port_width = item[2]
+                   portAttr.update({port_name:port_width})
+               port_use.update({module:portAttr})
+            for module,value in detail_module:
+                port_con = port_use[value["type"]]
+                for item2,value in value["con"]:
+                    pattern = re.compile("[`a-z_A-Z][a-zA-Z0-9_]*",flags=re.S)
+                    text_used = text_used + " " + item2
+
+                    if pattern.match(item2) != None:
+                        varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":4,"reWrite":True}
+                        if item2 not in vardefine:
+                            varAttr["width"] = port_con[item2]
+                            vardefine.update({item2:varAttr})
+            for item0 in vardefine:
+                if item0 not in text_used:
+                    attr = vardefine[item0]
+                    attr["reWrite"] = False
+
+            pattern = re.compile("\\bmodule.*?;",flags=re.S)
+            match = pattern.match(string_out)
+            # fp.write(match.group())
+            string_rep = match.group() + "\n"
+            
+            for item0 in para_all:
+                # fp.write(para_all+"\n")
+                string_rep = string_rep + "parameter " + item0 + ";\n"
+            for item0,value in vardefine:
+                if value["rewrite"] == True:
+                    # fp.write(value["type"] + " " + value["width"] + " " + item + ";\n")
+                    string_rep = string_rep + value["type"] + " " + value["width"] + " " + item0 + ";\n"
+            string_rep = string_rep + string_out[match.end():]
+            string.replace(item,string_rep)
+        fp.write(string)
+        fp.close()
+            # fp.write(string_out[match.out])
+
+                
+
+
+
+
+
+
+
 
 
     def tb_inst(self,SourceDic, TargetDic, name  ,flag = 0, flags = 0):
