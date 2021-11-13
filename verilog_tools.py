@@ -593,7 +593,7 @@ class Verilog_tools:
             else:
                 fp.write(lineT)
         fp.close()
-    def aotudefine(self,fullpath):
+    def autodefine(self,fullpath):
         os.chdir(os.path.dirname(__file__))
         fp = open(fullpath,"r")
         string = fp.read()
@@ -607,7 +607,8 @@ class Verilog_tools:
             string_rep = ""
             [vardefine,string_out] = self.fa.find_varDefine(item)
             [ports ,paras ,para_all]= self.fa.find_port_parameter(item)
-            string_out = string_out.replace(para_all,"")
+            for i in para_all:
+                string_out = string_out.replace(i,"")
             for port in ports:
                 var_name = port[3]
                 varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":0,"reWrite":True}
@@ -624,24 +625,26 @@ class Verilog_tools:
                portAttr = {}
                for item1 in ports_local:
                    port_name = item1[3]
-                   port_width = item[2]
+                   port_width = item1[2]
                    portAttr.update({port_name:port_width})
                port_use.update({module:portAttr})
-            for module,value in detail_module:
+            for module in detail_module.keys():
+                value = detail_module[module]
                 port_con = port_use[value["type"]]
-                for item2,value in value["con"]:
+                for item2 in value["con"]:
                     pattern = re.compile("[`a-z_A-Z][a-zA-Z0-9_]*",flags=re.S)
                     text_used = text_used + " " + item2
 
                     if pattern.match(item2) != None:
                         varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":4,"reWrite":True}
                         if item2 not in vardefine:
-                            varAttr["width"] = port_con[item2]
+                            varAttr["width"] = port_con[value["con"][item2]["type"]]
                             vardefine.update({item2:varAttr})
             for item0 in vardefine:
                 if item0 not in text_used:
                     attr = vardefine[item0]
                     attr["reWrite"] = False
+                    vardefine[item0] = attr
 
             pattern = re.compile("\\bmodule.*?;",flags=re.S)
             match = pattern.match(string_out)
@@ -651,12 +654,25 @@ class Verilog_tools:
             for item0 in para_all:
                 # fp.write(para_all+"\n")
                 string_rep = string_rep + "parameter " + item0 + ";\n"
-            for item0,value in vardefine:
-                if value["rewrite"] == True:
+            for item0 in vardefine:
+                value = vardefine[item0]
+                if value["reWrite"] == True:
                     # fp.write(value["type"] + " " + value["width"] + " " + item + ";\n")
                     string_rep = string_rep + value["type"] + " " + value["width"] + " " + item0 + ";\n"
-            string_rep = string_rep + string_out[match.end():]
-            string.replace(item,string_rep)
+            string_tmp = string_out[match.end():]
+            string_sp = " \n\t"
+            index_r = 0
+            for index in range(0,len(string_tmp)):
+                if string_tmp[index] in string_sp:
+                    index_r = index_r + 1
+                else:
+                    break
+            string_rep = string_rep + "\n\n" +string_tmp[index_r:] 
+            string = string.replace(item,string_rep)
+
+            # fk = open(fullpath+"test","w+")
+            # fk.write(string_rep)
+            # fk.close()
         fp.write(string)
         fp.close()
             # fp.write(string_out[match.out])
@@ -1182,14 +1198,15 @@ class Verilog_tools:
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    name = "gmec_core"
+    name = "lsu"
     # TargetPath = make_sim_dic(TargetPath, name)
     vt = Verilog_tools ()
-    vt.SourcePath = ["../rtl/"]
+    vt.SourcePath = ["../code/"]
     vt.TargetPath = "../sim/"
     vt.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
+    vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/lsu/lsu.v")
 
-    vt.simflow_seq(vt.SourcePath,vt.TargetPath,name)
+    # vt.simflow_seq(vt.SourcePath,vt.TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
     # filelist_gen(SourcePath,TargetPath, name,3, 0)
     # file_inst(SourcePath, 'test')
