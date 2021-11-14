@@ -532,6 +532,49 @@ class File_analyse:
 
 		func = re.findall("\\bfunction\\b\s*(.*)?\s*(?:;\()",string,flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
+		res_left = re.finditer("<?=",string,flags=re.S)
+		for item in res_left:
+			stack = []
+			word = ""
+			flag = 0
+			index = 0
+			word_blank = " \n\t"
+			for i in range(0,item.start()):
+				if string[item.start() - 1 - i] == "}":
+					flag = 1
+					index = item.start() - 1 - i
+					break
+				elif string[item.start() - 1 - i] == ")":
+					flag = 2
+					index = item.start() - 1 - i
+					break
+				elif string[item.start() - 1 - i] not in word_blank:
+					flag = 3
+					index = item.start() - 1 - i
+					break
+			for i in range(0,index):
+				if flag == 1 :
+					if string[index - i] == "}":
+						stack.append("}")
+					if string[index - i] == "{":
+						stack.pop()
+					if len(stack) == 0:
+						stringOut = stringOut + " " + string[index - i:index+1]
+						break
+				if flag == 2 :
+					if string[index - i] == ")":
+						stack.append(")")
+					if string[index - i] == "(":
+						stack.pop()
+					if len(stack) == 0:
+						stringOut = stringOut + " " + string[index - i:index+1]
+						break
+				if flag == 3:
+					if string[index - i] in word_blank:
+						stringOut = stringOut + " " + string[index - i:index+1]
+						break
+
+				
 		res_right = re.findall("=.*?;",string,flags=re.S)
 		for item in res_right:
 			stringOut = stringOut + " " + item.replace("="," ")
