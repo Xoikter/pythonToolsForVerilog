@@ -1209,7 +1209,7 @@ if __name__ == '__main__':
     vt.SourcePath = ["../code/"]
     vt.TargetPath = "../sim/"
     vt.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
-    vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/lsu/lsu.v")
+    vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/top.v")
 
     # vt.simflow_seq(vt.SourcePath,vt.TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
