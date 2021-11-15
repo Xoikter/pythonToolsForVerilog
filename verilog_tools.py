@@ -550,7 +550,7 @@ class Verilog_tools:
             resTemp = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)', lineT)
             if resTemp is not None:
                 # fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
-                ports = self.find_port(self.find_file(dic, resTemp.group(1)),resTemp.group(1))
+                ports = self.find_port(self.find_rtl_file(dic, resTemp.group(1)),resTemp.group(1))
                 lenStr = 0
                 for port in ports[0]:
                     if len(port[3]) > lenStr:
