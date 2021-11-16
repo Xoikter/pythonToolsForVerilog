@@ -202,7 +202,6 @@ class File_analyse:
 	def find_varDefine(self,stringIn:str):
 		out = {}
 		stringTemp = stringIn
-		varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":0,"reWrite":True}
 		string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		string = re.sub('//.*?\n', "", string, flags=re.S)
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
@@ -213,6 +212,7 @@ class File_analyse:
 		res = pattern.findall(string)
 		for item in res:
 			# varAttr.update({{"type":item[0]},{"width":}}
+			varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":0,"reWrite":True}
 			varAttr["type"] = item[0] 
 			varAttr["width"] = item[1] 
 			if "=" in item[2]:
@@ -391,7 +391,7 @@ class File_analyse:
 					match_connect = pattern_2.match(string,match.end())
 					if match_connect ==  None:
 						continue
-					for i in range(match_connect.start(), len(string)):
+					for i in range(match_connect.end() - 1, len(string)):
 						if string[i] == "(":
 							stack.append("(")	
 						if string[i] == ")":
@@ -399,7 +399,7 @@ class File_analyse:
 						if len(stack) == 0:
 							index = i + 1
 							break
-					con = self.connect_tool(string[match_connect.start():index])
+					con = self.connect_tool(string[match_connect.end() - 1:index])
 					out.update({match.group(1):{"type":item.group(1),"con":con}})
 					if item.group(1) not in module:
 						module.append(item.group(1))
@@ -610,8 +610,3 @@ class File_analyse:
 		# str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		# str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 		return re.findall("`define\s*([\S]+)\s*",stringIn,flags=re.S)
-
-
-
-
-		

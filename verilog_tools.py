@@ -550,7 +550,7 @@ class Verilog_tools:
             resTemp = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)', lineT)
             if resTemp is not None:
                 # fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
-                ports = self.find_port(self.find_file(dic, resTemp.group(1)),resTemp.group(1))
+                ports = self.find_port(self.find_rtl_file(dic, resTemp.group(1)),resTemp.group(1))
                 lenStr = 0
                 for port in ports[0]:
                     if len(port[3]) > lenStr:
@@ -1209,7 +1209,7 @@ if __name__ == '__main__':
     vt.SourcePath = ["../code/"]
     vt.TargetPath = "../sim/"
     vt.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
-    vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/lsu/lsu.v")
+    vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/top.v")
 
     # vt.simflow_seq(vt.SourcePath,vt.TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
