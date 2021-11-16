@@ -1197,7 +1197,7 @@ class Verilog_tools:
         self.sequencer_gen(sourcePath,targetPath,name,flag)
         self.transaction_gen(sourcePath,targetPath,name,flag)
         TB = self.tb_inst(sourcePath, targetPath, name)
-        self.filelist_regen(1,5,1,3,1,sourcePath,targetPath,name)
+        self.filelist_regen(1,1,sourcePath,targetPath,name)
 
 
 

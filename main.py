@@ -68,7 +68,7 @@ if __name__ == '__main__':
         elif (argue == 'csf'):
             fc.simflow_comb(SourcePath, TargetPath, sys.argv[1])
         elif (argue == 'f'):
-            fc.filelist_regen(1,0,1,2,1,SourcePath,TargetPath,sys.argv[1])
+            fc.filelist_regen(1,1,SourcePath,TargetPath,sys.argv[1])
             fc.interface_gen(SourcePath,TargetPath,sys.argv[1],0)
             fc.tb_inst(SourcePath,TargetPath,sys.argv[1],1)
 
