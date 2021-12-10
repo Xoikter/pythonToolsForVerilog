@@ -192,7 +192,7 @@ class File_analyse:
 			
 	def varDefineTool(self,stringIn:str):
 		stringTemp = stringIn
-		string = re.sub("[.*?]","",stringIn,flags=re.S)
+		string = re.sub("\[.*?\]","",stringIn,flags=re.S)
 		string = re.sub("=.*?[,;]",",",string,flags=re.S)
 		string = re.sub(" ","",string)
 		string = re.sub(";",",",string)
@@ -207,17 +207,21 @@ class File_analyse:
 		string = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", string)
 		string = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", string)
 		string = re.sub("\\binterface\\b.*?;", "", string, flags=re.S)
-		pattern = re.compile("\\b(wire|reg|intergred)\\b\s*(\[.*?\])?\s*(.*?;)")
-		pattern_temp = re.compile("\\b(?:wire|reg|intergred)\\b\s*(?:\[.*?\])?\s*(?:.*?;)\s*?\n")
+		string = re.sub("\\bmodule\\b.*?;", "", string, flags=re.S)
+		pattern = re.compile("\\b(wire|reg|intergred)\\b\s*\\b(signed|unsigned)?\s*(\[.*?\])?\s*(.*?;)")
+		pattern_temp = re.compile("\\b(?:wire|reg|intergred)\\b\s*\\b(?:signed|unsigned)?\\b\s*(?:\[.*?\])?\s*(?:.*?;)\s*?\n")
 		res = pattern.findall(string)
 		for item in res:
 			# varAttr.update({{"type":item[0]},{"width":}}
-			varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":0,"reWrite":True}
+			varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"signed":"","only_inst_port_connect_width":0,"reWrite":True}
 			varAttr["type"] = item[0] 
-			varAttr["width"] = item[1] 
-			if "=" in item[2]:
+			varAttr["signed"] = item[1]
+			varAttr["width"] = item[2] 
+			if "=" in item[3]:
 				varAttr["reWrite"] = False
-			var_local = self.varDefineTool(item[2])
+			if "[" in item[3]:
+				varAttr["reWrite"] = False
+			var_local = self.varDefineTool(item[3])
 			for item in var_local:
 				out.update({item:varAttr})
 		# print(out)
@@ -230,13 +234,14 @@ class File_analyse:
 		ports = []
 		parameters = []
 		parameters_all = []
-		str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", stringIn)
-		str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
-		str_temp = re.sub("\/\*.*?\*\/", "", str_temp, flags=re.S)
+		str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
+		str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
+		str_temp = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", str_temp)
+		str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
 		str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
 		# result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
-		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
+		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
 		# res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
 		res_para_temp = re.finditer('#\s*\(',str_port,flags=re.S)
 		stack_para = []
@@ -273,7 +278,7 @@ class File_analyse:
 			portTemp = [res[0], res[1], res[2], res[3]]
 			ports.append(portTemp)
 		str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
-		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b(?:signed)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
+		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
 		res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
 		if len(parameters) != 0:
 			res_para = []

@@ -610,7 +610,7 @@ class Verilog_tools:
                 string_out = string_out.replace(i,"")
             for port in ports:
                 var_name = port[3]
-                varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":0,"reWrite":True}
+                varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"signed":"","only_inst_port_connect_width":0,"reWrite":True}
                 varAttr["type"] = "reg" if port[1] == "reg" else "wire"
                 varAttr["width"] = port[2]
                 varAttr["reWrite"] = False
@@ -635,7 +635,7 @@ class Verilog_tools:
                     text_used = text_used + " " + item2
 
                     if pattern.match(item2) != None:
-                        varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"only_inst_port_connect_width":4,"reWrite":True}
+                        varAttr = {"type":"wire","width":0,"has_load":False,"has_drive":False,"signed":"","only_inst_port_connect_width":4,"reWrite":True}
                         if item2 not in vardefine:
                             varAttr["width"] = port_con[value["con"][item2]["type"]]
                             vardefine.update({item2:varAttr})
@@ -657,7 +657,8 @@ class Verilog_tools:
                 value = vardefine[item0]
                 if value["reWrite"] == True:
                     # fp.write(value["type"] + " " + value["width"] + " " + item + ";\n")
-                    string_rep = string_rep + value["type"] + " " + value["width"] + " " + item0 + ";\n"
+                    len_space = 1 if value["signed"] != "" else 0
+                    string_rep = string_rep + value["type"] + " "+value["signed"]  + value["width"] + len_space * " " + item0 + ";\n"
             string_tmp = string_out[match.end():]
             string_sp = " \n\t"
             index_r = 0
