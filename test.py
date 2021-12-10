@@ -14,7 +14,7 @@ if __name__=="__main__":
 	# stri = pattern.search(test_s).start()
 	fa = File_analyse(string_test)
 	fa.macro = ["xx"]
-	fa.text_used(string_test)
+	fa.find_port_parameter(string_test)
 	
 	# fa.(string_test)
 

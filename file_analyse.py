@@ -227,36 +227,67 @@ class File_analyse:
 				stringTemp = stringTemp.replace(item,"")
 		return [out,stringTemp]
 	def find_port_parameter(self,stringIn:str):
+		ports = []
+		parameters = []
+		parameters_all = []
 		str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", stringIn)
 		str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
 		str_temp = re.sub("\/\*.*?\*\/", "", str_temp, flags=re.S)
 		str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
 		str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
-		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
-		res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
-		ports = []
-		parameters = []
-		parameters_all = []
-		for res in res_para:
-		    para_temp = res[0]
-		    parameters.append(para_temp)
+		# result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
+		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
+		# res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
+		res_para_temp = re.finditer('#\s*\(',str_port,flags=re.S)
+		stack_para = []
+		para_str_port = []
+		if res_para_temp is not None:
+			stack_para.append("(")
+		for res_pare_temp_item in res_para_temp:
+			for index in range(res_pare_temp_item.end(),len(str_port)):
+				if(str_port[index] == r"("):
+					stack_para.append(r"(")
+				if(str_port[index] == r")"):
+					stack_para.pop()
+				if len(stack_para) == 0:
+					para_str_port.append(str_port[res_pare_temp_item.end():index])
+					break
+		for item in para_str_port:
+			str_temp_local = re.sub("\\bparameter\\b"," ",item,flags=re.S)
+			res_split = re.split("\s*,\s*",str_temp_local)
+			for res_sp in res_split:
+				res_sp = re.sub("^\s*","",res_sp,flags=re.S)
+				res_sp = re.sub("\s*$","",res_sp,flags=re.S)
+				parameters_all.append("parameter " + res_sp + ";")
+				res_sp_temp = re.sub("=.*","",res_sp,flags=re.S)
+				res_sp_temp = re.sub("\s","",res_sp_temp,flags=re.S)
+				parameters.append(res_sp_temp)
+
+
+
+
+		# for res in res_para:
+		#     para_temp = res[0]
+		#     parameters.append(para_temp)
 		for res in result:
-		    portTemp = [res[0], res[1], res[2], res[3]]
-		    ports.append(portTemp)
+			portTemp = [res[0], res[1], res[2], res[3]]
+			ports.append(portTemp)
 		str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
-		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
+		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b(?:signed)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
 		res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
+		if len(parameters) != 0:
+			res_para = []
 		for res in res_para:
-		    res_temp1 = re.split("\s*,\s*",res)
-		    parameters_all.append(res)
-		    for item in res_temp1:
-		        res_temp2 = re.split('\s*=\s*',item)
-		        parameters.append(res_temp2[0])		
+			res_temp1 = re.split("\s*,\s*",res)
+			parameters_all.append(res)
+			for item in res_temp1:
+				res_temp2 = re.split('\s*=\s*',item)
+				parameters.append(res_temp2[0])		
 		for res in result:
-		    res_temp = re.split("\s*,\s*", res[3])
-		    for item in res_temp:
-		        portTemp = [res[0], res[1], res[2], item]
-		        ports.append(portTemp)
+			res_temp = re.split("\s*,\s*", res[3])
+			for item in res_temp:
+				portTemp = [res[0], res[1], res[2], item]
+				ports.append(portTemp)
 		return [ports, parameters,parameters_all]		
 	def connect_tool(self,stringIn:str):
 		# string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
