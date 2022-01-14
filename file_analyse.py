@@ -263,7 +263,7 @@ class File_analyse:
 			for res_sp in res_split:
 				res_sp = re.sub("^\s*","",res_sp,flags=re.S)
 				res_sp = re.sub("\s*$","",res_sp,flags=re.S)
-				parameters_all.append("parameter " + res_sp + ";")
+				parameters_all.append("parameter " + res_sp )
 				res_sp_temp = re.sub("=.*","",res_sp,flags=re.S)
 				res_sp_temp = re.sub("\s","",res_sp_temp,flags=re.S)
 				parameters.append(res_sp_temp)
