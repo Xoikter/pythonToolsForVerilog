@@ -283,8 +283,10 @@ class File_analyse:
 		if len(parameters) != 0:
 			res_para = []
 		for res in res_para:
-			res_temp1 = re.split("\s*,\s*",res)
 			parameters_all.append(res)
+			res = re.sub("\s*\\b(signed|unsigned)\\b\s*","",res,flags=re.S)
+			res = re.sub("\s*\\b\[.*?\]\\b\s*","",res,flags=re.S)
+			res_temp1 = re.split("\s*,\s*",res)
 			for item in res_temp1:
 				res_temp2 = re.split('\s*=\s*',item)
 				parameters.append(res_temp2[0])		
