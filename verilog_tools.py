@@ -67,15 +67,15 @@ class Verilog_tools:
                             elif item[1]  not in self.test_filemap :
                                 self.test_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                         for item in define_temp:
-                            if ((item  in self.test_definemap)  and (real_path.strip() != self.test_definemap[item].strip())):
-                                    print("find mutidefine define_word\n" + item)
+                            if ((item[0]  in self.test_definemap)  and (real_path.strip() != self.test_definemap[item[0]][0].strip())):
+                                    print("find mutidefine define_word\n" + item[0])
                                     print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + " Y ")
-                                    print(self.test_definemap[item] + " N ")
+                                    print(self.test_definemap[item[0]] + " N ")
                                     # sel = input("select:")
                                     # if sel == "Y":
                                     #     self.test_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
-                            elif item not in self.test_definemap:
-                                self.test_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
+                            elif item[0] not in self.test_definemap:
+                                self.test_definemap.update({item[0]:[os.path.normpath(os.path.abspath(full_path)).replace("\\", "/"),item[1]]})
 
     def rtl_map_initial(self):
 
@@ -115,15 +115,15 @@ class Verilog_tools:
                                     self.rtl_filemap.update({item[1]:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
                                         
                         for item in define_temp:
-                            if ((item  in self.rtl_definemap) and (real_path.strip() != self.rtl_definemap[item].strip())):
-                                    print("find mutidefine define_word  " + item )
+                            if ((item[0]  in self.rtl_definemap) and (real_path.strip() != self.rtl_definemap[item[0]][0].strip())):
+                                    print("find mutidefine define_word  " + item[0] )
                                     # print(real_path + " Y ")
                                     # print(self.rtl_definemap[item] + " N ")
                                     # sel = input("select:")
                                     # if sel == "Y":
                                     #     self.rtl_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
-                            elif item not in self.rtl_definemap:
-                                self.rtl_definemap.update({item:os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")})
+                            elif item[0] not in self.rtl_definemap:
+                                self.rtl_definemap.update({item[0]:[os.path.normpath(os.path.abspath(full_path)).replace("\\", "/"),item[1]]})
                                 # self.filemap[item[1]] = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
         # return out_path
     def map_initial(self):
@@ -171,7 +171,7 @@ class Verilog_tools:
             self.map_initial()
         if define_word not in self.rtl_definemap:
             print("waring: define "+ define_word + " not find ")
-        return self.rtl_definemap.get(define_word)
+        return self.rtl_definemap.get(define_word)[0]
     
     def find_test_define_file(self,path, define_word):
         out_path = ""
@@ -179,7 +179,7 @@ class Verilog_tools:
             self.map_initial()
         if define_word not in self.test_definemap:
             print("waring: define "+ define_word + " not find ")
-        return self.test_definemap.get(define_word)
+        return self.test_definemap.get(define_word)[0]
     
         for start in path:
             for relpath, dirs, files in os.walk(start):

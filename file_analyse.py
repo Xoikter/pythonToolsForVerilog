@@ -647,4 +647,4 @@ class File_analyse:
 	def find_define_word(self,stringIn:str):
 		# str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
 		# str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-		return re.findall("`define\s*([\S]+)\s*",stringIn,flags=re.S)
+		return re.findall("`define\s*([\S]+)\s*([\S]*)",stringIn,flags=re.S)

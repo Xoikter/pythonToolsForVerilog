@@ -1,4 +1,5 @@
-define ram_addr_width 16
+`define ram_addr_width 16
+`define data_width 16
 // 14
 module fifo_ctr(
                 input wire clk_wr,
@@ -6,13 +7,14 @@ module fifo_ctr(
                 input wire rst_n,
                 input wire w_valid,
                 input wire r_valid,
-                input wire [data_width -1:0] w_data,
+                input wire [`data_width -1:0] w_data,
                 output reg [ `data_width -1:0] r_data,
                 output reg full,
                 output reg empty);
 // wire clk_wr,clk_rd,rst_n;
 reg [15:0] i;
 
+reg;
 // wire [`data_width-1:0] w_data;
 // reg [`data_width-1:0] r_data;
 // wire full,empty,nearly_full,nerly_empty;
