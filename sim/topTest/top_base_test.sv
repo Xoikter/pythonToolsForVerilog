@@ -2,22 +2,26 @@ class top_base_test extends uvm_test;
 
    top_env         env;
    
-   function new(string name = "base_test", uvm_component parent = null);
+   function new(string name = "top_base_test", uvm_component parent = null);
       super.new(name,parent);
    endfunction
    
    extern virtual function void build_phase(uvm_phase phase);
    extern virtual function void report_phase(uvm_phase phase);
-   `uvm_component_utils(base_test)
+   extern task main_phase(uvm_phase phase);
+   `uvm_component_utils(top_base_test)
 endclass
 
+task top_base_test::main_phase(uvm_phase phase);
+   phase.phase_done.set_drain_time(this,20);
+endtask
 
-function void base_test::build_phase(uvm_phase phase);
+function void top_base_test::build_phase(uvm_phase phase);
    super.build_phase(phase);
    env  =  top_env::type_id::create("env", this); 
 endfunction
 
-function void base_test::report_phase(uvm_phase phase);
+function void top_base_test::report_phase(uvm_phase phase);
    uvm_report_server server;
    int err_num;
    super.report_phase(phase);

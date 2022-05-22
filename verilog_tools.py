@@ -449,7 +449,9 @@ class Verilog_tools:
             fk.close()
         if flags != 1 :
             fo = open("filelist_uvm_base.f","w")
-            fo.write(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv' + "\n")
+            path_temp = os.path.relpath(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv',target_path).replace("\\","/")
+            # fo.write(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv' + "\n")
+            fo.write(path_temp + "\n")
             os.chdir(os.path.dirname(__file__))
             file_path_temp = []
             for item in lists:
@@ -457,19 +459,19 @@ class Verilog_tools:
                 if temp_path not in file_path_temp:
                     file_path_temp.append(temp_path)
             for item in file_path_temp:
-                fo.write(item + "\n")
-            fo.write(path + "\n")
+                fo.write(os.path.relpath(item,target_path).replace("\\","/") + "\n")
+            fo.write(os.path.relpath(path,target_path).replace("\\","/") + "\n")
             fo.close()
         if flag1 == 1:
             os.chdir(target_path)
             fl = open("filelist_uvm_case.f","w")
             os.chdir(os.path.dirname(__file__))
-            fl.write(self.find_test_file(source_path,name_temp+"_case0")+"\n")
+            fl.write(os.path.relpath(self.find_test_file(source_path,name_temp+"_case0"),target_path).replace("\\","/")+"\n")
             fl.close()
             os.chdir(target_path)
             fl = open("filelist_uvm.f","w")
-            fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f' + "\n")
-            fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f' + "\n")
+            fl.write("-f "+os.path.relpath(os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f',target_path).replace("\\","/") + "\n")
+            fl.write("-f "+os.path.relpath(os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f',target_path).replace("\\","/")+ "\n")
             fl.close()
 
 
@@ -485,9 +487,9 @@ class Verilog_tools:
                     file_path_temp.append(temp_path)
             for item in file_path_temp:
                 if item is not None:
-                    fp.write(item + "\n")
+                    fp.write(os.path.relpath(item,target_path).replace("\\","/") + "\n")
             if flag1 == 1:
-                fp.write(path + "\n")
+                fp.write(os.path.relpath(path,target_path).replace("\\","/") + "\n")
             fp.close()
         if flags == 1:
             os.chdir(target_path)
@@ -495,14 +497,14 @@ class Verilog_tools:
             os.chdir(os.path.dirname(__file__))
             for item in lists_root :
                 if  item not in file_path_temp and item is not None :
-                    fq.write(item + "\n")
+                    fq.write(os.path.relpath(item,target_path).replace("\\","/") + "\n")
             fq.close()
         if flags == 1:
             os.chdir(target_path)
             fj = open("filelist.f", "w")
-            fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
-            fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
-            fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+            fj.write("-f "+ os.path.relpath(os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f",target_path).replace("\\","/")+ "\n")
+            fj.write("-f "+ os.path.relpath(os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f',target_path).replace("\\","/") + "\n")
+            fj.write("-f "+ os.path.relpath(os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f',target_path).replace("\\","/") + "\n")
             fj.close()
 
 
@@ -1204,15 +1206,15 @@ class Verilog_tools:
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    name = "lsu"
+    name = "top"
     # TargetPath = make_sim_dic(TargetPath, name)
     vt = Verilog_tools ()
-    vt.SourcePath = ["../code/"]
-    vt.TargetPath = "../sim/"
+    vt.SourcePath = ["./code/"]
+    vt.TargetPath = "./sim/"
     vt.except_module = ['assert_never_unknown','ca53dpu_crypto_alu_sha']
-    vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/top.v")
+    # vt.autodefine("/home/IC/xsc/git_pro/RISCV/code/top.v")
 
-    # vt.simflow_seq(vt.SourcePath,vt.TargetPath,name)
+    vt.simflow_seq(vt.SourcePath,vt.TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
     # filelist_gen(SourcePath,TargetPath, name,3, 0)
     # file_inst(SourcePath, 'test')

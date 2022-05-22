@@ -9,7 +9,9 @@ class top_case0_sequence extends uvm_sequence #(top_transaction);
 
       if(starting_phase != null) 
          starting_phase.raise_objection(this);
-
+      repeat(10) begin
+         `uvm_do(m_trans)
+      end
 
 
       if(starting_phase != null) 
@@ -22,7 +24,7 @@ endclass
 
 class top_case0 extends top_base_test;
 
-   function new(string name = "top_case0", uvm_component parent = null);
+   function new(string name = "case0", uvm_component parent = null);
       super.new(name,parent);
    endfunction 
    extern virtual function void build_phase(uvm_phase phase); 

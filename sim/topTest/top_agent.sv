@@ -23,6 +23,7 @@ function void top_agent::build_phase(uvm_phase phase);
       drv = top_driver::type_id::create("drv", this);
    end
    mon = top_monitor::type_id::create("mon", this);
+   mon.is_active = is_active;
 endfunction 
 
 function void top_agent::connect_phase(uvm_phase phase);

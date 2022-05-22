@@ -39,16 +39,10 @@ task top_scoreboard::main_phase(uvm_phase phase);
             end
             else begin
                `uvm_error("top_scoreboard", "Compare FAILED");
-               $display("the expect pkt is");
-               tmp_tran.print();
-               $display("the actual pkt is");
-               get_actual.print();
             end
          end
          else begin
             `uvm_error("top_scoreboard", "Received from DUT, while Expect Queue is empty");
-            $display("the unexpected pkt is");
-            get_actual.print();
          end 
       end
    join
