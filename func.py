@@ -27,88 +27,67 @@ class Verilog_tools:
 # path = "/home/IC/xsc"
         self.filename = "fifo_ctr"
         self.filemap = {}
-        self.efinemap = {}
+        self.definemap = {}
     # except_module = ['assert_never_unknown']
         self.except_module = []
         self.fa = Fa("")
+        self.ctree = [  "de",
+                            "de/filelist",
+                            "de/rtl",
+                        "dv",
+                            "dv/simctrl",
+                            "dv/vc",
+                                "dv/vc/harness",
+                        "impl",
+                        "fpga"
+        ]
 
+        self.makefile  = { "de/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_de_filelist", "r", errors="ignore").read(),
+                           "de/rtl"     : open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r", errors="ignore").read(),
+                           "dv/filelist"     : open(os.path.dirname(__file__) + "/makefile/makefile_dv_filelist", "r", errors="ignore").read(),
+                           "dv/uvc"     : open(os.path.dirname(__file__) + "/makefile/makefile_dv_uvc", "r", errors="ignore").read()}
 
+        self.uvc = {
+                    "agent": open(os.path.dirname(__file__) + "/uvm/my_agent.sv", "r", errors="ignore").read(),
+                    "driver": open(os.path.dirname(__file__) + "/uvm/my_driver.sv", "r", errors="ignore").read(),
+                    "env": open(os.path.dirname(__file__) + "/uvm/my_env.sv", "r", errors="ignore").read(),
+                    "if": open(os.path.dirname(__file__) + "/uvm/my_if.sv", "r", errors="ignore").read(),
+                    "model": open(os.path.dirname(__file__) + "/uvm/my_model.sv", "r", errors="ignore").read(),
+                    "monitor": open(os.path.dirname(__file__) + "/uvm/my_monitor.sv", "r", errors="ignore").read(),
+                    "scoreboard_comb": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_comb.sv", "r", errors="ignore").read(),
+                    "scoreboard_seq": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_seq.sv", "r", errors="ignore").read(),
+                    "sequencer": open(os.path.dirname(__file__) + "/uvm/my_sequencer.sv", "r", errors="ignore").read(),
+                    "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read()}
+        self.tc = {
+                    "case0": open(os.path.dirname(__file__) + "/uvm/my_case0.sv", "r", errors="ignore").read()
+        }
 
 
 
     def find_port(self,filename,name):
-        ports = []
-        parameters = []
-        parameters_all = []
         fd = open(filename, errors='ignore')
-        str = fd.read()
-        # str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
-        # str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        # str_temp = re.sub("\\bfunction\\b[\s\S]*?\\bendfunction\\b", "", str_temp)
-        # str_temp = re.search("\\bmodule\\b\s*\\b" + name + "\\b.*?endmodule", str_temp, flags=re.S).group()
-        # str_temp = re.sub("\\btask\\b[\s\S]*?\\bendtask\\b", "", str_temp)
-        # str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
-        # str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
-        # result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
-        # res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
-        # for res in res_para:
-        #     para_temp = res[0]
-        #     parameters.append(para_temp)
-        # for res in result:
-        #     portTemp = [res[0], res[1], res[2], res[3]]
-        #     ports.append(portTemp)
-        # str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
-        # result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
-        # res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
-        # for res in res_para:
-        #     res_temp1 = re.split("\s*,\s*",res)
-        #     parameters_all.append(res)
-        #     for item in res_temp1:
-        #         res_temp2 = re.split('\s*=\s*',item)
-        #         parameters.append(res_temp2[0])
-
-        # for res in result:
-        #     res_temp = re.split("\s*,\s*", res[3])
-        #     for item in res_temp:
-        #         portTemp = [res[0], res[1], res[2], item]
-        #         ports.append(portTemp)
-        return Fa.find_port_parameter(str) 
+        stringIn = fd.read()
+        return self.fa.find_port_parameter(stringIn) 
 
 
     def find_define(self,path):
         fp = open(path, "r", errors="ignore")
         string = fp.read()
-        # str_temp = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
-        # str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        # defines = []
-        # result = re.findall("`(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)", str_temp)
-        # for item in result:
-        #     if item not in self.keyword:
-        #         defines.append(item)
-
-        return Fa.find_define(string)
+        return self.fa.find_define(string)
 
 
     def find_define_file(self,path, define_word):
         out_path = ""
         if define_word in self.definemap:
             return self.definemap[define_word]
-    
         for start in path:
             for relpath, dirs, files in os.walk(start):
                 for File in files:
                     if re.match('.+\.s?v$', File) is not None:
                         fp = open(os.path.join(relpath, File), "r", errors="ignore")
                         str = fp.read()
-                        # str_temp = re.sub("\/\*[\s\S]*?\*\/", "", str)
-                        # str_temp = re.sub(r'//.*$',"",str_temp)
-                        # str_temp = re.sub('//[\s\S]*?\n', "", str_temp)
-                        res_temp = Fa.find_define_word(str) 
-                        # print(File)
-
+                        res_temp = self.fa.find_define_word(str) 
                         full_path = os.path.join(relpath, File)
-                        # if(re.match(name + '.s?v$',File) != None):
-                        # res_temp = re.findall("`define\s*([\S]*)\s*",str_temp)
                         for item in res_temp:
                             if item  not in self.definemap:
                                 self.definemap[item] = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
@@ -116,7 +95,6 @@ class Verilog_tools:
 
 
 
-                        # if re.search('`define\s*(\\b'+define_word+'\\b)', str_temp) is not None:
                         if define_word in res_temp:
                         # for 
                             if out_path == "":
@@ -128,45 +106,24 @@ class Verilog_tools:
                                 sel = input("select:")
                                 if sel == "Y":
                                     out_path = os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
-                            # return out_path
-                            # print(full_path)
-                            # return os.path.normpath(os.path.abspath(full_path)).replace("\\", "/")
         return out_path
 
 
-    def find_module(self,path,flag):
+    def find_module(self,path):
         fp = open(path, "r", errors="ignore")
         str = fp.read()
-        # str_temp = re.sub("\/\*.*?\*\/", "", str, flags=re.S)
-        # str_temp = re.sub('//.*?\n', "", str_temp, flags=re.S)
-        # str_temp = re.sub('\\bif\s*\(', " if \(; ", str_temp, flags=re.S)
-        # str_temp = re.sub('\\bcase\s*\(', "case \(; ", str_temp, flags=re.S)
-        # str_temp = re.sub('\\bextern.*?;', " ; ", str_temp, flags=re.S)
-        # str_temp = re.sub('\\bfunction.*?\\bendfunction', " ; ", str_temp, flags=re.S)
-        # str_temp = re.sub('\\bdefine.*', " ; ", str_temp)
-        # str_temp = re.sub('\\btask.*?\\bendtask', " ; ", str_temp, flags=re.S)
 
         modules = []
+
         # if flag == 0 or flag == 5:
-        #     result = re.findall("#\(\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\)",str_temp,flags=re.S)
-        #     for item in result:
-        #         if(item not in self.keyword):
-        #             modules.append(item)
-
-        # str7 = "(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*(?:\(.*?\))?;"
-        # str6 = "(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*(?:#\s*\([^;]*?\))?\s*(\\b[a-zA-Z_`][a-zA-Z0-9_$]*\\b)\s*\([^;]*?\)\s*;"
-
-        if flag == 0 or flag == 5:
-            # result = re.findall(str7, str_temp,flags=re.S)
-            result = Fa.find_module_uvm(str)
-        else:
-            # result = re.findall(str6, str_temp,flags=re.S)
-            result = Fa.find_module_inst(str)[1]
+        #     result = self.fa.find_module_uvm(str)
+        # else:
+        result = self.fa.find_module_inst(str)[1]
 
 
         for item in result:
             if (item[0] not in self.keyword) and (item[1] not in self.keyword) and (item[0] not in modules) and (item[0] not in self.except_module):
-                modules.append(item[0])
+                modules.append(item)
 
         return modules
 
@@ -204,18 +161,18 @@ class Verilog_tools:
         return out_path
 
 
-    def filelist_gen(self,source_path, target_path, name, flags,flag1):
-        os.chdir(os.path.dirname(__file__))
+    def filelist_gen(self,source_path, name, fp ,fq):
+        # os.chdir(os.path.dirname(__file__))
         path = self.find_file(source_path, name)
-        if flags == 1 or flags == 3:
-            defines = self.find_define(path)
-            lists_root = []
-            for item in defines:
-                define_files = self.find_define_file(source_path, item)
-                if define_files not in lists_root:
-                    lists_root.append(define_files)
+        # if flags == 1 or flags == 3:
+        defines = self.find_define(path)
+        lists_root = []
+        for item in defines:
+            define_files = self.find_define_file(source_path, item)
+            if define_files not in lists_root:
+                lists_root.append(define_files)
 
-        lists = self.find_module(path,flags)
+        lists = self.find_module(path)
         flag = 1
         list_pass = []
         while flag == 1:
@@ -228,7 +185,7 @@ class Verilog_tools:
                     if dic == "":
                         print("error: module unfind = "+ list + "\n")
                     else:
-                        modules = self.find_module(dic,flags)            
+                        modules = self.find_module(dic)            
                         defines_temp = self.find_define(dic)
                         for define in defines_temp:
                             define_file = self.find_define_file(source_path, define)
@@ -242,50 +199,43 @@ class Verilog_tools:
                                 flag = 1
                         list_temp.append(list)
             lists = list_temp
-        # if flags == 1 or flags == 3:
-        #     for list in lists:
-        #         defines_temp = self.find_define(self.find_file(source_path,list))
-        #         for define in defines_temp:
-        #             define_file = self.find_define_file(source_path, define)
-        #             if define_file not in lists_root and define_file != "":
-        #                 lists_root.append(define_file)
-        os.chdir(target_path)
-        name_temp = re.sub("_base_test$","",name)
-        if flags == 5:
-            fk = open(name_temp+"_package.sv","w")
-            fk.write("import uvm_pkg::*;\n")
-            fk.close()
-        if flags == 0 or flags == 5:
-            fo = open("filelist_uvm_base.f","w")
-            fo.write(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv' + "\n")
-            os.chdir(os.path.dirname(__file__))
-            file_path_temp = []
-            for item in lists:
-                temp_path = self.find_file(source_path,item)
-                if temp_path not in file_path_temp:
-                    file_path_temp.append(temp_path)
-            for item in file_path_temp:
-                fo.write(item + "\n")
-            fo.write(path + "\n")
-            fo.close()
-        if flags == 5:
-            os.chdir(target_path)
-            fl = open("filelist_uvm_case.f","w")
-            os.chdir(os.path.dirname(__file__))
-            fl.write(self.find_file(source_path,name_temp+"_case0")+"\n")
-            fl.close()
-            os.chdir(target_path)
-            fl = open("filelist_uvm.f","w")
-            fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f' + "\n")
-            fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f' + "\n")
-            fl.close()
+        # os.chdir(target_path)
+        # name_temp = re.sub("_base_test$","",name)
+        # if flags == 5:
+        #     fk = open(name_temp+"_package.sv","w")
+        #     fk.write("import uvm_pkg::*;\n")
+        #     fk.close()
+        # if flags == 0 or flags == 5:
+        #     fo = open("filelist_uvm_base.f","w")
+        #     fo.write(os.path.abspath(os.path.dirname(name_temp+"_package.sv")).replace("\\", "/") + "/"+name_temp+'_package.sv' + "\n")
+        #     os.chdir(os.path.dirname(__file__))
+        #     file_path_temp = []
+        #     for item in lists:
+        #         temp_path = self.find_file(source_path,item)
+        #         if temp_path not in file_path_temp:
+        #             file_path_temp.append(temp_path)
+        #     for item in file_path_temp:
+        #         fo.write(item + "\n")
+        #     fo.write(path + "\n")
+        #     fo.close()
+        # if flags == 5:
+        #     os.chdir(target_path)
+        #     fl = open("filelist_uvm_case.f","w")
+        #     os.chdir(os.path.dirname(__file__))
+        #     fl.write(self.find_file(source_path,name_temp+"_case0")+"\n")
+        #     fl.close()
+        #     os.chdir(target_path)
+        #     fl = open("filelist_uvm.f","w")
+        #     fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_base.f")).replace("\\", "/") + '/filelist_uvm_base.f' + "\n")
+        #     fl.write("-f "+os.path.abspath(os.path.dirname("filelist_uvm_case.f")).replace("\\", "/") + '/filelist_uvm_case.f' + "\n")
+        #     fl.close()
 
 
 
-        if flags == 2 or flags == 3:
-            os.chdir(target_path)
-            fp = open("filelist_modules.f", "w")
-            os.chdir(os.path.dirname(__file__))
+        # if flags == 2 or flags == 3:
+        #     os.chdir(target_path)
+            fp = open("filelist_rtl.f", "w")
+            # os.chdir(os.path.dirname(__file__))
             file_path_temp = []
             for item in lists:
                 temp_path = self.find_file(source_path,item)
@@ -293,26 +243,21 @@ class Verilog_tools:
                     file_path_temp.append(temp_path)
             for item in file_path_temp:
                 fp.write(item + "\n")
-            if flag1 == 1:
-                fp.write(path + "\n")
+            fp.write(path + "\n")
             fp.close()
-        if flags == 1 or flags == 3:
-            os.chdir(target_path)
-            fq = open("filelist_defines.f", "w")
-            os.chdir(os.path.dirname(__file__))
+            # fq = open("filelist_defines.f", "w")
             for item in lists_root :
                 if  item not in file_path_temp:
                     fq.write(item + "\n")
-            if flag1== 1 and flags != 3:
-                fq.write(path + "\n")
+            # fq.write(path + "\n")
             fq.close()
-        if flags == 3:
-            os.chdir(target_path)
-            fj = open("filelist.f", "w")
-            fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
-            fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
-            fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
-            fj.close()
+        # if flags == 3:
+        #     os.chdir(target_path)
+        #     fj = open("filelist.f", "w")
+        #     fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_defines.f")).replace("\\", "/") +"/filelist_defines.f"+ "\n")
+        #     fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_modules.f")).replace("\\", "/") + '/filelist_modules.f' + "\n")
+        #     fj.write("-f "+ os.path.abspath(os.path.dirname("filelist_uvm.f")).replace("\\", "/") + '/filelist_uvm.f' + "\n")
+        #     fj.close()
 
 
     def makefile_src_gen(self,target_path, name):
@@ -404,36 +349,14 @@ class Verilog_tools:
         fp.close()
 
 
-    def tb_inst(self,SourceDic, TargetDic, name  ,flag = 0, flags = 0):
-        os.chdir(os.path.dirname(__file__))
-        TargetPath = self.make_sim_dic(TargetDic,name)
-        os.chdir(os.path.dirname(__file__))
+    def tb_inst(self,SourceDic, fp, name  ,flag = 0, flags = 0):
+        # os.chdir(os.path.dirname(__file__))
+        # TargetPath = self.make_sim_dic(TargetDic,name)
+        # os.chdir(os.path.dirname(__file__))
         path = self.find_file(SourceDic, name)
         # print(path)
         ports = self.find_port(path,name) #注意此处ports是一个二维的列表
-        # if(flag == 1):
 
-        #     fr = open(path, "r+", errors='ignore')
-        #     modules = find_module(path,2)
-        #     lines = fr.readlines()
-        #     string_file = fr.read()
-        #     fr.close()
-        #     fr = open(path + '.bak', 'w', errors='ignore')
-        #     fr.writelines(lines)
-        #     fr.close()
-        #     for module in modules:
-        #         path_file = find_file(SourceDic,module)
-        #         if(path_file != ""):
-        #             ports = find_port(path_file,module)
-
-        #     fr = open(path,"w+")
-
-
-
-
-
-
-        os.chdir(TargetPath)
         if not os.path.isfile(name + r"TB.sv"):
             lenStr = 0
             for para in ports[1]:
@@ -443,7 +366,7 @@ class Verilog_tools:
             for port in ports[0]:
                 if len(port[3]) > lenStr:
                     lenStr = len(port[3])
-            fp = open(name + r"TB.sv", "w+")
+            # fp = open(name + r"TB.sv", "w+")
             fp.write("`include \"uvm_macros.svh\"\n")
             # fp.write("import uvm_pkg::*;\n")
             fp.write("module " + name + "TB;\n")
@@ -549,7 +472,7 @@ class Verilog_tools:
             fp.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
             fp.write("end\n")
             fp.write("\n\n\n\n\nendmodule\n")
-            fp.close()
+            # fp.close()
         elif flag == 1:
             print("file exists file refresh\n")
             os.chdir(TargetPath)
@@ -679,7 +602,7 @@ class Verilog_tools:
             # fo.write("   uvm_config_db#(virtual "+name+"_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
             # fo.write("end\n")
             fo.write("\n\n\n\nendmodule\n")
-            fo.close()
+            # fo.close()
         else:
             print("file exist, gen stop")
 
@@ -825,7 +748,7 @@ class Verilog_tools:
         fp.write(write_str)
         fp.close()
 
-    def base_test_gen(self,Source_path,TargetPath,name,flag):
+    def base_test_gen(self,TargetPath,name):
         os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
         write_str = re.sub("my",name,open("./uvm/base_test.sv","r").read())
         path = self.make_sim_dic(TargetPath,name)
@@ -858,27 +781,67 @@ class Verilog_tools:
 
 
     def simflow_seq(self,sourcePath, targetPath, name):
-        os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-        # SourcePath = "../code/"
-        targetpath = self.make_sim_dic(targetPath, name)
-        TB = self.tb_inst(sourcePath, targetPath, name)
-        # makefile_src_gen(targetpath, name)
-        # # tb_inst(path,targetpath,"uart_byte_tx")
-        # filelist_gen(sourcePath, targetpath, TB)
-        flag = 1
-        self.makefile_src_gen(targetPath,name)
-        self.base_test_gen(sourcePath,targetPath,name,flag)
-        self.agent_gen(sourcePath,targetPath,name,flag)
-        self.case_gen(sourcePath,targetPath,name,flag)
-        self.drive_gen(sourcePath,targetPath,name,flag)
-        self.env_gen(sourcePath,targetPath,name,flag)
-        self.interface_gen(sourcePath,targetPath,name,flag)
-        self.model_gen(sourcePath,targetPath,name,flag)
-        self.monitor_gen(sourcePath,targetPath,name,flag)
-        self.scoreboard_gen(sourcePath,targetPath,name,flag)
-        self.sequencer_gen(sourcePath,targetPath,name,flag)
-        self.transaction_gen(sourcePath,targetPath,name,flag)
-        self.filelist_regen(1,5,1,3,1,sourcePath,targetPath,name)
+        if not os.path.isdir(targetPath+"/"+name):
+            print("create "+ name + " workspace")
+            os.makedirs(targetPath+"/" + name)
+            os.makedirs(targetPath+"/"+name+"/filelist")
+            os.makedirs(targetPath+"/"+name+"/uvc")
+            os.makedirs(targetPath+"/"+name+"/tb")
+            os.makedirs(targetPath+"/"+name+"/testcase")
+            os.makedirs(targetPath+"/"+name+"/work")
+            # os.chdir(targetPath+"/"+name)
+            for item in self.uvc:
+                fp = open( targetPath+"/" + name + "/uvc/"+name+"_"+item+".sv", "w")
+                fp.write(re.sub("my",name,self.uvc[item]))
+                fp.close()
+            fp= open(targetPath+"/" + name+ "/tb/"+name+"_tb.sv","w")
+            self.tb_inst(sourcePath,fp,name,0,0)
+            fp.close()
+            fp = open(targetPath+"/" + name+ "/filelist/filelist.f","w")
+            fp.write("../filelist/filelist_def.f")
+            fp.write("../filelist/filelist_rtl.f")
+            fp.write("../filelist/filelist_uvc.f")
+            fp.write("../filelist/filelist_tc.f")
+            fp.close()
+            fp = open(targetPath+"/" + name+"/filelist/makefile","w")
+            fp.write(self.makefile["dv/filelist"])
+            fp.close()
+            fp = open(targetPath+"/" + name+ "/filelist/filelist_rtl.f","w")
+            fq = open(targetPath+"/" + name+ "/filelist/filelist_def.f","w")
+            self.filelist_gen(sourcePath,name,fp,fq)
+            fp.close()
+            fq.close()
+            fp = open(targetPath+"/" + name+ "/filelist/filelist_uvc.f","w")
+            for item in self.uvc:
+                fp.write("../filelist/"+name+"_" + item+ ".sv")
+            fp.close()
+            fp = open(targetPath+"/" + name+ "/filelist/filelist_tc.f","w")
+            for item in self.tc:
+                fp.write("../filelist/"+name+"_" + item+ ".sv")
+            fp.close()
+            fp=open(targetPath+"/" + name+ "/testcase/case0.sv","w")
+            fp.write(re.sub("my",name,self.tc["case0"]))
+            fp.close()
+        else:
+            print("workspace exist")
+
+
+        # targetpath = self.make_sim_dic(targetPath, name)
+        # TB = self.tb_inst(sourcePath, targetPath, name)
+        # flag = 1
+        # self.makefile_src_gen(targetPath,name)
+        # self.base_test_gen(sourcePath,targetPath,name,flag)
+        # self.agent_gen(sourcePath,targetPath,name,flag)
+        # self.case_gen(sourcePath,targetPath,name,flag)
+        # self.drive_gen(sourcePath,targetPath,name,flag)
+        # self.env_gen(sourcePath,targetPath,name,flag)
+        # self.interface_gen(sourcePath,targetPath,name,flag)
+        # self.model_gen(sourcePath,targetPath,name,flag)
+        # self.monitor_gen(sourcePath,targetPath,name,flag)
+        # self.scoreboard_gen(sourcePath,targetPath,name,flag)
+        # self.sequencer_gen(sourcePath,targetPath,name,flag)
+        # self.transaction_gen(sourcePath,targetPath,name,flag)
+        # self.filelist_regen(1,5,1,3,1,sourcePath,targetPath,name)
 
 
 
@@ -908,14 +871,31 @@ class Verilog_tools:
 
 
 
+    def env_initial(self):
+        os.chdir(os.getcwd())
+        for item in self.ctree:
+            if not os.path.isdir(item):
+                print("generate " + item+ "directory")
+                os.makedirs(item)
+                if item in self.makefile:
+                    fp = open(item+"/makefile","w")
+                    fp.write(self.makefile[item])
+                    fp.close()
+            else:
+                print(item + " dirdectory exist!!" )
+
+
+
+
+
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-    SourcePath = ["../rtl/"]
-    TargetPath = "../sim/"
-    name = "gmec_core"
+    SourcePath = ["./code/"]
+    TargetPath = "./test/"
+    name = "top"
     # TargetPath = make_sim_dic(TargetPath, name)
     vt = Verilog_tools ()
-
+    # vt.env_initial()
     vt.simflow_seq(SourcePath,TargetPath,name)
     # filelist_gen([SourcePath], TargetPath, "top", 3)
     # filelist_gen(SourcePath,TargetPath, name,3, 0)

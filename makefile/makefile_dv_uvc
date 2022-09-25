@@ -1,0 +1,5 @@
+rtl_path = "../de/rtl/"
+cmd = "ssf"
+top = ""
+sim_flow:
+        ${PYTOOLS_HOME}/main.py  ${cmd}  ${rtl_path} $(shell pwd) ${top}

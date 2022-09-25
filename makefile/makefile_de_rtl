@@ -1,0 +1,5 @@
+rtl_path = "./rtl/"
+cmd = "inst"
+name = ""
+inst:
+    ${PYTOOLS_HOME}/main.py ${cmd}  ${rtl_path} $(shell pwd) ${name} ${output}
