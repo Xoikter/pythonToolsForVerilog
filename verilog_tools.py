@@ -58,15 +58,16 @@ class Verilog_tools:
 
         self.uvc = {
                     # "scoreboard_comb": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_comb.sv", "r", errors="ignore").read(),
-                    "scoreboard": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_seq.sv", "r", errors="ignore").read(),
-                    "agent": open(os.path.dirname(__file__) + "/uvm/my_agent.sv", "r", errors="ignore").read(),
-                    "driver": open(os.path.dirname(__file__) + "/uvm/my_driver.sv", "r", errors="ignore").read(),
-                    "env": open(os.path.dirname(__file__) + "/uvm/my_env.sv", "r", errors="ignore").read(),
-                    # "if": open(os.path.dirname(__file__) + "/uvm/my_if.sv", "r", errors="ignore").read(),
-                    "model": open(os.path.dirname(__file__) + "/uvm/my_model.sv", "r", errors="ignore").read(),
-                    "monitor": open(os.path.dirname(__file__) + "/uvm/my_monitor.sv", "r", errors="ignore").read(),
+                    "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read(),
                     "sequencer": open(os.path.dirname(__file__) + "/uvm/my_sequencer.sv", "r", errors="ignore").read(),
-                    "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read()}
+                    "driver": open(os.path.dirname(__file__) + "/uvm/my_driver.sv", "r", errors="ignore").read(),
+                    "monitor": open(os.path.dirname(__file__) + "/uvm/my_monitor.sv", "r", errors="ignore").read(),
+                    "agent": open(os.path.dirname(__file__) + "/uvm/my_agent.sv", "r", errors="ignore").read(),
+                    "model": open(os.path.dirname(__file__) + "/uvm/my_model.sv", "r", errors="ignore").read(),
+                    "scoreboard": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_seq.sv", "r", errors="ignore").read(),
+                    "env": open(os.path.dirname(__file__) + "/uvm/my_env.sv", "r", errors="ignore").read(),
+                    "base_test": open(os.path.dirname(__file__) + "/uvm/my_base_test.sv", "r", errors="ignore").read()}
+                    # "if": open(os.path.dirname(__file__) + "/uvm/my_if.sv", "r", errors="ignore").read(),
         self.tc = {
                     "case0": open(os.path.dirname(__file__) + "/uvm/my_case0.sv", "r", errors="ignore").read()
         }
@@ -976,6 +977,10 @@ class Verilog_tools:
                 fp = open( targetPath+"/" + name + "/uvc/"+name+"_"+item+".sv", "w")
                 fp.write(re.sub("my",name,self.uvc[item]))
                 fp.close()
+            fp = open( targetPath+"/" + name + "/uvc/"+name+"_""package.sv", "w")
+            fp.write("`include " + "uvm_macros.svh" + "\n")
+            fp.write("import uvm_pkg::*;\n")
+            fp.close()
             fp = open( targetPath+"/" + name + "/uvc/"+name+"_interface_port.sv", "w")
             fq = open( targetPath+"/" + name + "/uvc/"+name+"_interface_inner.sv", "w")
             self.interface_gen(sourcePath,fp,fq,name,1) 
@@ -984,10 +989,11 @@ class Verilog_tools:
             self.tb_inst(sourcePath,fp,name,0,0)
             fp.close()
             fp = open(targetPath+"/" + name+ "/filelist/filelist.f","w")
-            fp.write("../filelist/filelist_def.f\n")
-            fp.write("../filelist/filelist_rtl.f\n")
-            fp.write("../filelist/filelist_uvc.f\n")
-            fp.write("../filelist/filelist_tc.f\n")
+            print("gen filelist")
+            fp.write("-f ../filelist/filelist_def.f\n")
+            fp.write("-f ../filelist/filelist_rtl.f\n")
+            fp.write("-f ../filelist/filelist_uvc.f\n")
+            fp.write("-f ../filelist/filelist_tc.f\n")
             fp.close()
             fp = open(targetPath+"/" + name+"/filelist/makefile","w")
             fp.write(self.makefile["dv/filelist"])
@@ -998,6 +1004,7 @@ class Verilog_tools:
             fp.close()
             fq.close()
             fp = open(targetPath+"/" + name+ "/filelist/filelist_uvc.f","w")
+            fp.write("../uvc/"+name+"_" + "package.sv\n")
             for item in self.uvc:
                 fp.write("../uvc/"+name+"_" + item+ ".sv\n")
             fp.write("../uvc/"+name+"_interface_port.sv\n")
@@ -1032,6 +1039,10 @@ class Verilog_tools:
                 fp = open( targetPath+"/" + name + "/uvc/"+name+"_"+item+".sv", "w")
                 fp.write(re.sub("my",name,self.uvc[item]))
                 fp.close()
+            fp = open( targetPath+"/" + name + "/uvc/"+name+"_""package.sv", "w")
+            # fp.write("`include " + "uvm_macros.svh" + "\n")
+            fp.write("import uvm_pkg::*;\n")
+            fp.close()
             fp = open( targetPath+"/" + name + "/uvc/"+name+"_interface_port.sv", "w")
             fq = open( targetPath+"/" + name + "/uvc/"+name+"_interface_inner.sv", "w")
             self.interface_gen(sourcePath,fp,fq,name,1) 
@@ -1040,10 +1051,10 @@ class Verilog_tools:
             self.tb_inst(sourcePath,fp,name,0,0)
             fp.close()
             fp = open(targetPath+"/" + name+ "/filelist/filelist.f","w")
-            fp.write("../filelist/filelist_def.f\n")
-            fp.write("../filelist/filelist_rtl.f\n")
-            fp.write("../filelist/filelist_uvc.f\n")
-            fp.write("../filelist/filelist_tc.f\n")
+            fp.write("-f ../filelist/filelist_def.f\n")
+            fp.write("-f ../filelist/filelist_rtl.f\n")
+            fp.write("-f ../filelist/filelist_uvc.f\n")
+            fp.write("-f ../filelist/filelist_tc.f\n")
             fp.close()
             fp = open(targetPath+"/" + name+"/filelist/makefile","w")
             fp.write(self.makefile["dv/filelist"])
@@ -1054,16 +1065,17 @@ class Verilog_tools:
             fp.close()
             fq.close()
             fp = open(targetPath+"/" + name+ "/filelist/filelist_uvc.f","w")
-            for item in self.uvc:
-                fp.write("../uvc/"+name+"_" + item+ ".sv\n")
+            fp.write("../uvc/"+name+"_" + "package.sv\n")
             fp.write("../uvc/"+name+"_interface_port.sv\n")
             fp.write("../uvc/"+name+"_interface_inner.sv\n")
+            for item in self.uvc:
+                fp.write("../uvc/"+name+"_" + item+ ".sv\n")
             fp.close()
             fp = open(targetPath+"/" + name+ "/filelist/filelist_tc.f","w")
             for item in self.tc:
                 fp.write("../testcase/"+name+"_" + item+ ".sv\n")
             fp.close()
-            fp=open(targetPath+"/" + name+ "/testcase/case0.sv","w")
+            fp=open(targetPath+"/" + name+ "/testcase/" + name + "_case0.sv","w")
             fp.write(re.sub("my",name,self.tc["case0"]))
             fp.close()
             fp = open(targetPath + name+"/sim/makefile","w")
