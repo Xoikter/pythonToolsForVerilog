@@ -1081,6 +1081,12 @@ class Verilog_tools:
             fp = open(targetPath + name+"/sim/makefile","w")
             fp.write(re.sub("my",name,self.makefile["dv/sim"]))
             fp.close()
+            fp = open(targetPath + name+"/sim/run.scr","w")
+            fp.write("global env \n")
+            fp.write("#fsdbDumpfile \"$env(name).fsdb\"\n")
+            fp.write("fsdbDumpvars 0 \"$env(name)\"\n") 
+            fp.write("run")
+            fp.close()
         else:
             print("workspace exist")
 
