@@ -18,6 +18,7 @@ if __name__ == '__main__':
     TargetPath = ""
     except_module = [""]
     fc = vt()
+    config_flag = False
     # print(sys.argv[1:])
 
 
@@ -44,7 +45,7 @@ if __name__ == '__main__':
                         elif(item[0] == "except module"):
                             except_module = ast.literal_eval(item[1])
                     fd.close()
-
+                    config_flag = True
                     fc.SourcePath = SourcePath
                     fc.TargetPath = TargetPath
                     fc.except_module = except_module
@@ -70,24 +71,33 @@ if __name__ == '__main__':
     # full_path_temp = os.path.join(sys.argv[3],sys.argv[2])
     # full_path = os.path.normpath(os.path.abspath(full_path_temp)).replace("\\", "/")
     
-    if len(sys.argv) > 4:
-        name = sys.argv[4]
+    # if len(sys.argv) > 4:
+    #     name = sys.argv[4]
     
     
     if len(sys.argv) > 1:
         # argue = sys.argv[1]
         print(cmd)
         if (cmd == "inst"):
-            fc.file_inst(fc.SourcePath, name ,2)
+            if config_flag:
+                fc.file_inst(fc.SourcePath, name ,2)
+            else: 
+                print("need config file")
         elif(cmd == "inst_o"):
-            fc.file_inst(fc.SourcePath, name,1)
+            if config_flag:
+                fc.file_inst(fc.SourcePath, name,1)
+            else: 
+                print("need config file")
         elif(cmd == "vd"):
             fc.autodefine(full_path)
         elif (cmd == "t"):
             fc.tb_inst(fc.SourcePath, fc.TargetPath, sys.argv[1])
         elif (cmd == 'ssf'):
             print("entry")
-            fc.simflow_seq(fc.SourcePath, fc.TargetPath, name)
+            if config_flag:
+                fc.simflow_seq(fc.SourcePath, fc.TargetPath, top)
+            else: 
+                print("need config file")
         elif (cmd == 'csf'):
             fc.simflow_comb(fc.SourcePath, fc.TargetPath, sys.argv[1])
         elif (cmd == 'f'):

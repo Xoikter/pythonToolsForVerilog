@@ -110,10 +110,10 @@ class Verilog_tools:
                                 self.test_definemap.update({item[0]:[os.path.normpath(os.path.abspath(full_path)).replace("\\", "/"),item[1]]})
 
     def rtl_map_initial(self):
-        # for start in self.SourcePath:
+        for start in self.SourcePath:
             # print(start)
-            for relpath, dirs, files in os.walk(self.SourcePath):
-            # for relpath, dirs, files in os.walk(start):
+            # for relpath, dirs, files in os.walk(self.SourcePath):
+            for relpath, dirs, files in os.walk(start):
                 for File in files:
                     if re.match('.+\.s?v$', File) is not None:
                         fp = open(os.path.join(relpath, File), "r", errors="ignore")
@@ -256,6 +256,9 @@ class Verilog_tools:
                 path = self.find_rtl_file(self.SourcePath,lists[ i ])
             else:
                 path = self.find_test_file(self.TargetPath,lists[ i ])
+            if path == None:
+                self.moduleFound.append(lists[i])
+                return lists[index:i] + (self.dfs(lists,i+1,flags))
             list_temp = self.find_module(path,flags)
             self.moduleFound.append(lists[i])
             if len(list_temp) != 0:
@@ -349,7 +352,7 @@ class Verilog_tools:
         fp.close()
 
 
-    def file_inst(self,dic, path, flags=1):
+    def file_inst(self,dic, name, flags=1):
         # os.chdir(os.path.dirname(__file__))
         path = self.find_rtl_file(dic, name)
         fp = open(path, "r+", errors='ignore')
@@ -1081,7 +1084,7 @@ class Verilog_tools:
             fp = open(targetPath + name+"/sim/makefile","w")
             fp.write(re.sub("my",name,self.makefile["dv/sim"]))
             fp.close()
-            fp = open(targetPath + name+"/sim/run.scr","w")
+            fp = open(targetPath + name+"/sim/run.tcl","w")
             fp.write("global env \n")
             fp.write("#fsdbDumpfile \"$env(name).fsdb\"\n")
             fp.write("fsdbDumpvars 0 \"$env(name)\"\n") 
