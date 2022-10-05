@@ -41,21 +41,26 @@ class Verilog_tools:
 
         self.ctree = [  "de",
                             "de/filelist",
+                            "de/common_ip",
                             "de/rtl",
                         "dv",
                             "dv/simctrl",
                             "dv/vc",
-                                "dv/vc/harness",
+                            "dv/tg",
                         "impl",
-                        "fpga"
+                        "fpga",
+                        "ip"
         ]
 
         self.makefile  = { "de/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_de_filelist", "r", errors="ignore").read(),
                            "de/rtl"     : open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r", errors="ignore").read(),
                            "dv/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_dv_filelist", "r", errors="ignore").read(),
-                           "dv/vc/harness": open(os.path.dirname(__file__) + "/makefile/makefile_dv_uvc", "r", errors="ignore").read(),
+                           "dv/tg"      : open(os.path.dirname(__file__) + "/makefile/makefile_dv_uvc", "r", errors="ignore").read(),
                            "dv/sim"     : open(os.path.dirname(__file__) + "/makefile/makefile_dv_sim", "r", errors="ignore").read()}
-
+        self.config = {
+                           "dv/tg"      : open(os.path.dirname(__file__) + "/config/config_dv_tg.txt", "r", errors="ignore").read(),
+                           "de/rtl"     : open(os.path.dirname(__file__) + "/config/config_de_rtl.txt", "r", errors="ignore").read()
+        }
         self.uvc = {
                     # "scoreboard_comb": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_comb.sv", "r", errors="ignore").read(),
                     "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read(),
@@ -1119,14 +1124,19 @@ class Verilog_tools:
 
 
     def env_initial(self):
-        os.chdir(os.getcwd())
+        # os.chdir(os.getcwd())
         for item in self.ctree:
             if not os.path.isdir(item):
-                print("generate " + item+ "directory")
+                print("generate " + item+ " directory")
                 os.makedirs(item)
                 if item in self.makefile:
                     fp = open(item+"/makefile","w")
                     fp.write(self.makefile[item])
+                    fp.close()
+                if item in self.config:
+                    fp = open(item + "/config.txt","w")
+                    # print(item)
+                    fp.write(self.config[item])
                     fp.close()
             else:
                 print(item + " dirdectory exist!!" )
