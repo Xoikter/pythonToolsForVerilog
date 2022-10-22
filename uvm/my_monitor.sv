@@ -3,7 +3,7 @@ class my_monitor extends uvm_monitor;
    virtual my_interface_port vif;
    virtual my_interface_inner vif_i;
    uvm_active_passive_enum is_active = UVM_ACTIVE;
-   uvm_analysis_port #(my_transaction)  ap;
+   uvm_analysis_port #(my_transation)  ap;
    
    `uvm_component_utils(my_monitor)
    function new(string name = "my_monitor", uvm_component parent = null);

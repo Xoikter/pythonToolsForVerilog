@@ -3,7 +3,7 @@ class my_agent extends uvm_agent ;
    my_driver     drv;
    my_monitor    mon;
    
-   uvm_analysis_port #(my_transaction)  ap;
+   uvm_analysis_port #(my_transation)  ap;
    
    function new(string name, uvm_component parent);
       super.new(name, parent);

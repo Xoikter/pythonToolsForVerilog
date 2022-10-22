@@ -63,7 +63,7 @@ class Verilog_tools:
         }
         self.uvc = {
                     # "scoreboard_comb": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_comb.sv", "r", errors="ignore").read(),
-                    "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read(),
+                    "transation": open(os.path.dirname(__file__) + "/uvm/my_transation.sv", "r", errors="ignore").read(),
                     "sequencer": open(os.path.dirname(__file__) + "/uvm/my_sequencer.sv", "r", errors="ignore").read(),
                     "driver": open(os.path.dirname(__file__) + "/uvm/my_driver.sv", "r", errors="ignore").read(),
                     "monitor": open(os.path.dirname(__file__) + "/uvm/my_monitor.sv", "r", errors="ignore").read(),
@@ -843,18 +843,18 @@ class Verilog_tools:
             fp.write("logic " + port[2] + (0 if len(port[2]) == 0 else 1) * " " + port[3] + ";\n")
         fp.write("\n\n\n\nendinterface")
 
-    def transaction_gen(self,Source_path,TargetPath,name,flag):
+    def transation_gen(self,Source_path,TargetPath,name,flag):
         os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
         path = self.make_sim_dic(TargetPath,name)
         os.chdir(path)
-        fp = open(name+"_transaction.sv","w")
+        fp = open(name+"_transation.sv","w")
         # fp.write("import uvm_pkg::*;\n")
-        fp.write("class "+name+"_transaction extends uvm_sequence_item;\n")
+        fp.write("class "+name+"_transation extends uvm_sequence_item;\n")
         fp.write("rand bit variable_for_test;\n")
         fp.write("\n\n\nconstraint con{\nvariable_for_test == 0;\n\n}\n")
-        fp.write("`uvm_object_utils_begin("+name+"_transaction)\n")
+        fp.write("`uvm_object_utils_begin("+name+"_transation)\n")
         fp.write("\n\n`uvm_object_utils_end\n")
-        fp.write("function new(string name = \""+name+"_transaction\");\nsuper.new();\nendfunction\n")
+        fp.write("function new(string name = \""+name+"_transation\");\nsuper.new();\nendfunction\n")
         fp.write("endclass\n")
         fp.close()
 
@@ -864,7 +864,7 @@ class Verilog_tools:
         path = self.make_sim_dic(TargetPath,name)
         os.chdir(path)
         fp = open(name+"_sequencer.sv","w")
-        fp.write("class "+name+"_sequencer extends uvm_sequencer #("+ name +"_transaction);\n")
+        fp.write("class "+name+"_sequencer extends uvm_sequencer #("+ name +"_transation);\n")
         fp.write("    function new(string name, uvm_component parent);\n        super.new(name, parent);\n    endfunction \n")
         fp.write("    `uvm_component_utils("+name+"_sequencer)\n")
         fp.write("endclass\n")
@@ -1123,7 +1123,7 @@ class Verilog_tools:
         self.monitor_gen(sourcePath,targetPath,name,flag)
         self.scoreboard_gen(sourcePath,targetPath,name,0)
         self.sequencer_gen(sourcePath,targetPath,name,flag)
-        self.transaction_gen(sourcePath,targetPath,name,flag)
+        self.transation_gen(sourcePath,targetPath,name,flag)
         TB = self.tb_inst(sourcePath, targetPath, name)
         self.filelist_regen(1,1,sourcePath,targetPath,name)
 
