@@ -547,7 +547,7 @@ class Verilog_tools:
 
 
         # os.chdir(TargetPath)
-        if not os.path.isfile(name + r"TB.sv"):
+        if not os.path.isfile(name + r"_tb.sv"):
             lenStr = 0
             for para in ports[1]:
                 if len(para) > lenStr:
@@ -559,7 +559,7 @@ class Verilog_tools:
             # fp = open(name + r"TB.sv", "w+")
             fp.write("`include \"uvm_macros.svh\"\n")
             # fp.write("import uvm_pkg::*;\n")
-            fp.write("module " + name + "TB;\n")
+            fp.write("module " + name + "_tb;\n")
             for para_all in ports[2]:
                 fp.write("parameter "+para_all+";\n")
             if len(ports[1]) != 0:           
