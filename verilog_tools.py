@@ -1095,6 +1095,11 @@ class Verilog_tools:
             fp.write("fsdbDumpvars 0 \"$env(name)\"\n") 
             fp.write("run")
             fp.close()
+            fp = open(targetPath + name+"/sim/synopsys_sim.setup","w")
+            fp.write("WORK>DEFAULT\n")
+            fp.write("DEFAULT:./work\n")
+            fp.write("OTHERS=/opt/vivado_lib/synopsys_sim.setup\n") 
+            fp.close()
         else:
             print("workspace exist")
 

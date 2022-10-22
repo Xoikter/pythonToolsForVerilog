@@ -241,7 +241,7 @@ class File_analyse:
 		str_temp = re.sub("\\binterface\\b.*?;", "", str_temp, flags=re.S)
 		str_port = re.search("\\bmodule.*?;",str_temp,flags=re.S).group()
 		# result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
-		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
+		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg|logic)?\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
 		# res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
 		res_para_temp = re.finditer('#\s*\(',str_port,flags=re.S)
 		stack_para = []
@@ -278,7 +278,7 @@ class File_analyse:
 			portTemp = [res[0], res[1], res[2], res[3]]
 			ports.append(portTemp)
 		str_temp = re.sub("\\bmodule.*?;","",str_temp,flags=re.S)
-		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
+		result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg|logic)?\\b\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp, flags=re.S)
 		res_para = re.findall('\\bparameter\\b\s*(.*?)\s*;',str_temp,flags=re.S)
 		if len(parameters) != 0:
 			res_para = []
