@@ -1,14 +1,14 @@
 OUTPUT = my
 export name = ${OUTPUT}
 comp_uvm:
-	vlogan -work WORK  -j6 -lca -kdb -ntb_opts uvm-1.1 -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
+	vlogan -work WORK -timescale=1ns/1ps -j6 -lca -kdb -ntb_opts uvm-1.1 -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
 comp_ip:
-	vlogan -work WORK  -j6 -lca -kdb -f ../../../../ip/ip.f -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
+	vlogan -work WORK -timescale=1ns/1ps -j6 -ntb_opts uvm-1.1 -lca -kdb -f ../../../../ip/ip.f -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
 
 comp: comp_uvm comp_ip
-	vlogan -work WORK  -j6 -lca -kdb -full64 -sverilog  -f ../filelist/filelist.f  -l sim.log ../tb/${OUTPUT}_tb.sv-P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
+	vlogan -work WORK -timescale=1ns/1ps -j6 -ntb_opts uvm-1.1 -lca -kdb -full64 -sverilog  -f ../filelist/filelist.f  -l sim.log ../tb/${OUTPUT}_tb.sv -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
 elaborate:
-	vcs   ${OUTPUT}_tb  -j6 -full64 -lca -kdb  -fsdb  +lint=TFIPC-L -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
+	vcs   ${OUTPUT}_tb -ntb_opts uvm-1.1 -j6 -full64 -lca -kdb  -fsdb  +lint=TFIPC-L -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
 sim: comp elaborate
 	./simv  -ucli   -i   ./run.tcl  +fsdbfile+${OUTPUT}.fsdb + autoflush  -l sim.log
 

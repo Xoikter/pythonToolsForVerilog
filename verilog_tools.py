@@ -1048,7 +1048,7 @@ class Verilog_tools:
                 fp.write(re.sub("my",name,self.uvc[item]))
                 fp.close()
             fp = open( targetPath+"/" + name + "/uvc/"+name+"_""package.sv", "w")
-            # fp.write("`include " + "uvm_macros.svh" + "\n")
+            fp.write("`include " + "uvm_macros.svh" + "\n")
             fp.write("import uvm_pkg::*;\n")
             fp.close()
             fp = open( targetPath+"/" + name + "/uvc/"+name+"_interface_port.sv", "w")
