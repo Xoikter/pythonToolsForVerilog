@@ -1,3 +1,0 @@
--f /home/IC/xsc/gmec/pythonToolsForVerilog/sim/testTest/filelist_defines.f
--f /home/IC/xsc/gmec/pythonToolsForVerilog/sim/testTest/filelist_modules.f
--f /home/IC/xsc/gmec/pythonToolsForVerilog/sim/testTest/filelist_uvm.f

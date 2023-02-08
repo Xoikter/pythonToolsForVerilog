@@ -1,9 +1,0 @@
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/ram.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/decode.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/ifu.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/exu_bjp.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/dpath.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/alu.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/regfile.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/exu.v
-e:/xsc/pro/git_pro/pythonToolsForVerilog/code/core/lsu.v
