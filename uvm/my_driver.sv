@@ -1,4 +1,4 @@
-class my_driver extends uvm_driver#(my_transation);
+class my_driver extends uvm_driver#(my_transaction);
 
    virtual my_interface_port vif;
    virtual my_interface_inner vif_i;

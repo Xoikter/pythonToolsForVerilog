@@ -1,6 +1,6 @@
 import re
-import ply.lex as lex
-import ply.yyac as yyac
+# import ply.lex as lex
+# import ply.yyac as yyac
 import os
 from sys import flags
 from typing import Pattern
@@ -42,22 +42,22 @@ class File_analyse:
         self.strRow = strRow
         self.macro = []
 
-    tokens = (
-        'NUMBER',
-        'OPERATE',
-        'LOGIC'
-        'NAME',
-        'KEYWORD',
-    )
+    # tokens = (
+    #     'NUMBER',
+    #     'OPERATE',
+    #     'LOGIC'
+    #     'NAME',
+    #     'KEYWORD',
+    # )
 
-    def t_OPEATE(t):
-        r'[+-*/]'
-        return t
-    def t_LOGIC(t):
-        r'(&&|\|\|)'
-        return t
-    def t_BITOP(t):
-        r'(~|\|'
+    # def t_OPEATE(t):
+    #     r'[+-*/]'
+    #     return t
+    # def t_LOGIC(t):
+    #     r'(&&|\|\|)'
+    #     return t
+    # def t_BITOP(t):
+    #     r'(~|\|'
 
 
 

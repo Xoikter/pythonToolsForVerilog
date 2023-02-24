@@ -11,7 +11,8 @@ tokens = (
     "SYMBOL",
     "NUMBER",
     "UNINUMBER",
-    "SEMI"
+    "SEMI",
+    "OTHERS"
 )
 t_UNINUMBER = r'\d+[a-z][a-f0-9]+'
 t_NUMBER = r'\d+'
@@ -19,13 +20,14 @@ t_NAME = r'[_A-Za-z]+'
 t_MIRCO = r'`[_A-Za-z]+'
 t_OPERATE = r'[\+\-\*\/\&\|\~\!\\<\>\+\^\=]'
 t_SEMI = r';'
+t_OTHERS = r'.'
 
 def t_newline(t):
     r"\n+"
     t.lexer.lineno += len(t.value)
 
 t_ignore = ' \t'
-t_SYMBOL = r"[\[\]\(\)\:\#\,\@]"
+t_SYMBOL = r"[\[\]\(\)\:\#\,]"
 
 
 fp = open("./code/test.sv", "r")

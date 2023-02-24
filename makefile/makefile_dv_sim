@@ -12,11 +12,11 @@ elaborate:
 sim: comp elaborate
 	./simv  -ucli +UVM_TESTNAME=${OUTPUT}_case0  -i   ./run.tcl  +fsdbfile+${OUTPUT}.fsdb + autoflush  -l sim.log
 verdi:
-    verdi -elab simv.daidir/kdb -ssf ${OUTPUT}.fsdb -nologo  -l v.log
+	verdi -elab simv.daidir/kdb -ssf ${OUTPUT}.fsdb -nologo  -l v.log
 
 
 VCS:
-	vcs  +acc +vpi -j6   -full64 +v2k -sverilog -ntb_opts uvm-1.1  +define+DEBUG  -CFLAGS -DVCS -lca -kdb +lint=TFIPC-L -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -LDFLAGS -rdynamic  -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a  -f ../filelist/filelist.f  -l sim.log ../tb/${OUTPUT}_tb.sv
+	vcs  +acc +vpi -j6   -full64 +v2k -sverilog -ntb_opts uvm-1.1 +incdir+${UVM_HOME}/src  ${UVM_HOME}/src/uvm_pkg.sv ${UVM_HOME}/src/dpi/uvm_dpi.cc  +define+DEBUG  -CFLAGS -DVCS -lca -kdb +lint=TFIPC-L -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -LDFLAGS -rdynamic  -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a  -f ../filelist/filelist.f  -l sim.log ../tb/${OUTPUT}_tb.sv
 VERDI:
 	verdi -f file_list.f -ssf ${OUTPUT}.fsdb -nologo  -l v.log 
 SIM:

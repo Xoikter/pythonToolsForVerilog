@@ -1,4 +1,4 @@
-class my_transation extends uvm_sequence_item;
+class my_transaction extends uvm_sequence_item;
 
     constraint pload_cons{
  
@@ -10,10 +10,10 @@ class my_transation extends uvm_sequence_item;
       // crc = calc_crc;  
       endfunction
 
-   `uvm_object_utils_begin(my_transation)
+   `uvm_object_utils_begin(my_transaction)
    `uvm_object_utils_end
 
-   function new(string name = "my_transation");
+   function new(string name = "my_transaction");
       super.new();
    endfunction
 

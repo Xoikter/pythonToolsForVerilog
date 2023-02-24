@@ -1,7 +1,7 @@
 class my_model extends uvm_component;
    
-   uvm_blocking_get_port #(my_transation)  port;
-   uvm_analysis_port #(my_transation)  ap;
+   uvm_blocking_get_port #(my_transaction)  port;
+   uvm_analysis_port #(my_transaction)  ap;
 
    extern function new(string name, uvm_component parent);
    extern function void build_phase(uvm_phase phase);

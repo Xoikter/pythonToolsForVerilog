@@ -1,7 +1,7 @@
 class my_scoreboard extends uvm_scoreboard;
-   my_transation  expect_queue[$];
-   uvm_blocking_get_port #(my_transation)  exp_port;
-   uvm_blocking_get_port #(my_transation)  act_port;
+   my_transaction  expect_queue[$];
+   uvm_blocking_get_port #(my_transaction)  exp_port;
+   uvm_blocking_get_port #(my_transaction)  act_port;
    `uvm_component_utils(my_scoreboard)
 
    extern function new(string name, uvm_component parent = null);
