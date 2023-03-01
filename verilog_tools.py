@@ -7,7 +7,7 @@ from file_analyse import File_analyse as fa
 
 # path = "../verilog_python"
 class Verilog_tools:
-    def __init__(self):
+    def __init__(self,name):
         self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos',
                         'deassign',
                         'default',
@@ -39,7 +39,7 @@ class Verilog_tools:
                         'uvm_active_passive_enum', 'define', 'undef'
             , 'ifdef', 'elsif', 'endif', "uvm_object_utils_begin", "uvm_object_utils_end"]
         # path = "/home/IC/xsc"
-        self.filename = "fifo_ctr"
+        self.filename = name
         self.rtl_filemap = {}
         self.rtl_definemap = {}
         self.test_filemap = {}
@@ -50,6 +50,10 @@ class Verilog_tools:
         self.SourcePath = []
         self.TargetPath = ""
         self.moduleFound = []
+        self.build_list=[]
+        self.test_list=[]
+        self.regress_list=[]
+        self.sanity_list=[]
         self.fa = fa("")
 
         self.ctree = ["de",
@@ -850,6 +854,21 @@ class Verilog_tools:
         fp = open(name + "_base_test.sv", "w")
         fp.write(write_str)
         fp.close()
+    
+
+    ##
+    ##
+    def comp(self):
+        for relpath, dirs, files in os.walk("./build"):
+            for file in files:
+                if(re.match(".+\.py",file) is not None):
+                    with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
+                        exec(fp.read())
+        os.chdir("../build")
+        os.system("ls")
+        for list in self.build_list:
+            os.system(list["build_opts"])
+
 
     def sim_gen(self, dic, name):
         TargetPath = self.make_sim_dic(name)

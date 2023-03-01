@@ -17,12 +17,12 @@ if __name__ == '__main__':
     SourcePath = [""]
     TargetPath = ""
     except_module = [""]
-    fc = vt()
     config_flag = False
     # print(sys.argv[1:])
+    agent_num = 1
 
 
-    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:e")
+    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:e:x:s:r:a")
     # print(args.exclude)
     for opt, arg in opts:
         if(opt == '-e'):
@@ -55,7 +55,16 @@ if __name__ == '__main__':
             top = arg
         elif(opt == '-n'):
             name = arg
+        elif(opt == '-x'):
+            testcase = arg
+        elif(opt == '-x'):
+            seed = int(arg)
+        elif(opt == 'r'):
+            repeat_num = int(arg)
+        elif(opt == 'a'):
+            agent_num = int(arg)
 
+    fc = vt(name)
     # if len(sys.argv) > 2:
         # fc.SourcePath = sys.argv[2]
     # if len(sys.argv) > 3:
@@ -106,6 +115,14 @@ if __name__ == '__main__':
             fc.tb_inst(SourcePath,TargetPath,sys.argv[1],1)
         elif (cmd == "ctree"):
             fc.env_initial()
+        elif (cmd == "comp"):
+            fc.comp()
+        elif (cmd == "sim"):
+            fc.sim(testcase,seed,repeat_num)
+        elif (cmd == "regress"):
+            fc.regress(repeat_num)
+        elif (cmd == "sanity"):
+            fc.sanity()
     else:
         print ("need cmd")
 
