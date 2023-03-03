@@ -18,11 +18,12 @@ if __name__ == '__main__':
     TargetPath = ""
     except_module = [""]
     config_flag = False
+    delete_pass = False
     # print(sys.argv[1:])
     agent_num = 1
 
 
-    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:e:x:s:r:a")
+    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:e:x:s:r:a:m")
     # print(args.exclude)
     for opt, arg in opts:
         if(opt == '-e'):
@@ -57,12 +58,22 @@ if __name__ == '__main__':
             name = arg
         elif(opt == '-x'):
             testcase = arg
-        elif(opt == '-x'):
-            seed = int(arg)
-        elif(opt == 'r'):
-            repeat_num = int(arg)
-        elif(opt == 'a'):
+            print(testcase)
+        elif(opt == '-s'):
+            print(arg)
+            if arg == "":
+                seed = None
+            else:
+                seed = int(arg)
+        elif(opt == '-r'):
+            if arg == "":
+                repeat_num = None
+            else:
+                repeat_num = int(arg)
+        elif(opt == '-a'):
             agent_num = int(arg)
+        elif(opt == '-m'):
+            delete_pass = True
 
     fc = vt(name)
     # if len(sys.argv) > 2:

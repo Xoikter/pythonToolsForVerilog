@@ -1,5 +1,8 @@
 import os
 import re
+import threading
+import random
+from queue import Queue
 
 # import uvm_gen as ug
 from file_analyse import File_analyse as fa
@@ -50,10 +53,10 @@ class Verilog_tools:
         self.SourcePath = []
         self.TargetPath = ""
         self.moduleFound = []
-        self.build_list=[]
-        self.test_list=[]
-        self.regress_list=[]
-        self.sanity_list=[]
+        self.build_list={}
+        self.test_list={}
+        self.regress_list={}
+        self.sanity_list={}
         self.fa = fa("")
 
         self.ctree = ["de",
@@ -515,6 +518,7 @@ class Verilog_tools:
         return True
         # fp.write(string_out[match.out])
 
+    # TODO: need to update for multi agent
     def tb_inst(self, SourceDic, fp, name, flag=0, flags=0):
         if self.mapGenFlag is not True:
             self.map_initial()
@@ -596,8 +600,8 @@ class Verilog_tools:
             fp.write("clk = 0;\n")
             fp.write("rst_n = 0;\n")
             fp.write("rst_p = 1;\n")
-            fp.write("#8 rst_n = 1;\n")
-            fp.write("#6 rst_p = 0;\n")
+            fp.write("#2 rst_n = 1;\n")
+            fp.write("#1 rst_p = 0;\n")
 
             fp.write("\n")
             fp.write("end\n\n")
@@ -866,8 +870,70 @@ class Verilog_tools:
                         exec(fp.read())
         os.chdir("../build")
         os.system("ls")
-        for list in self.build_list:
-            os.system(list["build_opts"])
+        for key in self.build_list.keys():
+            os.system(self.build_list[key]["build_opts"])
+
+    def sim_single(self,test_case,seed,q):
+        if not os.path.isdir( "../work"):
+            print("no work directory, create it")
+            os.makedirs("../work")
+        if not os.path.isdir( "../work/"+ test_case + "_" + str(seed)):
+            print("no test directory, create it")
+            os.makedirs( "../work/"+ test_case + "_" + str(seed))
+        print("run test case: ",test_case,", seed=",seed)
+        os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + ">> tools.log")
+        if not os.path.exists("../work/"+ test_case + "_" + str(seed) + "/tools.log"):
+            print("can not find log !!!")
+            q.put(False)
+            print("running test case number:",threading.activeCount() ,"  can not find log !!!")
+        else:
+            with open ("../work/"+ test_case + "_" + str(seed) + "/tools.log") as fi:
+                if re.search("TEST\s*CASE\s*PASSED",fi.read()) is not None:
+                    print(test_case + "_" + str(seed) + " pass")
+                    q.put(True)
+                    print("running test case number:",threading.activeCount(),"  "+test_case + "_" + str(seed) + " pass")
+                else:
+                    q.put(False)
+                    print("running test case number:",threading.activeCount(),"  "+test_case + "_" + str(seed) + " fail")
+
+        
+
+
+    def sim(self,test_case,seed,repeat_num):
+        for relpath, dirs, files in os.walk("./testlist"):
+            for file in files:
+                if(re.match(".+\.py",file) is not None):
+                    print(file)
+                    with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
+                        exec(fp.read())
+            print(test_case)
+            print(self.test_list)
+        if test_case in self.test_list.keys():
+            result = []
+            pass_cnt = 0
+            fail_cnt = 0
+            q = Queue()
+            threads = []
+            if repeat_num == None:
+                repeat_num = self.test_list[test_case]["repeat_num"]
+            for index in range(repeat_num):
+                if seed == None:
+                    t = threading.Thread(target=self.sim_single,args=(test_case,random.randint(0,9999999),q))
+                else:
+                    t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
+                t.start()
+                threads.append(t)
+            print(repeat_num," test case are running")
+            for thread in threads:
+                thread.join()
+            for _ in range(repeat_num):
+                if q.get():
+                    pass_cnt = pass_cnt + 1
+                else:
+                    fail_cnt = fail_cnt + 1
+            print("repeat num = ",repeat_num,", pass ",pass_cnt,", fail ",fail_cnt)
+
+
 
 
     def sim_gen(self, dic, name):
