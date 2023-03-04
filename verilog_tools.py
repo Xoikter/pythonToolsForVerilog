@@ -789,17 +789,9 @@ class Verilog_tools:
         fp.write("endclass\n")
         fp.close()
 
-    def scoreboard_gen(self, Source_path, TargetPath, name, flag):
-        os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-        if flag == 1:
-            write_str = re.sub("my", name, open("./uvm/my_scoreboard_seq.sv", "r").read())
-        else:
-            write_str = re.sub("my", name, open("./uvm/my_scoreboard_comb.sv", "r").read())
-        path = self.make_sim_dic(TargetPath, name)
-        os.chdir(path)
-        fp = open(name + "_scoreboard.sv", "w")
-        fp.write(write_str)
-        fp.close()
+    # FIXME:
+    def scoreboard_gen(self):
+        str_temp = "class "+self.filename+"_scoreboard extends uvm_scoreboard;\n\n"
 
     def monitor_gen(self,componetn_id):
         str_temp = re.sub("my", self.filename, open("./uvm/my_monitor.sv", "r").read())
@@ -809,7 +801,57 @@ class Verilog_tools:
 
 
     def model_gen(self):
-        str_temp = "class "+self.filename+" extends uvm_component;\n\n"
+        str_temp = "class "+self.filename+"_model extends uvm_component;\n\n"
+        for index in range(self.agent_out_num):
+            str_temp = str_temp + "    " + self.filename + "_transaction expect_queue" + str(index) + "[$]\n"
+        
+        # generate port
+        for index in range(self.agent_in_num):
+            str_temp = str_temp + "    uvm_blocking_get_port #(" + self.filename + "transaction) port" + str(index) +";\n"
+        
+        str_temp = str_temp + "\n\n"
+        
+        #generate ap
+        for index in range(self.agent_out_num):
+            str_temp = str_temp + "    uvm_analysis_port #(" + self.filename + "transaction) ap" + str(index) +";\n"
+
+        str_temp = str_temp + "\n\n"
+
+        str_temp = str_temp + "    extern function new(string name, uvm_component parent);\n"
+        str_temp = str_temp + "    extern function void build_phase(uvm_phase phase);\n"
+        str_temp = str_temp + "    extern virtual  task main_phase(uvm_phase phase);\n"
+
+        str_temp = str_temp + "\n\n"
+
+        str_temp = str_temp + "    `uvm_component_utils(" + self.filename + "_model)\n"
+        str_temp = str_temp + "endclass\n"
+
+        str_temp = str_temp + "\n\n"
+
+
+        str_temp = str_temp + "function void " + self.filename + "_model::new(string name, uvm_component parent);\n"
+        str_temp = str_temp + "    super.new(name, parent);\n"
+        str_temp = str_temp + "endfunction\n"
+
+        str_temp = str_temp + "\n\n"
+
+
+        str_temp = str_temp + "function void " + self.filename + "_model::build_phase(string name, uvm_component parent);\n"
+        str_temp = str_temp + "    super.build_phase(name, parent);\n"
+        for index in range(self.agent_in_num):
+            str_temp = "    port"+str(index)+" = (\"port" + str(index) + "\", this);\n"
+        for index in range(self.agent_out_num):
+            str_temp = "    ap"+str(index)+" = (\"ap" + str(index) + "\", this);\n"
+        str_temp = str_temp + "endfunction\n"
+
+        str_temp = str_temp + "\n\n"
+    
+        str_temp = str_temp + "function void " + self.filename + "_model::main_phase(string name, uvm_component parent);\n"
+        str_temp = str_temp + "    super.main_phase(phase);\n"
+        str_temp = str_temp + "\n\n"
+        str_temp = str_temp + "\n\n"
+        str_temp = str_temp + "endtask\n"
+        return str_temp
 
     def env_gen(self, Source_path, TargetPath, name, flag):
         os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考

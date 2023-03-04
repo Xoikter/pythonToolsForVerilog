@@ -20,7 +20,8 @@ if __name__ == '__main__':
     config_flag = False
     delete_pass = False
     # print(sys.argv[1:])
-    agent_num = 1
+    agent_in_num = 1
+    agent_out_num = 1
 
 
     opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:e:x:s:r:a:m")
@@ -75,7 +76,7 @@ if __name__ == '__main__':
         elif(opt == '-m'):
             delete_pass = True
 
-    fc = vt(name)
+    fc = vt(name,agent_in_num,agent_out_num)
     # if len(sys.argv) > 2:
         # fc.SourcePath = sys.argv[2]
     # if len(sys.argv) > 3:
