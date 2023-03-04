@@ -101,6 +101,8 @@ class Verilog_tools:
         self.tc = {
             "case0": open(os.path.dirname(__file__) + "/uvm/my_case0.sv", "r", errors="ignore").read()
         }
+        self.build_py = open(os.path.dirname(__file__) + "/build/build.py", "r", errors="ignore").read()
+        self.test_list_py = open(os.path.dirname(__file__) + "/test_list/test_list.py", "r", errors="ignore").read()
 
     def test_map_initial(self):
         for relpath, dirs, files in os.walk(self.TargetPath):
@@ -1031,7 +1033,7 @@ class Verilog_tools:
             os.makedirs(targetPath + "/" + name + "/work")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl/build")
-            os.makedirs(targetPath + "/" + name + "/sim_ctrl/testlist")
+            os.makedirs(targetPath + "/" + name + "/sim_ctrl/test_list")
             # os.chdir(targetPath+"/"+name)
             for item in self.uvc:
                 fp = open(targetPath + "/" + name + "/uvc/" + name + "_" + item + ".sv", "w")
@@ -1084,6 +1086,12 @@ class Verilog_tools:
             fp.write("#fsdbDumpfile \"$env(name).fsdb\"\n")
             fp.write("fsdbDumpvars 0 \"$env(name)\"\n")
             fp.write("run")
+            fp.close()
+            fp = open(targetPath + name + "/sim_ctrl/build/build.py", "w")
+            fp.write(self.build)
+            fp.close()
+            fp = open(targetPath + name + "/sim_ctrl/test_list/test_list.py", "w")
+            fp.write(self.test_list_py)
             fp.close()
             fp = open(targetPath + name + "/sim_ctrl/synopsys_sim.setup", "w")
             fp.write("WORK>DEFAULT\n")
