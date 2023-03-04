@@ -10,7 +10,7 @@ from file_analyse import File_analyse as fa
 
 # path = "../verilog_python"
 class Verilog_tools:
-    def __init__(self,name):
+    def __init__(self,name,agent_in_num,agent_out_num):
         self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos',
                         'deassign',
                         'default',
@@ -58,6 +58,9 @@ class Verilog_tools:
         self.regress_list={}
         self.sanity_list={}
         self.fa = fa("")
+        self.agent_in_num = agent_in_num
+        self.agent_out_num = agent_out_num
+
 
         self.ctree = ["de",
                       "de/filelist",
@@ -798,23 +801,15 @@ class Verilog_tools:
         fp.write(write_str)
         fp.close()
 
-    def monitor_gen(self, Source_path, TargetPath, name, flag):
-        os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-        write_str = re.sub("my", name, open("./uvm/my_monitor.sv", "r").read())
-        path = self.make_sim_dic(TargetPath, name)
-        os.chdir(path)
-        fp = open(name + "_monitor.sv", "w")
-        fp.write(write_str)
-        fp.close()
+    def monitor_gen(self,componetn_id):
+        str_temp = re.sub("my", self.filename, open("./uvm/my_monitor.sv", "r").read())
+        str_temp = re.sub(self.filename+ "_monitor", self.filename+ "_monitor"+str(componetn_id),str_temp)
+        str_temp = re.sub(self.filename+ "_transaction", self.filename+ "_transaction"+str(componetn_id),str_temp)
+        return str_temp
 
-    def model_gen(self, Source_path, TargetPath, name, flag):
-        os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-        write_str = re.sub("my", name, open("./uvm/my_model.sv", "r").read())
-        path = self.make_sim_dic(TargetPath, name)
-        os.chdir(path)
-        fp = open(name + "_model.sv", "w")
-        fp.write(write_str)
-        fp.close()
+
+    def model_gen(self):
+        str_temp = "class "+self.filename+" extends uvm_component;\n\n"
 
     def env_gen(self, Source_path, TargetPath, name, flag):
         os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
@@ -825,14 +820,11 @@ class Verilog_tools:
         fp.write(write_str)
         fp.close()
 
-    def drive_gen(self, Source_path, TargetPath, name, flag):
-        os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-        write_str = re.sub("my", name, open("./uvm/my_driver.sv", "r").read())
-        path = self.make_sim_dic(TargetPath, name)
-        os.chdir(path)
-        fp = open(name + "_driver.sv", "w")
-        fp.write(write_str)
-        fp.close()
+    def drive_gen(self,componetn_id):
+        str_temp = re.sub("my", self.filename, open("./uvm/my_driver.sv", "r").read())
+        str_temp = re.sub(self.filename+ "_driver", self.filename+ "_driver"+str(componetn_id),str_temp)
+        str_temp = re.sub(self.filename+ "_transaction", self.filename+ "_transaction"+str(componetn_id),str_temp)
+        return str_temp
 
     def case_gen(self, Source_path, TargetPath, name, flag):
         os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
