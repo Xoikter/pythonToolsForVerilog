@@ -1,29 +1,15 @@
 OUTPUT = my
 export name = ${OUTPUT}
-comp_uvm:
-	vlogan -work WORK -timescale=1ns/1ps -j6 -lca -kdb -ntb_opts uvm-1.1 -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
-comp_ip:
-	vlogan -work WORK -timescale=1ns/1ps -j6 -ntb_opts uvm-1.1 -lca -kdb -f ../../../../ip/ip.f -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
-
-comp: comp_uvm comp_ip
-	vlogan -work WORK -timescale=1ns/1ps -j6 -ntb_opts uvm-1.1 -lca -kdb -full64 -sverilog  -f ../filelist/filelist.f  -l sim.log ../tb/${OUTPUT}_tb.sv -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
-elaborate:
-	vcs   ${OUTPUT}_tb -ntb_opts uvm-1.1 -j6 -full64 -lca -kdb  -fsdb  +lint=TFIPC-L -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a
-sim: comp elaborate
-	./simv  -ucli +UVM_TESTNAME=${OUTPUT}_case0  -i   ./run.tcl  +fsdbfile+${OUTPUT}.fsdb + autoflush  -l sim.log
-verdi:
-	verdi -elab simv.daidir/kdb -ssf ${OUTPUT}.fsdb -nologo  -l v.log
-
-
-VCS:
-	vcs  +acc +vpi -j6   -full64 +v2k -sverilog -ntb_opts uvm-1.1 +incdir+${UVM_HOME}/src  ${UVM_HOME}/src/uvm_pkg.sv ${UVM_HOME}/src/dpi/uvm_dpi.cc  +define+DEBUG  -CFLAGS -DVCS -lca -kdb +lint=TFIPC-L -timescale=1ns/1ps -debug_acc+all -debug_region+cell+encrypt -LDFLAGS -rdynamic  -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a  -f ../filelist/filelist.f  -l sim.log ../tb/${OUTPUT}_tb.sv
-VERDI:
-	verdi -f file_list.f -ssf ${OUTPUT}.fsdb -nologo  -l v.log 
-SIM:
-	./simv   +UVM_TESTNAME=${OUTPUT}_case0 -gui=verdi -i   ./run.tcl  +fsdbfile+${OUTPUT}.fsdb + autoflush  -l sim.log
-SIM_NO_GUI:
-	./simv  -ucli +UVM_TESTNAME=${OUTPUT}_case0 -i  ./run.tcl -l sim.log
+REPEAT=1
+SEED=0
+TC=${name}_case0
 CLEAN:
 	rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf
-TEST: VCS SIM
-CASE: VCS SIM_NO_GUI
+
+comp:
+	python ${PYTOOLS_HOME}/main.py -c comp -n ${name}
+
+sim:
+	python ${PYTOOLS_HOME}/main.py -c sim -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT}
+
+all: comp sim

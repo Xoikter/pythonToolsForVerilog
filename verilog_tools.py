@@ -72,7 +72,8 @@ class Verilog_tools:
                       "dv/tg",
                       "impl",
                       "fpga",
-                      "ip"
+                      "ip",
+                      "doc"
                       ]
 
         self.makefile = {"de/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_de_filelist", "r",
@@ -93,6 +94,7 @@ class Verilog_tools:
             # "scoreboard_comb": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_comb.sv", "r", errors="ignore").read(),
             "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read(),
             "sequencer": open(os.path.dirname(__file__) + "/uvm/my_sequencer.sv", "r", errors="ignore").read(),
+            "vsqr": open(os.path.dirname(__file__) + "/uvm/my_vsqr.sv", "r", errors="ignore").read(),
             "driver": open(os.path.dirname(__file__) + "/uvm/my_driver.sv", "r", errors="ignore").read(),
             "monitor": open(os.path.dirname(__file__) + "/uvm/my_monitor.sv", "r", errors="ignore").read(),
             "agent": open(os.path.dirname(__file__) + "/uvm/my_agent.sv", "r", errors="ignore").read(),
@@ -103,6 +105,10 @@ class Verilog_tools:
         # "if": open(os.path.dirname(__file__) + "/uvm/my_if.sv", "r", errors="ignore").read(),
         self.tc = {
             "case0": open(os.path.dirname(__file__) + "/uvm/my_case0.sv", "r", errors="ignore").read()
+        }
+        self.seq_lib = {
+            "case0_sequence": open(os.path.dirname(__file__) + "/uvm/my_case0_sequence.sv", "r", errors="ignore").read(),
+            "case0_vseq": open(os.path.dirname(__file__) + "/uvm/my_case0_vseq.sv", "r", errors="ignore").read()
         }
         self.build_py = open(os.path.dirname(__file__) + "/build/build.py", "r", errors="ignore").read()
         self.test_list_py = open(os.path.dirname(__file__) + "/test_list/test_list.py", "r", errors="ignore").read()
@@ -127,7 +133,7 @@ class Verilog_tools:
                         # flag_file = 0
                         if ((item[1] in self.test_filemap) and (
                                 real_path.strip() != self.test_filemap[item[1]].strip())):
-                            print("find mutidefine module\n" + item[0])
+                            print("find mutidefine module\n" + item[1])
                             print(os.path.normpath(os.path.abspath(full_path)).replace("\\", "/") + " Y ")
                             print(self.test_filemap[item[1]] + " N ")
                             # sel = input("select:")
@@ -626,17 +632,17 @@ class Verilog_tools:
 
             fp.write("initial begin\n")
             fp.write(
-                "   uvm_config_db#(virtual " + name + "_interface_port)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif\", " + "ifo);\n")
+                "   uvm_config_db#(virtual " + name + "_interface_port)::set(null, \"uvm_test_top.env.mst_agt.drv\", \"vif\", " + "ifo);\n")
             fp.write(
-                "   uvm_config_db#(virtual " + name + "_interface_port)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif\", " + "ifo);\n")
+                "   uvm_config_db#(virtual " + name + "_interface_port)::set(null, \"uvm_test_top.env.mst_agt.mon\", \"vif\", " + "ifo);\n")
             fp.write(
-                "   uvm_config_db#(virtual " + name + "_interface_port)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif\", " + "ifo);\n")
+                "   uvm_config_db#(virtual " + name + "_interface_port)::set(null, \"uvm_test_top.env.slv_agt.mon\", \"vif\", " + "ifo);\n")
             fp.write(
-                "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.i_agt.drv\", \"vif_i\", " + "ifi);\n")
+                "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.mst_agt.drv\", \"vif_i\", " + "ifi);\n")
             fp.write(
-                "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.i_agt.mon\", \"vif_i\", " + "ifi);\n")
+                "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.mst_agt.mon\", \"vif_i\", " + "ifi);\n")
             fp.write(
-                "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.o_agt.mon\", \"vif_i\", " + "ifi);\n")
+                "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.slv_agt.mon\", \"vif_i\", " + "ifi);\n")
             fp.write("end\n")
             fp.write("\n\n\n\n\nendmodule\n")
             # fp.close()
@@ -789,14 +795,64 @@ class Verilog_tools:
         fp.write("endclass\n")
         fp.close()
 
-    # FIXME:
     def scoreboard_gen(self):
         str_temp = "class "+self.filename+"_scoreboard extends uvm_scoreboard;\n\n"
+        for index in range(self.agent_out_num):
+            str_temp = str_temp + "    " + self.filename + "_transaction expect_queue" + str(index) + "[$];\n"
+            str_temp = str_temp + "    uvm_blocking_get_port #(" + self.filename + "_transaction) exp_port" + str(index) +";\n"
+            str_temp = str_temp + "    uvm_blocking_get_port #(" + self.filename + "_transaction) act_port" + str(index) +";\n"
+            str_temp = str_temp + "\n\n"
+        str_temp = str_temp + "    `uvm_component_utils(" + self.filename + "_scoreboard)\n"
+
+        str_temp = str_temp + "function " + self.filename + "_scoreboard::new(string name, uvm_component parent = null);\n"
+        str_temp = str_temp + "   super.new(name, parent);\n"
+        str_temp = str_temp + "endfunction\n"
+
+        str_temp = str_temp + "function void " + self.filename + "_scoreboard::build_phase(uvm_phase phase);\n"
+        str_temp = str_temp + "   super.build_phase(phase);\n"
+
+        for index in range(self.agent_out_num):
+            str_temp = str_temp + "    exp_port" + str(index) + " = new(\"exp_port" + str(index) + "\", this);\n"
+            str_temp = str_temp + "    act_port" + str(index) + " = new(\"act_port" + str(index) + "\", this);\n"
+        str_temp = str_temp + "endfunction\n"
+
+        str_temp = str_temp + "task " + self.filename + "_scoreboard::main_phase(uvm_phase phase);\n"
+        for index in range(self.agent_out_num):
+            str_temp = str_temp + "    " + self.filename + "_transaction get_expect" + str(index) + ", get_actual" + str(index) + ", tmp_tran" + str(index) + ";\n"
+            str_temp = str_temp + "    bit result" + str(index) + ";\n"
+        str_temp = str_temp + "   super.main_phase(phase);\n"
+        str_temp = str_temp + "    fork\n"
+        for index in range(self.agent_out_num):
+            str_temp = str_temp + "      while(1) begin\n"
+            str_temp = str_temp + "        exp_port" + str(index) + ".get(get_expect" + str(index) + ");\n"
+            str_temp = str_temp + "      end\n"
+            str_temp = str_temp + "      while(1) begin\n"
+            str_temp = str_temp + "        act_port" + str(index) + ".get(act_expect" + str(index) + ");\n"
+            str_temp = str_temp + "        if(expect_queue" + str(index) + ".size() > 0) begin\n"
+            str_temp = str_temp + "          tmp_tran" + str(index) + " = expect_queue" + str(index) + ".pop_front();\n"
+            str_temp = str_temp + "          result" + str(index) + " = get_actual" + str(index) + ".compare(tmp_tran" + str(index) + ");\n"
+            str_temp = str_temp + "          if(result" + str(index) + ") begin\n"
+            str_temp = str_temp + "          `uvm_info(\"my_scoreboard\", \"" + "Checker" + str(index) +  " compare SUCCESSFULLY\", UVM_LOW);\n"
+            str_temp = str_temp + "          end\n"
+            str_temp = str_temp + "          else begin\n"
+            str_temp = str_temp + "            `uvm_error(\"my_scoreboard\", \"" + "Checker" + str(index) +  " compare FAILED\");\n"
+            str_temp = str_temp + "          end\n"
+            str_temp = str_temp + "        end\n"
+            str_temp = str_temp + "        else begin\n"
+            str_temp = str_temp + "          `uvm_error(\"my_scoreboard\", \"" + "Checker" + str(index) +  " received from DUT, while Expect Queue is empty\");\n"
+            str_temp = str_temp + "        end\n"
+            str_temp = str_temp + "      end\n"
+        str_temp = str_temp + "    join\n"
+        str_temp = str_temp + "endtask\n"
+        return str_temp
+               
+
+
 
     def monitor_gen(self,componetn_id):
         str_temp = re.sub("my", self.filename, open("./uvm/my_monitor.sv", "r").read())
         str_temp = re.sub(self.filename+ "_monitor", self.filename+ "_monitor"+str(componetn_id),str_temp)
-        str_temp = re.sub(self.filename+ "_transaction", self.filename+ "_transaction"+str(componetn_id),str_temp)
+        # str_temp = re.sub(self.filename+ "_transaction", self.filename+ "_transaction"+str(componetn_id),str_temp)
         return str_temp
 
 
@@ -854,18 +910,34 @@ class Verilog_tools:
         return str_temp
 
     def env_gen(self, Source_path, TargetPath, name, flag):
-        os.chdir(os.path.dirname(__file__))  # 路径是以此python文件路径为参考
-        write_str = re.sub("my", name, open("./uvm/my_env.sv", "r").read())
-        path = self.make_sim_dic(TargetPath, name)
-        os.chdir(path)
-        fp = open(name + "_env.sv", "w")
-        fp.write(write_str)
-        fp.close()
+        str_temp = "class "+self.filename+"_env extends uvm_env;\n\n"
+        str_temp = str_temp + "    " + self.filename + "_model mdl;\n"
+        str_temp = str_temp + "    " + self.filename + "_scoreboard scb;\n"
+        for index in self.agent_in_num:
+            str_temp = str_temp + "    " + self.filename + "agent_master" + str(index) + ";\n"
+            str_temp = str_temp + "    uvm_tlm_analysis_fifo #(" + self.filename + "_transaction) " + "agent_master" + str(index) +"_mdl_fifo;\n"
+        str_temp = str_temp + "\n\n"
+        for index in self.agent_out_num:
+            str_temp = str_temp + "    " + self.filename + "agent_slave" + str(index) + ";\n"
+            str_temp = str_temp + "    uvm_tlm_analysis_fifo #(" + self.filename + "_transaction) " + "agent_slave" + str(index) +"_scb_fifo;\n"
+        for index in self.agent_out_num:
+            str_temp = str_temp + "    uvm_tlm_analysis_fifo #(" + self.filename + "_transaction) " + "mdl_scb_fifo" + str(index) + ";\n"
+        str_temp = str_temp + "    function new(string name = \"" + self.filename + "_env\", uvm_component parent);\n"
+        str_temp = str_temp + "        super.new(name, parent);\n"
+        str_temp = str_temp + "    endfunction\n"
+
+        str_temp = str_temp + "    virtual function void build_phase(uvm_phase phase);\n"
+        str_temp = str_temp + "        super.build_phase(phase);\n"
+        for index in range(self.agent_in_num):
+            str_temp = str_temp + "      agent_master" + str(index) + " = " + self.filename + "_agent_master" + str(index) + "::type_id::create(\"agent_master" + str(index) + "\", this);\n"
+        str_temp = str_temp + "\n\n"
+        for index in range(self.agent_in_num):
+            str_temp = str_temp + "      agent_slave" + str(index) + " = " + self.filename + "_agent_slave" + str(index) + "::type_id::create(\"agent_master" + str(index) + "\", this);\n"
 
     def drive_gen(self,componetn_id):
         str_temp = re.sub("my", self.filename, open("./uvm/my_driver.sv", "r").read())
         str_temp = re.sub(self.filename+ "_driver", self.filename+ "_driver"+str(componetn_id),str_temp)
-        str_temp = re.sub(self.filename+ "_transaction", self.filename+ "_transaction"+str(componetn_id),str_temp)
+        # str_temp = re.sub(self.filename+ "_transaction", self.filename+ "_transaction"+str(componetn_id),str_temp)
         return str_temp
 
     def case_gen(self, Source_path, TargetPath, name, flag):
@@ -1064,7 +1136,9 @@ class Verilog_tools:
             os.makedirs(targetPath + "/" + name + "/uvc")
             os.makedirs(targetPath + "/" + name + "/tb")
             os.makedirs(targetPath + "/" + name + "/testcase")
+            os.makedirs(targetPath + "/" + name + "/seq_lib")
             os.makedirs(targetPath + "/" + name + "/work")
+            os.makedirs(targetPath + "/" + name + "/build")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl/build")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl/test_list")
@@ -1073,9 +1147,13 @@ class Verilog_tools:
                 fp = open(targetPath + "/" + name + "/uvc/" + name + "_" + item + ".sv", "w")
                 fp.write(re.sub("my", name, self.uvc[item]))
                 fp.close()
+            for item in self.seq_lib:
+                fp = open(targetPath + "/" + name + "/seq_lib/" + name + "_" + item + ".sv", "w")
+                fp.write(re.sub("my", name, self.seq_lib[item]))
+                fp.close()
             fp = open(targetPath + "/" + name + "/uvc/" + name + "_""package.sv", "w")
-            fp.write("`include " + "uvm_macros.svh" + "\n")
             fp.write("import uvm_pkg::*;\n")
+            fp.write("`include " + "\"uvm_macros.svh\"" + "\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/uvc/" + name + "_interface_port.sv", "w")
             fq = open(targetPath + "/" + name + "/uvc/" + name + "_interface_inner.sv", "w")
@@ -1104,6 +1182,8 @@ class Verilog_tools:
             fp.write("../uvc/" + name + "_interface_inner.sv\n")
             for item in self.uvc:
                 fp.write("../uvc/" + name + "_" + item + ".sv\n")
+            for item in self.seq_lib:
+                fp.write("../seq_lib/" + name + "_" + item + ".sv\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist_tc.f", "w")
             for item in self.tc:
@@ -1117,17 +1197,17 @@ class Verilog_tools:
             fp.close()
             fp = open(targetPath + name + "/sim_ctrl/run.tcl", "w")
             fp.write("global env \n")
-            fp.write("#fsdbDumpfile \"$env(name).fsdb\"\n")
+            fp.write("#fsdbDumpfile \"hw.fsdb\"\n")
             fp.write("fsdbDumpvars 0 \"$env(name)\"\n")
             fp.write("run")
             fp.close()
             fp = open(targetPath + name + "/sim_ctrl/build/build.py", "w")
-            fp.write(self.build)
+            fp.write(self.build_py)
             fp.close()
             fp = open(targetPath + name + "/sim_ctrl/test_list/test_list.py", "w")
             fp.write(self.test_list_py)
             fp.close()
-            fp = open(targetPath + name + "/sim_ctrl/synopsys_sim.setup", "w")
+            fp = open(targetPath + name + "/build/synopsys_sim.setup", "w")
             fp.write("WORK>DEFAULT\n")
             fp.write("DEFAULT:./work\n")
             fp.write("OTHERS=/opt/vivado_lib/synopsys_sim.setup\n")

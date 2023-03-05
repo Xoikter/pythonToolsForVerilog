@@ -24,7 +24,7 @@ if __name__ == '__main__':
     agent_out_num = 1
 
 
-    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:e:x:s:r:a:m")
+    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:m:e",["agent_in_num=","agent_out_num="])
     # print(args.exclude)
     for opt, arg in opts:
         if(opt == '-e'):
@@ -48,13 +48,11 @@ if __name__ == '__main__':
                             except_module = ast.literal_eval(item[1])
                     fd.close()
                     config_flag = True
-                    fc.SourcePath = SourcePath
-                    fc.TargetPath = TargetPath
-                    fc.except_module = except_module
         elif(opt == '-c'):
             cmd = arg
         elif(opt == '-t'):
             top = arg
+            name = top
         elif(opt == '-n'):
             name = arg
         elif(opt == '-x'):
@@ -71,12 +69,17 @@ if __name__ == '__main__':
                 repeat_num = None
             else:
                 repeat_num = int(arg)
-        elif(opt == '-a'):
-            agent_num = int(arg)
+        elif(opt == '-agent_in_num'):
+            agent_in_num = int(arg)
+        elif(opt == '-agent_out_num'):
+            agent_out_num = int(arg)
         elif(opt == '-m'):
             delete_pass = True
 
     fc = vt(name,agent_in_num,agent_out_num)
+    fc.SourcePath = SourcePath
+    fc.TargetPath = TargetPath
+    fc.except_module = except_module
     # if len(sys.argv) > 2:
         # fc.SourcePath = sys.argv[2]
     # if len(sys.argv) > 3:

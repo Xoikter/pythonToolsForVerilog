@@ -1,12 +1,14 @@
 class my_base_test extends uvm_test;
 
    my_env         env;
+   my_vsqr        vsqr;
    
    function new(string name = "my_base_test", uvm_component parent = null);
       super.new(name,parent);
    endfunction
    
    extern virtual function void build_phase(uvm_phase phase);
+   extern virtual function void connect_phase(uvm_phase phase);
    extern virtual function void report_phase(uvm_phase phase);
    extern task main_phase(uvm_phase phase);
    `uvm_component_utils(my_base_test)
@@ -19,7 +21,14 @@ endtask
 function void my_base_test::build_phase(uvm_phase phase);
    super.build_phase(phase);
    env  =  my_env::type_id::create("env", this); 
+   vsqr =  my_vsqr::type_id::create("vsqr", this); 
 endfunction
+
+function void my_base_test::connect_phase(uvm_phase phase);
+   super.connect_phase(phase);
+   vsqr.sqr0 = env.mst_agt.sqr;
+endfunction
+
 
 function void my_base_test::report_phase(uvm_phase phase);
    uvm_report_server server;
