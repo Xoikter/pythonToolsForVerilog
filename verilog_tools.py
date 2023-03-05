@@ -85,6 +85,8 @@ class Verilog_tools:
                          "dv/tg": open(os.path.dirname(__file__) + "/makefile/makefile_dv_uvc", "r",
                                        errors="ignore").read(),
                          "dv/sim": open(os.path.dirname(__file__) + "/makefile/makefile_dv_sim", "r",
+                                        errors="ignore").read(),
+                         "sim": open(os.path.dirname(__file__) + "/makefile/makefile_sim", "r",
                                         errors="ignore").read()}
         self.config = {
             "dv/tg": open(os.path.dirname(__file__) + "/config/config_dv_tg.txt", "r", errors="ignore").read(),
@@ -990,25 +992,40 @@ class Verilog_tools:
             os.makedirs( "../work/"+ test_case + "_" + str(seed))
         print("run test case: ",test_case,", seed=",seed)
         os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + ">> tools.log")
+        fp = open("../work/"+ test_case + "_" + str(seed) + "/makefile","w")
+        str_temp = re.sub("my",self.filename,self.makefile["sim"])
+        str_temp = re.sub("TC_TEMP",test_case,str_temp)
+        str_temp = re.sub("SEED_TEMP",str(seed),str_temp)
+        fp.write(str_temp)
+        fp.close()
+        fp = open("../work/"+ test_case + "_" + str(seed) + "/run.tcl","w")
+        fp.write("global env \n")
+        fp.write("#fsdbDumpfile \"hw.fsdb\"\n")
+        fp.write("fsdbDumpvars 0 \"$env(name)_tb\"\n")
+        fp.write("run")
+        fp.close()
         if not os.path.exists("../work/"+ test_case + "_" + str(seed) + "/tools.log"):
             print("can not find log !!!")
-            q.put(False)
+            q.put([False," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
             print("running test case number:",threading.activeCount() ,"  can not find log !!!")
         else:
             with open ("../work/"+ test_case + "_" + str(seed) + "/tools.log") as fi:
                 if re.search("TEST\s*CASE\s*PASSED",fi.read()) is not None:
                     print(test_case + "_" + str(seed) + " pass")
-                    q.put(True)
-                    print("running test case number:",threading.activeCount(),"  "+test_case + "_" + str(seed) + " pass")
+                    q.put([True," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+                    print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " pass")
+                    print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                 else:
-                    q.put(False)
-                    print("running test case number:",threading.activeCount(),"  "+test_case + "_" + str(seed) + " fail")
+                    q.put([False," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+                    print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " pass")
+                    print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " fail")
+                    print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
 
         
 
 
     def sim(self,test_case,seed,repeat_num):
-        for relpath, dirs, files in os.walk("./testlist"):
+        for relpath, dirs, files in os.walk("./test_list"):
             for file in files:
                 if(re.match(".+\.py",file) is not None):
                     print(file)
@@ -1019,13 +1036,15 @@ class Verilog_tools:
         if test_case in self.test_list.keys():
             result = []
             pass_cnt = 0
+            pass_case = []
+            fail_case = []
             fail_cnt = 0
             q = Queue()
             threads = []
             if repeat_num == None:
                 repeat_num = self.test_list[test_case]["repeat_num"]
             for index in range(repeat_num):
-                if seed == None:
+                if repeat_num != 1:
                     t = threading.Thread(target=self.sim_single,args=(test_case,random.randint(0,9999999),q))
                 else:
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
@@ -1035,10 +1054,17 @@ class Verilog_tools:
             for thread in threads:
                 thread.join()
             for _ in range(repeat_num):
-                if q.get():
+                result = q.get()
+                if result[0]:
                     pass_cnt = pass_cnt + 1
+                    pass_case.append(result[1])
                 else:
                     fail_cnt = fail_cnt + 1
+                    fail_case.append(result[1])
+            for item in pass_case:
+                print("pass case: " + item)
+            for item in fail_case:
+                print("fail case: " + item)
             print("repeat num = ",repeat_num,", pass ",pass_cnt,", fail ",fail_cnt)
 
 
@@ -1198,7 +1224,7 @@ class Verilog_tools:
             fp = open(targetPath + name + "/sim_ctrl/run.tcl", "w")
             fp.write("global env \n")
             fp.write("#fsdbDumpfile \"hw.fsdb\"\n")
-            fp.write("fsdbDumpvars 0 \"$env(name)\"\n")
+            fp.write("fsdbDumpvars 0 \"$env(name)_tb\"\n")
             fp.write("run")
             fp.close()
             fp = open(targetPath + name + "/sim_ctrl/build/build.py", "w")

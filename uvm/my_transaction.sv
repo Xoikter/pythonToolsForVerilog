@@ -7,7 +7,6 @@ class my_transaction extends uvm_sequence_item;
 
 
    function void post_randomize();
-      // crc = calc_crc;  
       endfunction
 
    `uvm_object_utils_begin(my_transaction)
