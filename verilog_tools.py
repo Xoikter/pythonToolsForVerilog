@@ -61,7 +61,7 @@ class Verilog_tools:
         self.agent_in_num = agent_in_num
         self.agent_out_num = agent_out_num
         self.del_pass = False
-        self.max_thread = 100
+        self.max_thread = 150
         self.sem = threading.Semaphore(self.max_thread)
 
 
@@ -1083,7 +1083,7 @@ class Verilog_tools:
                 threads.append(t)
             print(repeat_num," test case are running")
             for thread in threads:
-                thread.join()
+                thread.join(300)
             for _ in range(repeat_num):
                 result = q.get()
                 if result[0]:
