@@ -61,6 +61,8 @@ class Verilog_tools:
         self.agent_in_num = agent_in_num
         self.agent_out_num = agent_out_num
         self.del_pass = False
+        self.max_thread = 100
+        self.sem = threading.Semaphore(self.max_thread)
 
 
         self.ctree = ["de",
@@ -1009,6 +1011,7 @@ class Verilog_tools:
         print("run test case: ",test_case,", seed=",seed)
         print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) )
         os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + "> tools.log")
+        
         if self.del_pass is False:
             fp = open("../work/"+ test_case + "_" + str(seed) + "/makefile","w")
             str_temp = re.sub("my",self.filename,self.makefile["sim"])
@@ -1040,6 +1043,7 @@ class Verilog_tools:
                     q.put([False," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
                     print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " fail")
                     print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
+        self.sem.release()
         
 
 
@@ -1070,8 +1074,10 @@ class Verilog_tools:
                         seed_temp = random.randint(0,9999999)
                         # print("retry 00000000000000")
                     seed_use.append(seed_temp)
+                    self.sem.acquire()
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed_temp,q))
                 else:
+                    self.sem.acquire()
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
                 t.start()
                 threads.append(t)
