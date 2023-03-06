@@ -2,6 +2,7 @@ OUTPUT = my
 export name = ${OUTPUT}
 REPEAT=1
 SEED=0
+DEL_PASS=False
 TC=${name}_case0
 CLEAN:
 	rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf
@@ -10,6 +11,6 @@ comp:
 	python ${PYTOOLS_HOME}/main.py -c comp -n ${name}
 
 sim:
-	python ${PYTOOLS_HOME}/main.py -c sim -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT}
+	python ${PYTOOLS_HOME}/main.py -c sim -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT} --del_pass ${DEL_PASS}
 
 all: comp sim

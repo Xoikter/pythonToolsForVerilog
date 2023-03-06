@@ -18,13 +18,13 @@ if __name__ == '__main__':
     TargetPath = ""
     except_module = [""]
     config_flag = False
-    delete_pass = False
+    del_pass = False
     # print(sys.argv[1:])
     agent_in_num = 1
     agent_out_num = 1
 
 
-    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:m:e",["agent_in_num=","agent_out_num="])
+    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:e",["agent_in_num=","agent_out_num=","del_pass="])
     # print(args.exclude)
     for opt, arg in opts:
         if(opt == '-e'):
@@ -73,13 +73,18 @@ if __name__ == '__main__':
             agent_in_num = int(arg)
         elif(opt == '-agent_out_num'):
             agent_out_num = int(arg)
-        elif(opt == '-m'):
-            delete_pass = True
+        elif(opt == '--del_pass'):
+            if(arg == "True"):
+                del_pass = True
+            else:
+                del_pass = False
 
     fc = vt(name,agent_in_num,agent_out_num)
     fc.SourcePath = SourcePath
     fc.TargetPath = TargetPath
     fc.except_module = except_module
+    print(del_pass)
+    fc.del_pass = del_pass
     # if len(sys.argv) > 2:
         # fc.SourcePath = sys.argv[2]
     # if len(sys.argv) > 3:
