@@ -979,10 +979,25 @@ class Verilog_tools:
                 if(re.match(".+\.py",file) is not None):
                     with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
                         exec(fp.read())
-        os.chdir("../build")
-        os.system("ls")
+        os.system("cd ../build && echo start build > build.log")
         for key in self.build_list.keys():
-            os.system(self.build_list[key]["build_opts"])
+            print("[INFO] run build " + key)
+            print("[INFO] build command: " + self.build_list[key]["build_opts"])
+            os.system("cd ../build/ && "+ self.build_list[key]["build_opts"] + ">> build.log")
+        with open("../build/build.log","r") as fq:
+            if (re.search("(Error|ERROR)",fq.read()) is not None):
+                print("[ERROR]  " + self.filename + " build fail")
+                return False
+            else:
+                print("[INFO]  " + self.filename + " build pass")
+                return True
+    
+    def all(self,test_case,seed,repeat_num):
+        build_result = self.comp()
+        if build_result:
+            self.sim(test_case,seed,repeat_num)
+        else:
+            print("[ERROR] skip all test case")
 
     def sim_single(self,test_case,seed,q):
         if not os.path.isdir( "../work"):
@@ -992,7 +1007,7 @@ class Verilog_tools:
             print("no test directory, create it")
             os.makedirs( "../work/"+ test_case + "_" + str(seed))
         print("run test case: ",test_case,", seed=",seed)
-        print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + "> tools.log")
+        print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) )
         os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + "> tools.log")
         if self.del_pass is False:
             fp = open("../work/"+ test_case + "_" + str(seed) + "/makefile","w")
@@ -1032,11 +1047,11 @@ class Verilog_tools:
         for relpath, dirs, files in os.walk("./test_list"):
             for file in files:
                 if(re.match(".+\.py",file) is not None):
-                    print(file)
+                    # print(file)
                     with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
                         exec(fp.read())
-            print(test_case)
-            print(self.test_list)
+            # print(test_case)
+            # print(self.test_list)
         if test_case in self.test_list.keys():
             result = []
             pass_cnt = 0
@@ -1053,7 +1068,7 @@ class Verilog_tools:
                     seed_temp = random.randint(0,9999999)
                     while(seed_temp in seed_use):
                         seed_temp = random.randint(0,9999999)
-                        print("retry 00000000000000")
+                        # print("retry 00000000000000")
                     seed_use.append(seed_temp)
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed_temp,q))
                 else:
@@ -1072,10 +1087,10 @@ class Verilog_tools:
                     fail_cnt = fail_cnt + 1
                     fail_case.append(result[1])
             for item in pass_case:
-                print("pass case: " + item)
+                print("[INFO] pass case: " + item)
             for item in fail_case:
-                print("fail case: " + item)
-            print("repeat num = ",repeat_num,", pass ",pass_cnt,", fail ",fail_cnt)
+                print("[ERROR] fail case: " + item)
+            print("[INFO] repeat num = ",repeat_num,", pass ",pass_cnt,", fail ",fail_cnt)
 
 
 

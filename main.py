@@ -57,9 +57,9 @@ if __name__ == '__main__':
             name = arg
         elif(opt == '-x'):
             testcase = arg
-            print(testcase)
+            # print(testcase)
         elif(opt == '-s'):
-            print(arg)
+            # print(arg)
             if arg == "":
                 seed = None
             else:
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     fc.SourcePath = SourcePath
     fc.TargetPath = TargetPath
     fc.except_module = except_module
-    print(del_pass)
+    # print(del_pass)
     fc.del_pass = del_pass
     # if len(sys.argv) > 2:
         # fc.SourcePath = sys.argv[2]
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     
     if len(sys.argv) > 1:
         # argue = sys.argv[1]
-        print(cmd)
+        print("[INFO] command: " + cmd)
         if (cmd == "inst"):
             if config_flag:
                 fc.file_inst(fc.SourcePath, name ,2)
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         elif (cmd == "t"):
             fc.tb_inst(fc.SourcePath, fc.TargetPath, sys.argv[1])
         elif (cmd == 'ssf'):
-            print("entry")
+            # print("entry")
             if config_flag:
                 fc.simflow_seq(fc.SourcePath, fc.TargetPath, top)
             else: 
@@ -139,6 +139,8 @@ if __name__ == '__main__':
             fc.comp()
         elif (cmd == "sim"):
             fc.sim(testcase,seed,repeat_num)
+        elif (cmd == "all"):
+            fc.all(testcase,seed,repeat_num)
         elif (cmd == "regress"):
             fc.regress(repeat_num)
         elif (cmd == "sanity"):
