@@ -7,7 +7,7 @@ CLEAN:
 	rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf
 
 verdi:
-	verdi -full64  -dbdir ../../build/simv.daidir/ -ssf hw.fsdb -smlog sim.log +UVM_TESTNAME=${TC} +ntb_random_seed=${SEED}
+	verdi -full64  -dbdir ../../build/simv.daidir/ -ssf hw.fsdb -smlog sim.log -simOpt '+UVM_TESTNAME=${TC} +ntb_random_seed=${SEED} +UVM_TIMEOUT=\"90000000ns, yes\" +UVM_MAX_QUIT_COUNT=15,no +vcs+lic+wait  +fsdb+all=on  +fsdbfile+hw.fsdb   -l sim.log'
 	
 sim:
 	python ${PYTOOLS_HOME}/main.py -c sim -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT}
