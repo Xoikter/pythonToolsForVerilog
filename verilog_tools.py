@@ -382,29 +382,49 @@ class Verilog_tools:
         fp.writelines(lines)
         fp.close()
         fp = open(path, "w+")
+        para_dictionary = {}
+        port_dictionary = {}
+        variables_dictionary = {}
         for lineT in lines:
-            resTemp = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)',
+            resTemp2 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)',
                                 lineT)
-            if resTemp is not None:
+            resTemp1 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst_i\*/\)',
+                                lineT)
+            if (resTemp2 is not None) or (resTemp1 is not None):
                 # fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
+                if resTemp2 is not None:
+                    resTemp = resTemp2
+                else:
+                    resTemp = resTemp1
                 ports = self.find_port(self.find_rtl_file(dic, resTemp.group(1)), resTemp.group(1))
                 lenStr = 0
+                len_width = 0
                 for port in ports[0]:
                     if len(port[3]) > lenStr:
                         lenStr = len(port[3])
                 for para in ports[1]:
                     if len(para) > lenStr:
                         lenStr = len(para)
+                for port in ports[1]:
+                    if len(port[2]) > len_width:
+                        len_width = len(ports[2])
+                if resTemp1 is not None:
+                    for index in range(len(ports[0])):
+                        port = ports[0][index]
+                        fp.write("logic " + port[2] + " " * (len_width - len(port[2])) + " " + port[3] + ";\n")
                 if len(ports[1]) != 0:
                     fp.write(resTemp.group(1) + " #(\n")
-                    for para in ports[1]:
+                    for index in range(len(ports[1])):
+                        para = ports[1][index]
+                        if para not in para_dictionary:
+                            para_dictionary[para] = ports[2][index]
                         if flags == 1:
-                            if para == ports[1][len(ports[1]) - 1]:
+                            if index == len(ports[1]) - 1:
                                 fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"())" + "\n")
                             else:
                                 fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"()," + "\n")
                         else:
-                            if para == ports[1][len(ports[1]) - 1]:
+                            if index == len(ports[1]) - 1:
                                 fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + para + " " * (
                                         lenStr + 2 - len(para)) + r"))" + "\n")
                             else:
@@ -417,9 +437,19 @@ class Verilog_tools:
 
                     # print(lenStr)
 
-                for port in ports[0]:
+                for index in range(len(ports[0])):
+                    port = ports[0][index]
+                    if port[3] not in port_dictionary:
+                        if port[3] not in variables_dictionary:
+                            port_dictionary[port[3]] = [port[0],port[1],port[2]]
+                    elif port[0] != port_dictionary[port[3]][0]:
+                        del port_dictionary[port[3]]
+                        if port[3] not in variables_dictionary:
+                            variables_dictionary[port[3]] = port[2]
+
+                    
                     if flags == 1:
-                        if port == ports[0][len(ports[0]) - 1]:
+                        if index == len(ports[0]) - 1:
                             fp.write(
                                 " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"());" + r"//" + port[
                                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
@@ -428,7 +458,7 @@ class Verilog_tools:
                                 " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"() ," + r"//" + port[
                                     0] + " " * (8 - len(port[0])) + port[2] + "\n")
                     else:
-                        if port == ports[0][len(ports[0]) - 1]:
+                        if index == len(ports[0]) - 1:
                             fp.write(
                                 " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
                                         lenStr + 2 - len(port[3])) + r"));" + r"//" + port[0] + " " * (
@@ -441,6 +471,73 @@ class Verilog_tools:
 
             else:
                 fp.write(lineT)
+        fp.close()
+        fp = open(path, "r+", errors='ignore')
+        lines = fp.readlines()
+        fp.close()
+        fp = open(path, "w+")
+        # print(para_dictionary)
+        # print(port_dictionary)
+        for lineT in lines:
+            resTemp = re.search('(\\bmodule+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*ports\*/\)',
+                                lineT)
+            if resTemp is not None:
+                if len(para_dictionary) != 0:
+                    fp.write("module " + resTemp.group(1) + " #(\n")
+                    cnt = 0
+                    for para in para_dictionary:
+                         if cnt == len(para_dictionary) - 1:
+                             fp.write(para_dictionary[para] + ")\n")
+                         else:
+                             fp.write(para_dictionary[para] + ",\n")
+                         cnt = cnt + 1
+                    
+                    fp.write(" " * 10 + "(\n")
+                else:
+                    fp.write("module " + resTemp.group(2) + " (\n")
+                cnt = 0
+                port0_len = 0
+                port1_len = 0
+                port2_len = 0
+                for port in port_dictionary:
+                    if len(port_dictionary[port][0]) > port0_len:
+                        port0_len = len(port_dictionary[port][0])
+                    if len(port_dictionary[port][1]) > port1_len:
+                        port1_len = len(port_dictionary[port][1])
+                    if len(port_dictionary[port][2]) > port2_len:
+                        port2_len = len(port_dictionary[port][2])
+                    
+                for port in port_dictionary:
+                    if cnt == len(port_dictionary) - 1:
+                        fp.write(" " * 4 + port_dictionary[port][0] + " "*(port0_len -  len(port_dictionary[port][0]))  + " " + "logic" + " " * 0 + " " + port_dictionary[port][2] +" " * (port2_len -  len(port_dictionary[port][2])) + " " + port + ");\n")
+                    else:
+                        fp.write(" " * 4 + port_dictionary[port][0] + " "*(port0_len -  len(port_dictionary[port][0]))  + " " + "logic" + " " * 0 + " " + port_dictionary[port][2] +" " * (port2_len -  len(port_dictionary[port][2])) + " " + port + ",\n")
+                    cnt = cnt + 1
+            else:
+                fp.write(lineT)
+
+        fp.close()
+        fp = open(path, "r+", errors='ignore')
+        lines = fp.readlines()
+        fp.close()
+        fp = open(path, "w+")
+        for lineT in lines:
+            resTemp = re.search('\s*/\*vars\*/',
+                                lineT)
+            if resTemp is not None :
+                name_len = 0
+                width_len = 0
+                for var in variables_dictionary:
+                    if(len(var) > name_len):
+                        name_len = len(var)
+                    if(len(variables_dictionary[var]) > width_len):
+                        width_len = len(variables_dictionary[var])
+                for var in variables_dictionary:
+                    fp.write("logic " + variables_dictionary[var] + " " * (width_len - len(variables_dictionary[var])) + " " + var + " " * (name_len - len(var)) + " ;\n")
+            else:
+                fp.write(lineT)
+
+
         fp.close()
 
 # autodefine is deprecated

@@ -5,17 +5,14 @@ class my_case0_vseq extends uvm_sequence;
    
    function  new(string name= "my_case0_vseq");
       super.new(name);
+      set_automatic_phase_objection(1);
    endfunction 
    
    virtual task body();
       my_case0_sequence dseq;
-      if(starting_phase != null) 
-         starting_phase.raise_objection(this);
       dseq = my_case0_sequence::type_id::create("dseq");
       dseq.start(p_sequencer.sqr0);
       
-      if(starting_phase != null) 
-         starting_phase.drop_objection(this);
    endtask
 
 endclass
