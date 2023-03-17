@@ -22,6 +22,7 @@ if __name__ == '__main__':
     # print(sys.argv[1:])
     agent_in_num = 1
     agent_out_num = 1
+    name = "test"
 
 
     opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:e",["agent_in_num=","agent_out_num=","del_pass="])

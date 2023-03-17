@@ -719,13 +719,13 @@ class Verilog_tools:
             fp.write("\n")
             fp.write("end\n\n")
 
-            fp.write("always@ * begin\n")
+            fp.write("always_comb begin\n")
             if (flags == 0):
-                fp.write("ifo.clk <= clk;\n")
-                fp.write("ifo.rst_n <= rst_n;\n")
+                fp.write("ifo.clk = clk;\n")
+                fp.write("ifo.rst_n = rst_n;\n")
             elif (flags == 1):
-                fp.write("ifo.clk <= clk;\n")
-                fp.write("ifo.rst <= rst_p;\n")
+                fp.write("ifo.clk = clk;\n")
+                fp.write("ifo.rst = rst_p;\n")
             fp.write("\nend\n\n")
 
             fp.write("initial begin\n")
@@ -746,6 +746,9 @@ class Verilog_tools:
             fp.write(
                 "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.slv_agt.mon\", \"vif_i\", " + "ifi);\n")
             fp.write("end\n")
+            fo.write("initial begin\n")
+            fo.write("   $fsdbDumpvars();\n")
+            fo.write("end\n")
             fp.write("\n\n\n\n\nendmodule\n")
             # fp.close()
         elif flag == 1:
