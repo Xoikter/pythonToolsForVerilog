@@ -12,7 +12,7 @@ class File_analyse:
                         'deassign',
                         'default',
                         'defparam', 'disable', 'edge', 'else', 'end', 'endcase', 'endmodule', 'endfunction',
-                        'endprimitive',
+                        'endprimitive','include',
                         'endspecify',
                         'endtable', 'endtask', 'event', 'for', 'force', 'forever', 'fork', 'function', 'highz0',
                         'highz1', 'if',

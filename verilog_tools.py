@@ -248,6 +248,7 @@ class Verilog_tools:
             self.map_initial()
         if define_word not in self.rtl_definemap:
             print("waring: define " + define_word + " not find ")
+            return ""
         return self.rtl_definemap.get(define_word)[0]
 
     def find_test_define_file(self, path, define_word):
@@ -746,11 +747,11 @@ class Verilog_tools:
             fp.write(
                 "   uvm_config_db#(virtual " + name + "_interface_inner)::set(null, \"uvm_test_top.env.slv_agt.mon\", \"vif_i\", " + "ifi);\n")
             fp.write("end\n")
-            fo.write("initial begin\n")
-            fo.write("   $fsdbDumpvars();\n")
-            fo.write("end\n")
+            fp.write("initial begin\n")
+            fp.write("   $fsdbDumpvars();\n")
+            fp.write("end\n")
             fp.write("\n\n\n\n\nendmodule\n")
-            # fp.close()
+            fp.close()
         elif flag == 1:
             print("file exists file refresh\n")
             # os.chdir(TargetPath)
@@ -1091,8 +1092,19 @@ class Verilog_tools:
             print("[INFO] build command: " + self.build_list[key]["build_opts"])
             os.system("cd ../build/ && "+ self.build_list[key]["build_opts"] + ">> build.log")
         with open("../build/build.log","r") as fq:
-            if (re.search("(Error|ERROR)",fq.read()) is not None):
-                print("[ERROR]  " + self.filename + " build fail")
+            if (re.search("(Error-|ERROR)",fq.read()) is not None):
+                print("\033[0;31m[ERROR]  " + self.filename + " build fail\033[0m")
+                fq.seek(0)
+                lines = fq.readlines()
+                flag = False
+                for line in lines:
+                    if(flag ==True and re.match("\s+",line) is not None):
+                        print("\033[0;31m" + line + "\033[0m")
+                    else:
+                        flag = False
+                    if(flag == False and re.search("(Error-|ERROR-)",line) is not None):
+                        print("\033[0;31m" + line + "\033[0m")
+                        flag = True
                 return False
             else:
                 print("[INFO]  " + self.filename + " build pass")
@@ -1103,7 +1115,7 @@ class Verilog_tools:
         if build_result:
             self.sim(test_case,seed,repeat_num)
         else:
-            print("[ERROR] skip all test case")
+            print("\033[0;33m[ERROR] skip all test case\033[0m")
 
     def sim_single(self,test_case,seed,q):
         if not os.path.isdir( "../work"):
@@ -1131,20 +1143,34 @@ class Verilog_tools:
             # fp.close()
         if not os.path.exists("../work/"+ test_case + "_" + str(seed) + "/tools.log"):
             print("can not find log !!!")
-            q.put([False," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+            q.put([False,[]," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
             print("running test case number:",threading.activeCount() ,"  can not find log !!!")
         else:
             with open ("../work/"+ test_case + "_" + str(seed) + "/tools.log") as fi:
                 if re.search("TEST\s*CASE\s*PASSED",fi.read()) is not None:
                     print(test_case + "_" + str(seed) + " pass")
-                    q.put([True," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+                    q.put([True,[]," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
                     print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " pass")
                     print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                     if self.del_pass:
                         print("delete sim path : ", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                         os.system("rm -rf " + os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                 else:
-                    q.put([False," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+                    temp_result = []
+                    fi.seek(0)
+                    lines = fi.readlines()
+                    flag = False
+                    for line in lines:
+                        if(flag ==True and re.match("\s+",line) is not None):
+                            print("\033[0;31m" + line + "\033[0m")
+                            temp_result.append(line)
+                        else:
+                            flag = False
+                        if(flag == False and re.match("(UVM_ERROR |UVM_FATAL )",line) is not None):
+                            print("\033[0;31m" + line + "\033[0m")
+                            temp_result.append(line)
+                            flag = True
+                    q.put([False,temp_result," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
                     print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " fail")
                     print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
         self.sem.release()
@@ -1192,10 +1218,10 @@ class Verilog_tools:
                 result = q.get()
                 if result[0]:
                     pass_cnt = pass_cnt + 1
-                    pass_case.append(result[1])
+                    pass_case.append(result[2])
                 else:
                     fail_cnt = fail_cnt + 1
-                    fail_case.append(result[1])
+                    fail_case.append(result[2])
             for item in pass_case:
                 print("[INFO] pass case: " + item)
             for item in fail_case:
