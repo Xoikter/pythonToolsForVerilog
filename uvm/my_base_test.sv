@@ -15,7 +15,7 @@ class my_base_test extends uvm_test;
 endclass
 
 task my_base_test::main_phase(uvm_phase phase);
-   phase.phase_done.set_drain_time(this,20);
+   // phase.phase_done.set_drain_time(this,20);
 endtask
 
 function void my_base_test::build_phase(uvm_phase phase);
