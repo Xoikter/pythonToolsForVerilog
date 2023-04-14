@@ -30,20 +30,27 @@ task my_monitor::main_phase(uvm_phase phase);
    my_transaction tr;
    //------------forever------//
    // while(1) begin
-   //    tr = new("tr");
-   //    collect_one_pkt(tr);
-   //    ap.write(tr);
+      // if(is_active == UVM_ACTIVE) begin
+      //    tr = new("tr");
+      //    collect_one_pkt_drv(tr);
+      //    ap.write(tr);
+      // end
+      // else begin
+      //    tr = new("tr");
+      //    collect_one_pkt_mon(tr);
+      //    ap.write(tr);
+      // end
    // end
 
    //------------repeat-------//
    repeat(1) begin
       if(is_active == UVM_ACTIVE) begin
-         tr0 = new("tr");
+         tr = new("tr");
          collect_one_pkt_drv(tr);
          ap.write(tr);
       end
       else begin
-         tr1 = new("tr1");
+         tr = new("tr");
          collect_one_pkt_mon(tr);
          ap.write(tr);
       end
