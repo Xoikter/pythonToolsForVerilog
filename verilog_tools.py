@@ -1122,12 +1122,12 @@ class Verilog_tools:
 
     def sim_single(self,test_case,seed,q):
         if not os.path.isdir( "../work"):
-            print("no work directory, create it")
+            print("[INFO] no work directory, create it")
             os.makedirs("../work")
         if not os.path.isdir( "../work/"+ test_case + "_" + str(seed)):
-            print("no test directory, create it")
+            print("[INFO] no test directory, create it")
             os.makedirs( "../work/"+ test_case + "_" + str(seed))
-        print("run test case: ",test_case,", seed=",seed)
+        print("[INFO] run test case: ",test_case,", seed=",seed)
         print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
         os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "> tools.log")
         
@@ -1145,18 +1145,18 @@ class Verilog_tools:
             # fp.write("run")
             # fp.close()
         if not os.path.exists("../work/"+ test_case + "_" + str(seed) + "/tools.log"):
-            print("can not find log !!!")
+            print("[ERROR] can not find log !!!")
             q.put([False,[]," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
-            print("running test case number:",threading.activeCount() ,"  can not find log !!!")
+            print("[ERROR] running test case number:",threading.activeCount() ,"  can not find log !!!")
         else:
             with open ("../work/"+ test_case + "_" + str(seed) + "/tools.log") as fi:
                 if re.search("TEST\s*CASE\s*PASSED",fi.read()) is not None:
-                    print(test_case + "_" + str(seed) + " pass")
+                    print("[INFO] " + test_case + "_" + str(seed) + " pass")
                     q.put([True,[]," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
-                    print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " pass")
-                    print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
+                    print("[INFO] running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " pass")
+                    print("[INFO] " + test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                     if self.del_pass:
-                        print("delete sim path : ", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
+                        print("[INFO] delete sim path : ", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                         os.system("rm -rf " + os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                 else:
                     temp_result = []
@@ -1178,8 +1178,8 @@ class Verilog_tools:
                             temp_result.append(line)
                             flag = True
                     q.put([False,temp_result," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
-                    print("running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " fail")
-                    print(test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
+                    print("[INFO] active test case number:",threading.activeCount() - 2,"  "+test_case + "_" + str(seed) + " fail")
+                    print("[INFO] " + test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
         self.sem.release()
         
 
@@ -1218,7 +1218,7 @@ class Verilog_tools:
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
                 t.start()
                 threads.append(t)
-            print(repeat_num," test case are running")
+            print("[INFO] " , threading.activeCount() - 1 ," test case are running")
             for thread in threads:
                 thread.join(300)
             for _ in range(repeat_num):

@@ -5,4 +5,5 @@ lists = {
 }
 
 for key  in lists.keys():
+    print("[INFO] add build: "+ key)
     self.build_list[key] = lists[key]

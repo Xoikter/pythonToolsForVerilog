@@ -6,5 +6,5 @@ lists = {
 
 
 for key in lists.keys():
-    print("add test case: "+ key)
+    print("[INFO] add test case: "+ key)
     self.test_list[key] = lists[key]
