@@ -4,6 +4,7 @@ REPEAT=1
 SEED=0
 DEL_PASS=False
 TC=${name}_case0
+UVM_VERIBOSITY=UVM_MEDIUM
 clean:
 	cd ../build && rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf
 
@@ -11,7 +12,7 @@ comp:
 	python ${PYTOOLS_HOME}/main.py -c comp -n ${name}
 
 sim:
-	python ${PYTOOLS_HOME}/main.py -c sim -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT} --del_pass ${DEL_PASS}
+	python ${PYTOOLS_HOME}/main.py -c sim -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT} --del_pass ${DEL_PASS} --uvm_veribosity ${UVM_VERIBOSITY}
 
 all: 
-	python ${PYTOOLS_HOME}/main.py -c all -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT} --del_pass ${DEL_PASS}
+	python ${PYTOOLS_HOME}/main.py -c all -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT} --del_pass ${DEL_PASS} --uvm_veribosity ${UVM_VERIBOSITY}
