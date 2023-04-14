@@ -23,9 +23,9 @@ if __name__ == '__main__':
     agent_in_num = 1
     agent_out_num = 1
     name = "test"
-    uvm_veribosity = "UVM_MEDIUM"
+    uvm_verbosity = "UVM_MEDIUM"
 
-    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:e",["agent_in_num=","agent_out_num=","del_pass=","uvm_veribosity="])
+    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:e",["agent_in_num=","agent_out_num=","del_pass=","uvm_verbosity="])
     # print(args.exclude)
     for opt, arg in opts:
         if(opt == '-e'):
@@ -70,8 +70,8 @@ if __name__ == '__main__':
                 repeat_num = None
             else:
                 repeat_num = int(arg)
-        elif(opt == '--uvm_veribosity'):
-            uvm_veribosity = arg
+        elif(opt == '--uvm_verbosity'):
+            uvm_verbosity = arg
         elif(opt == '-agent_in_num'):
             agent_in_num = int(arg)
         elif(opt == '-agent_out_num'):
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     fc.SourcePath = SourcePath
     fc.TargetPath = TargetPath
     fc.except_module = except_module
-    fc.uvm_veribosity = uvm_veribosity
+    fc.uvm_verbosity = uvm_verbosity
     # print(del_pass)
     fc.del_pass = del_pass
     # if len(sys.argv) > 2:

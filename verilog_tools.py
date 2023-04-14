@@ -63,7 +63,7 @@ class Verilog_tools:
         self.del_pass = False
         self.max_thread = 150
         self.sem = threading.Semaphore(self.max_thread)
-        self.uvm_veribosity="UVM_MEDIUM"
+        self.uvm_verbosity="UVM_MEDIUM"
 
 
         self.ctree = ["de",
@@ -1128,8 +1128,8 @@ class Verilog_tools:
             print("no test directory, create it")
             os.makedirs( "../work/"+ test_case + "_" + str(seed))
         print("run test case: ",test_case,", seed=",seed)
-        print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) )
-        os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERIBOSITY=" + self.uvm_veribosity + "> tools.log")
+        print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
+        os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "> tools.log")
         
         if self.del_pass is False:
             fp = open("../work/"+ test_case + "_" + str(seed) + "/makefile","w")
