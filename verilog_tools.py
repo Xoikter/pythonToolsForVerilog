@@ -1097,9 +1097,11 @@ class Verilog_tools:
                 fq.seek(0)
                 lines = fq.readlines()
                 flag = False
+                mask_cnt = 2
                 for line in lines:
-                    if(flag ==True and re.match("\s+",line) is not None):
+                    if(flag ==True and ((re.match("\s+",line) is not None) or (mask_cnt != 0))):
                         print("\033[0;31m" + line + "\033[0m")
+                        mask_cnt = mask_cnt - 1
                     else:
                         flag = False
                     if(flag == False and re.search("(Error-|ERROR-)",line) is not None):
@@ -1160,14 +1162,18 @@ class Verilog_tools:
                     fi.seek(0)
                     lines = fi.readlines()
                     flag = False
+                    mask_cnt = 2
                     for line in lines:
-                        if(flag ==True and re.match("\s+",line) is not None):
+                        # if(flag ==True and  (mask_cnt != 0)):
+                        if(flag ==True and ((re.match("\s+",line) is not None) or (mask_cnt != 0))):
                             print("\033[0;31m" + line + "\033[0m")
+                            mask_cnt = mask_cnt - 1
                             temp_result.append(line)
                         else:
                             flag = False
                         if(flag == False and re.match("(UVM_ERROR |UVM_FATAL )",line) is not None):
                             print("\033[0;31m" + line + "\033[0m")
+                            mask_cnt = 2
                             temp_result.append(line)
                             flag = True
                     q.put([False,temp_result," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
