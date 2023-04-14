@@ -22,7 +22,8 @@ class my_monitor extends uvm_monitor;
    endfunction
 
    extern task main_phase(uvm_phase phase);
-   extern task collect_one_pkt(my_transaction tr);
+   extern task collect_one_pkt_drv(my_transaction tr);
+   extern task collect_one_pkt_mon(my_transaction tr);
 endclass
 
 task my_monitor::main_phase(uvm_phase phase);
@@ -36,22 +37,24 @@ task my_monitor::main_phase(uvm_phase phase);
 
    //------------repeat-------//
    repeat(1) begin
-      tr = new("tr");
-      collect_one_pkt(tr);
-      ap.write(tr);
+      if(is_active == UVM_ACTIVE) begin
+         tr0 = new("tr");
+         collect_one_pkt_drv(tr);
+         ap.write(tr);
+      end
+      else begin
+         tr1 = new("tr1");
+         collect_one_pkt_mon(tr);
+         ap.write(tr);
+      end
    end
 
 
 endtask
 
 task my_monitor::collect_one_pkt(my_transaction tr);
-      if(is_active == UVM_ACTIVE) begin
-
-      end
-      else begin
-
-      end
-
 endtask
 
 
+task my_monitor::collect_one_pkt(my_transaction tr);
+endtask
