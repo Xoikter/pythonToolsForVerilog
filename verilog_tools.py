@@ -1121,9 +1121,6 @@ class Verilog_tools:
             print("\033[0;33m[ERROR] skip all test case\033[0m")
 
     def sim_single(self,test_case,seed,q):
-        if not os.path.isdir( "../work"):
-            print("[INFO] no work directory, create it")
-            os.makedirs("../work")
         if not os.path.isdir( "../work/"+ test_case + "_" + str(seed)):
             print("[INFO] no test directory, create it")
             os.makedirs( "../work/"+ test_case + "_" + str(seed))
@@ -1194,6 +1191,9 @@ class Verilog_tools:
                         exec(fp.read())
             # print(test_case)
             # print(self.test_list)
+        if not os.path.isdir( "../work"):
+            print("[INFO] no work directory, create it")
+            os.makedirs("../work")
         if test_case in self.test_list.keys():
             result = []
             pass_cnt = 0
