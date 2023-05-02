@@ -61,7 +61,7 @@ class Verilog_tools:
         self.agent_in_num = agent_in_num
         self.agent_out_num = agent_out_num
         self.del_pass = False
-        self.max_thread = 150
+        self.max_thread = 30
         self.sem = threading.Semaphore(self.max_thread)
         self.uvm_verbosity="UVM_MEDIUM"
 
