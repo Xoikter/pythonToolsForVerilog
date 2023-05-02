@@ -61,7 +61,8 @@ class Verilog_tools:
         self.agent_in_num = agent_in_num
         self.agent_out_num = agent_out_num
         self.del_pass = False
-        self.max_thread = 30
+        self.max_thread = 50
+        self.remain_task_num = 0
         self.sem = threading.Semaphore(self.max_thread)
         self.uvm_verbosity="UVM_MEDIUM"
 
@@ -1201,22 +1202,27 @@ class Verilog_tools:
             fail_case = []
             fail_cnt = 0
             q = Queue()
+            self.remain_task_num = repeat_num
             threads = []
             seed_use = []
             if repeat_num == None:
                 repeat_num = self.test_list[test_case]["repeat_num"]
             for index in range(repeat_num):
                 if repeat_num != 1:
-                    seed_temp = random.randint(0,9999999)
+                    seed_temp = random.randint(0,99999999)
                     while(seed_temp in seed_use):
-                        seed_temp = random.randint(0,9999999)
+                        seed_temp = random.randint(0,99999999)
                         # print("retry 00000000000000")
                     seed_use.append(seed_temp)
                     self.sem.acquire()
+                    self.remain_task_num = self.remain_task_num - 1 
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed_temp,q))
+                    print("[INFO] number of unstarted cases: ",self.remain_task_num)
                 else:
                     self.sem.acquire()
+                    self.remain_task_num = self.remain_task_num - 1 
                     t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
+                    print("[INFO] number of unstarted cases: ",self.remain_task_num)
                 t.start()
                 threads.append(t)
             print("[INFO] " , threading.activeCount() - 1 ," test case are running")
