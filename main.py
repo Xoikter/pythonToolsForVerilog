@@ -138,7 +138,9 @@ if __name__ == '__main__':
             fc.interface_gen(SourcePath,TargetPath,sys.argv[1],0)
             fc.tb_inst(SourcePath,TargetPath,sys.argv[1],1)
         elif (cmd == "ctree"):
-            fc.env_initial()
+            fc.env_initial(1)
+        elif (cmd == "ctree_lite"):
+            fc.env_initial(0)
         elif (cmd == "comp"):
             fc.comp()
         elif (cmd == "sim"):

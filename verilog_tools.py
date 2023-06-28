@@ -67,6 +67,10 @@ class Verilog_tools:
         self.uvm_verbosity="UVM_MEDIUM"
 
 
+        self.ctree_lite = [
+                      "rtl",
+                      "sim",
+                      ]
         self.ctree = ["de",
                       "de/filelist",
                       "de/common_ip",
@@ -97,6 +101,15 @@ class Verilog_tools:
             "dv/tg": open(os.path.dirname(__file__) + "/config/config_dv_tg.txt", "r", errors="ignore").read(),
             "de/rtl": open(os.path.dirname(__file__) + "/config/config_de_rtl.txt", "r", errors="ignore").read()
         }
+        self.config_lite = {
+            "sim": open(os.path.dirname(__file__) + "/config/config_dv_tg_lite.txt", "r", errors="ignore").read(),
+            "rtl": open(os.path.dirname(__file__) + "/config/config_de_rtl_lite.txt", "r", errors="ignore").read()
+        }
+        self.makefile_lite = {
+                         "rtl": open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r",
+                                        errors="ignore").read(),
+                         "sim": open(os.path.dirname(__file__) + "/makefile/makefile_dv_uvc", "r",
+                                        errors="ignore").read()}
         self.uvc = {
             # "scoreboard_comb": open(os.path.dirname(__file__) + "/uvm/my_scoreboard_comb.sv", "r", errors="ignore").read(),
             "transaction": open(os.path.dirname(__file__) + "/uvm/my_transaction.sv", "r", errors="ignore").read(),
@@ -1416,23 +1429,40 @@ class Verilog_tools:
         else:
             print("workspace exist")
 
-    def env_initial(self):
+    def env_initial(self,flag):
         # os.chdir(os.getcwd())
-        for item in self.ctree:
-            if not os.path.isdir(item):
-                print("generate " + item + " directory")
-                os.makedirs(item)
-                if item in self.makefile:
-                    fp = open(item + "/makefile", "w")
-                    fp.write(self.makefile[item])
-                    fp.close()
-                if item in self.config:
-                    fp = open(item + "/config.txt", "w")
-                    # print(item)
-                    fp.write(self.config[item])
-                    fp.close()
-            else:
-                print(item + " dirdectory exist!!")
+        if(flag) :
+            for item in self.ctree:
+                if not os.path.isdir(item):
+                    print("generate " + item + " directory")
+                    os.makedirs(item)
+                    if item in self.makefile:
+                        fp = open(item + "/makefile", "w")
+                        fp.write(self.makefile[item])
+                        fp.close()
+                    if item in self.config:
+                        fp = open(item + "/config.txt", "w")
+                        # print(item)
+                        fp.write(self.config[item])
+                        fp.close()
+                else:
+                    print(item + " dirdectory exist!!")
+        else:
+            for item in self.ctree_lite:
+                if not os.path.isdir(item):
+                    print("generate " + item + " directory")
+                    os.makedirs(item)
+                    if item in self.makefile_lite:
+                        fp = open(item + "/makefile", "w")
+                        fp.write(self.makefile_lite[item])
+                        fp.close()
+                    if item in self.config_lite:
+                        fp = open(item + "/config.txt", "w")
+                        # print(item)
+                        fp.write(self.config_lite[item])
+                        fp.close()
+                else:
+                    print(item + " dirdectory exist!!")
 
 
 if __name__ == '__main__':

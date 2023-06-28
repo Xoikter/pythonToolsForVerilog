@@ -1,9 +1,52 @@
 import re
-# import ply.lex as lex
+import ply.lex as lex
 # import ply.yyac as yyac
+# import func
 import os
 from sys import flags
 from typing import Pattern
+
+tokens = (
+    "MIRCO",
+    "OPERATE",
+    "OTHERS",
+    "SYMBOL",
+    "NUMBER",
+    "UNINUMBER",
+    "SEMI",
+    # "OTHERS",
+    "MODULE",
+    "LPAREN",
+    "NAME",
+    "RPAREN"
+)
+t_OTHERS = r'.'
+# t_MODULE = r"\\bmodule\\b"
+t_UNINUMBER = r'\d+[a-z][a-f0-9]+'
+t_NUMBER = r'\d+'
+# t_NAME = r'\\b[_A-Za-z]+\\b'
+t_MIRCO = r'`[_A-Za-z]+'
+t_OPERATE = r'[\+\-\*\/\&\|\~\!\\<\>\+\^\=]'
+t_SEMI = r';'
+# t_SYMBOL = r"[\[\]\(\)\:\#\,]"
+t_SYMBOL = r"[\#]"
+t_LPAREN = r"\("
+t_RPAREN = r"\)"
+def t_MODULE(t):
+    r"\bmodule\b"
+    return t
+def t_NAME(t):
+    r'[_A-Za-z][_A-Za-z0-9\[\]\.]*'
+    return t
+def t_error(t):
+    raise Exception('Lex error {} at line {}, illegal character {}'
+                    .format(t.value[0], t.lineno, t.value[0]))
+def t_newline(t):
+    r"\n+"
+    t.lexer.lineno += len(t.value)
+
+t_ignore = ' \t'
+
 
 
 class File_analyse:
@@ -21,7 +64,7 @@ class File_analyse:
                         'negedge', 'nmos',
                         'nor', 'not', 'notif0',
                         'notifl', 'or', 'output', 'parameter', 'pmos', 'posedge', 'primitive', 'pull0', 'pull1',
-                        'pullup',
+                        'pullup','typedef'
                         'pulldown', 'rcmos',
                         'reg', 'releses', 'repeat', 'mmos', 'rpmos', 'rtran', 'rtranif0', 'rtranif1', 'scalared',
                         'small', 'specify',
@@ -239,6 +282,7 @@ class File_analyse:
 
     def find_port_parameter(self, stringIn: str):
         ports = []
+        ports_interface = []
         parameters = []
         parameters_all = []
         str_temp = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
@@ -249,7 +293,10 @@ class File_analyse:
         str_port = re.search("\\bmodule.*?;", str_temp, flags=re.S).group()
         # result = re.findall('\\b(input|output)\\b\s*\\b(wire|reg)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)', str_port, flags=re.S)
         result = re.findall(
-            '\\b(input|output)\\b\s*\\b(wire|reg|logic)?\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)',
+            '\\b(input|output)\\b\s*\\b([a-zA-Z_\.]*)?\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)',
+            str_port, flags=re.S)
+        result_interface = re.findall(
+            '\\b([a-zA-Z_]*)\.([a-zA-Z_]*)\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)',
             str_port, flags=re.S)
         # res_para = re.findall('\\bparameter\\b\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)(\s*=)',str_port,flags=re.S)
         res_para_temp = re.finditer('#\s*\(', str_port, flags=re.S)
@@ -283,6 +330,11 @@ class File_analyse:
         for res in result:
             portTemp = [res[0], res[1], res[2], res[3]]
             ports.append(portTemp)
+
+        for res in result_interface:
+            portTemp = [res[0], res[1], res[2]]
+            ports_interface.append(portTemp)
+
         str_temp = re.sub("\\bmodule.*?;", "", str_temp, flags=re.S)
         result = re.findall(
             '\\b(input|output)\\b\s*\\b(wire|reg|logic)?\\b\s*\\b(?:signed)?\\b\s*(\[.*?\])?\s*(.*?)\s*;', str_temp,
@@ -303,7 +355,7 @@ class File_analyse:
             for item in res_temp:
                 portTemp = [res[0], res[1], res[2], item]
                 ports.append(portTemp)
-        return [ports, parameters, parameters_all]
+        return [ports, parameters, parameters_all,ports_interface]
 
     def connect_tool(self, stringIn: str):
         # string = re.sub("\/\*.*?\*\/", "", stringIn, flags=re.S)
@@ -357,6 +409,88 @@ class File_analyse:
         symbol = " \n\t"
         string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
         string = re.sub('//.*?\n', "", string, flags=re.S)
+        lexer = lex.lex()
+        lexer.input(string)
+        module_lex = []
+
+        while True:
+            tok = lexer.token()
+            if not tok:
+                break
+            if tok.type == "MODULE":
+                print("module name " + lexer.token().value)
+                lexer.token()
+            temp = tok.value
+            if tok.type == "NAME" and tok.value not in self.keyword:
+                tok_temp = lexer.token()
+                if not tok_temp:
+                    break
+                if tok_temp.value == r"#":
+                    stack_par = []
+                    tok_temp = lexer.token()
+                    if not tok_temp:
+                        break
+                    if tok_temp.value == "(":
+                        stack_par.append(r"(")
+                        while(True):
+                            tok_temp = lexer.token()
+                            if not tok_temp:
+                                break
+                            
+                            if tok_temp.value == "(":
+                                stack_par.append(r"(")
+                            if tok_temp.value == ")":
+                                stack_par.pop()
+                            if len(stack_par) == 0:
+                                break
+                        tok_temp = lexer.token()
+                        if not tok_temp:
+                            break
+                        # if tok_temp.type != "NAME":
+                            # print("[WARNING] there is a waring!!!")
+                        if tok_temp.type == "NAME" and tok_temp.value not in self.keyword :
+                            temp2 = tok_temp.value
+                            tok_temp = lexer.token()
+                            if not tok_temp:
+                                break
+                            if(tok_temp.value == "("):
+                                # print("[INFO] find module inst name is " + temp)
+                                module_lex.append(temp)
+                            elif tok_temp.type == "NAME" and tok_temp.value not in self.keyword:
+                                tok_temp = lexer.token()
+                                if not tok_temp:
+                                    break
+                                if(tok_temp.value == "("):
+                                    # print("[INFO] find module inst name is " + temp)
+                                    module_lex.append(temp2)
+
+
+                    else:
+                        print("[WARNING] there is a waring!!! no (")
+                elif tok_temp.type ==  "NAME" and tok_temp.value not in self.keyword:
+                            temp2 = tok_temp.value
+                            tok_temp = lexer.token()
+                            if not tok_temp:
+                                break
+                            if(tok_temp.value == "("):
+                                # print("[INFO] find module inst name is 22 " + temp)
+                                module_lex.append(temp)
+                            elif tok_temp.type == "NAME" and tok_temp.value not in self.keyword:
+                                tok_temp = lexer.token()
+                                if not tok_temp:
+                                    break
+                                if(tok_temp.value == "("):
+                                    # print("[INFO] find module inst name is " + temp)
+                                    module_lex.append(temp2)
+
+        # return 
+        # while True:
+        #     tok = lexer.token()
+        #     print(tok)
+        #     if not tok:
+        #         break
+
+
         res = re.finditer("\s*([`_a-zA-Z][_a-zA-Z0-9]*)\\b\s*(?=#|[`_a-zA-Z][_a-zA-Z0-9]*\\b)", string, flags=re.S)
         pattern_1 = re.compile("\s*#", flags=re.S)
         pattern_3 = re.compile("\s*([`_a-zA-Z][_a-zA-Z0-9]*\\b)", flags=re.S)
@@ -450,7 +584,7 @@ class File_analyse:
                     if item.group(1) not in module:
                         module.append(item.group(1))
 
-        return [out, module]
+        return [out, module_lex]
 
     def find_module_uvm(self, stringIn: str):
         string = stringIn

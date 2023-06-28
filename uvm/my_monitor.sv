@@ -59,9 +59,9 @@ task my_monitor::main_phase(uvm_phase phase);
 
 endtask
 
-task my_monitor::collect_one_pkt(my_transaction tr);
+task my_monitor::collect_one_pkt_drv(my_transaction tr);
 endtask
 
 
-task my_monitor::collect_one_pkt(my_transaction tr);
+task my_monitor::collect_one_pkt_mon(my_transaction tr);
 endtask
