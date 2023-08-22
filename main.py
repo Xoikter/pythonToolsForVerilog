@@ -89,6 +89,7 @@ if __name__ == '__main__':
     fc.uvm_verbosity = uvm_verbosity
     # print(del_pass)
     fc.del_pass = del_pass
+    fc.read_py()
     # if len(sys.argv) > 2:
         # fc.SourcePath = sys.argv[2]
     # if len(sys.argv) > 3:
@@ -144,10 +145,11 @@ if __name__ == '__main__':
         elif (cmd == "comp"):
             fc.comp()
         elif (cmd == "sim"):
-            fc.sim(testcase,seed,repeat_num)
+            fc.sim(testcase,seed,repeat_num,0)
         elif (cmd == "all"):
             fc.all(testcase,seed,repeat_num)
         elif (cmd == "regress"):
+            # fc.sim(testcase,seed,repeat_num,1)
             fc.regress(repeat_num)
         elif (cmd == "sanity"):
             fc.sanity()

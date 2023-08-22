@@ -55,6 +55,7 @@ class Verilog_tools:
         self.moduleFound = []
         self.build_list={}
         self.test_list={}
+        self.list_all={}
         self.regress_list={}
         self.sanity_list={}
         self.fa = fa("")
@@ -132,6 +133,7 @@ class Verilog_tools:
         }
         self.build_py = open(os.path.dirname(__file__) + "/build/build.py", "r", errors="ignore").read()
         self.test_list_py = open(os.path.dirname(__file__) + "/test_list/test_list.py", "r", errors="ignore").read()
+        self.regress_py = open(os.path.dirname(__file__) + "/test_list/regress.py", "r", errors="ignore").read()
 
     def test_map_initial(self):
         for relpath, dirs, files in os.walk(self.TargetPath):
@@ -1095,42 +1097,99 @@ class Verilog_tools:
 
     ##
     ##
-    def comp(self):
+    def read_py(self):
         for relpath, dirs, files in os.walk("./build"):
             for file in files:
                 if(re.match(".+\.py",file) is not None):
                     with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
                         exec(fp.read())
-        os.system("cd ../build && echo start build > build.log")
+        for relpath, dirs, files in os.walk("./test_list"):
+            for file in files:
+                if(re.match(".+\.py",file) is not None):
+                    with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
+                        exec(fp.read())
+        for test_key in self.test_list:
+            for build_key in self.build_list:
+                self.list_all[build_key + "_" + test_key] = [self.test_list[test_key],build_key,test_key]
+
+    def comp(self):
+        # os.system("cd ../build && echo start build > build.log")
+        result = []
         for key in self.build_list.keys():
+            if not os.path.isdir( "../build/" + key):
+                print("[INFO] no work directory, create it")
+                os.makedirs("../build/" + key)
+            os.system("cd ../build/"+key + " && echo start build > build.log")
             print("[INFO] run build " + key)
             print("[INFO] build command: " + self.build_list[key]["build_opts"])
-            os.system("cd ../build/ && "+ self.build_list[key]["build_opts"] + ">> build.log")
-        with open("../build/build.log","r") as fq:
-            if (re.search("(Error-|ERROR)",fq.read()) is not None):
-                print("\033[0;31m[ERROR]  " + self.filename + " build fail\033[0m")
-                fq.seek(0)
-                lines = fq.readlines()
-                flag = False
-                mask_cnt = 2
-                for line in lines:
-                    if(flag ==True and ((re.match("\s+",line) is not None) or (mask_cnt != 0))):
-                        print("\033[0;31m" + line + "\033[0m")
-                        mask_cnt = mask_cnt - 1
-                    else:
-                        flag = False
-                    if(flag == False and re.search("(Error-|ERROR-)",line) is not None):
-                        print("\033[0;31m" + line + "\033[0m")
-                        flag = True
-                return False
-            else:
-                print("[INFO]  " + self.filename + " build pass")
-                return True
+            os.system("cd ../build/" + key +"&& "+ self.build_list[key]["build_opts"] + ">> build.log")
+            with open("../build/" + key + "/build.log","r") as fq:
+                if (re.search("(Error-|ERROR)",fq.read()) is not None):
+                    # print("\033[0;31m[ERROR]  " + self.filename + " build fail\033[0m")
+                    print("\033[0;31m[ERROR]  " + key + " build fail\033[0m")
+                    fq.seek(0)
+                    lines = fq.readlines()
+                    flag = False
+                    mask_cnt = 2
+                    for line in lines:
+                        if(flag ==True and ((re.match("\s+",line) is not None) or (mask_cnt != 0))):
+                            print("\033[0;31m" + line + "\033[0m")
+                            mask_cnt = mask_cnt - 1
+                        else:
+                            flag = False
+                        if(flag == False and re.search("(Error-|ERROR-)",line) is not None):
+                            print("\033[0;31m" + line + "\033[0m")
+                            flag = True
+                    # return False
+                    result.append(False)
+                else:
+                    # print("[INFO]  " + self.filename + " build pass")
+                    print("[INFO]  " + key + " build pass")
+                    # return True
+                    result.append(True)
+        for res in result: 
+            if res == False:
+                return False    
+        return True
+
     
     def all(self,test_case,seed,repeat_num):
         build_result = self.comp()
         if build_result:
-            self.sim(test_case,seed,repeat_num)
+            self.sim(test_case,seed,repeat_num,0)
+        else:
+            print("\033[0;33m[ERROR] skip all test case\033[0m")
+
+    def regress(self,repeat_num):
+        build_result = self.comp()
+        if build_result:
+            # print(self.regress_list)
+            # p = Queue()
+            # threads = []
+            # result = []
+            # for regress_case in self.regress_list:
+            #     seed = random.randint(0,99999999)
+            #     t = threading.Thread(target=self.sim,args=(regress_case,seed,repeat_num,1,p))
+            #     # self.sim(regress_case,seed,repeat_num)
+            #     t.start()
+            #     threads.append(t)
+            # for thread in threads:
+            #     thread.join(300)
+            # pass_cnt = 0
+            # fail_cnt = 0
+            # for regress_case in self.regress_list:
+            #     result.append(p.get())
+            # for res in result:
+            #     for item in res[0]:
+            #         print("[INFO] pass case: " + item)
+            #         pass_cnt = pass_cnt + 1
+            # for res in result:
+            #     for item in res[1]:
+            #         print("[ERROR] fail case: " + item)
+            #         fail_cnt = fail_cnt + 1
+            # print("[INFO]", " pass ",pass_cnt,", fail ",fail_cnt)
+            self.sim(0,0,repeat_num,1)
+
         else:
             print("\033[0;33m[ERROR] skip all test case\033[0m")
 
@@ -1139,14 +1198,16 @@ class Verilog_tools:
             print("[INFO] no test directory, create it")
             os.makedirs( "../work/"+ test_case + "_" + str(seed))
         print("[INFO] run test case: ",test_case,", seed=",seed)
-        print("[INFO] command: ",self.test_list[test_case]["sim_opts"] + " +ntb_random_seed="+str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
-        os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + self.test_list[test_case]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "> tools.log")
+        # print("[INFO] command: ",self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed="+str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
+        print("[INFO] command: "," ../../build/" + self.list_all[test_case][1] +"/simv " +  self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
+        os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + " ../../build/" + self.list_all[test_case][1] +"/simv " +  self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "> tools.log")
         
         if self.del_pass is False:
             fp = open("../work/"+ test_case + "_" + str(seed) + "/makefile","w")
             str_temp = re.sub("my",self.filename,self.makefile["sim"])
-            str_temp = re.sub("TC_TEMP",test_case,str_temp)
+            str_temp = re.sub("TC_TEMP",self.list_all[test_case][2],str_temp)
             str_temp = re.sub("SEED_TEMP",str(seed),str_temp)
+            str_temp = re.sub("BUILD_DIR_TEMP",self.list_all[test_case][1],str_temp)
             fp.write(str_temp)
             fp.close()
             # fp = open("../work/"+ test_case + "_" + str(seed) + "/run.tcl","w")
@@ -1196,64 +1257,84 @@ class Verilog_tools:
         
 
 
-    def sim(self,test_case,seed,repeat_num):
-        for relpath, dirs, files in os.walk("./test_list"):
-            for file in files:
-                if(re.match(".+\.py",file) is not None):
-                    # print(file)
-                    with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
-                        exec(fp.read())
+
+    def sim(self,testcase,seed,repeat_num,regress_flag):
+        # for relpath, dirs, files in os.walk("./test_list"):
+        #     for file in files:
+        #         if(re.match(".+\.py",file) is not None):
+        #             with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
+        #                 exec(fp.read())
+        # for relpath, dirs, files in os.walk("./build"):
+        #     for file in files:
+        #         if(re.match(".+\.py",file) is not None):
+        #             with open(os.path.join(relpath, file), "r", errors="ignore") as fp:
+        #                 exec(fp.read())
+        # for test_key in self.test_list:
+        #     for build_key in self.build_list:
+        #         self.list_all[build_key + "_" + test_key] = [self.test_list[test_key],build_key,test_key]
             # print(test_case)
             # print(self.test_list)
         if not os.path.isdir( "../work"):
             print("[INFO] no work directory, create it")
             os.makedirs("../work")
-        if test_case in self.test_list.keys():
-            result = []
-            pass_cnt = 0
-            pass_case = []
-            fail_case = []
-            fail_cnt = 0
-            q = Queue()
-            self.remain_task_num = repeat_num
-            threads = []
-            seed_use = []
-            if repeat_num == None:
-                repeat_num = self.test_list[test_case]["repeat_num"]
-            for index in range(repeat_num):
-                if repeat_num != 1:
-                    seed_temp = random.randint(0,99999999)
-                    while(seed_temp in seed_use):
+        test_list = []
+        if regress_flag == 1:
+            for keys in self.regress_list:
+                test_list.append(keys)
+        else:
+            test_list.append(testcase)
+
+        result = []
+        pass_cnt = 0
+        pass_case = []
+        fail_case = []
+        fail_cnt = 0
+        q = Queue()
+        self.remain_task_num = repeat_num * len(test_list)
+        threads = []
+        seed_use = []
+        for test_case in test_list:
+            if test_case in self.list_all.keys():
+                if repeat_num == None:
+                    repeat_num = self.list_all[test_case][0]["repeat_num"]
+                for index in range(repeat_num):
+                    if repeat_num != 1:
                         seed_temp = random.randint(0,99999999)
-                        # print("retry 00000000000000")
-                    seed_use.append(seed_temp)
-                    self.sem.acquire()
-                    self.remain_task_num = self.remain_task_num - 1 
-                    t = threading.Thread(target=self.sim_single,args=(test_case,seed_temp,q))
-                    print("[INFO] number of unstarted cases: ",self.remain_task_num)
-                else:
-                    self.sem.acquire()
-                    self.remain_task_num = self.remain_task_num - 1 
-                    t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
-                    print("[INFO] number of unstarted cases: ",self.remain_task_num)
-                t.start()
-                threads.append(t)
-            print("[INFO] " , threading.activeCount() - 1 ," test case are running")
-            for thread in threads:
-                thread.join(300)
-            for _ in range(repeat_num):
-                result = q.get()
-                if result[0]:
-                    pass_cnt = pass_cnt + 1
-                    pass_case.append(result[2])
-                else:
-                    fail_cnt = fail_cnt + 1
-                    fail_case.append(result[2])
-            for item in pass_case:
-                print("[INFO] pass case: " + item)
-            for item in fail_case:
-                print("[ERROR] fail case: " + item)
-            print("[INFO] repeat num = ",repeat_num,", pass ",pass_cnt,", fail ",fail_cnt)
+                        while(seed_temp in seed_use):
+                            seed_temp = random.randint(0,99999999)
+                            # print("retry 00000000000000")
+                        seed_use.append(seed_temp)
+                        self.sem.acquire()
+                        self.remain_task_num = self.remain_task_num - 1 
+                        t = threading.Thread(target=self.sim_single,args=(test_case,seed_temp,q))
+                        print("[INFO] number of unstarted cases: ",self.remain_task_num)
+                    else:
+                        self.sem.acquire()
+                        self.remain_task_num = self.remain_task_num - 1 
+                        t = threading.Thread(target=self.sim_single,args=(test_case,seed,q))
+                        print("[INFO] number of unstarted cases: ",self.remain_task_num)
+                    t.start()
+                    threads.append(t)
+                print("[INFO] " , threading.activeCount() - 1 ," test case are running")
+            else:
+                print("[ERROR] testcase " + test_case + " not exist")
+        
+        for thread in threads:
+            thread.join(300)
+        # for _ in range(repeat_num):
+        for thread in threads:
+            result = q.get()
+            if result[0]:
+                pass_cnt = pass_cnt + 1
+                pass_case.append(result[2])
+            else:
+                fail_cnt = fail_cnt + 1
+                fail_case.append(result[2])
+        for item in pass_case:
+            print("[INFO] pass case: " + item)
+        for item in fail_case:
+            print("[ERROR] fail case: " + item)
+        print("[INFO] repeat num = ",repeat_num,", pass ",pass_cnt,", fail ",fail_cnt)
 
 
 
@@ -1322,15 +1403,15 @@ class Verilog_tools:
             fp.close()
             fq.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist_uvc.f", "w")
-            fp.write("../uvc/" + name + "_" + "package.sv\n")
+            fp.write("../../uvc/" + name + "_" + "package.sv\n")
             for item in self.uvc:
-                fp.write("../uvc/" + name + "_" + item + ".sv\n")
-            fp.write("../uvc/" + name + "_interface_port.sv\n")
-            fp.write("../uvc/" + name + "_interface_inner.sv\n")
+                fp.write("../../uvc/" + name + "_" + item + ".sv\n")
+            fp.write("../../uvc/" + name + "_interface_port.sv\n")
+            fp.write("../../uvc/" + name + "_interface_inner.sv\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist_tc.f", "w")
             for item in self.tc:
-                fp.write("../testcase/" + name + "_" + item + ".sv\n")
+                fp.write("../../testcase/" + name + "_" + item + ".sv\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/testcase/case0.sv", "w")
             fp.write(re.sub("my", name, self.tc["case0"]))
@@ -1387,21 +1468,21 @@ class Verilog_tools:
             fp.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist_rtl.f", "w")
             fq = open(targetPath + "/" + name + "/filelist/filelist_def.f", "w")
-            self.filelist_gen(sourcePath, targetPath + "/" + name + "/sim_ctrl", name, fp, fq, 1)
+            self.filelist_gen(sourcePath, targetPath + "/" + name + "/sim_ctrl/build", name, fp, fq, 1)
             fp.close()
             fq.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist_uvc.f", "w")
-            fp.write("../uvc/" + name + "_" + "package.sv\n")
-            fp.write("../uvc/" + name + "_interface_port.sv\n")
-            fp.write("../uvc/" + name + "_interface_inner.sv\n")
+            fp.write("../../uvc/" + name + "_" + "package.sv\n")
+            fp.write("../../uvc/" + name + "_interface_port.sv\n")
+            fp.write("../../uvc/" + name + "_interface_inner.sv\n")
             for item in self.uvc:
-                fp.write("../uvc/" + name + "_" + item + ".sv\n")
+                fp.write("../../uvc/" + name + "_" + item + ".sv\n")
             for item in self.seq_lib:
-                fp.write("../seq_lib/" + name + "_" + item + ".sv\n")
+                fp.write("../../seq_lib/" + name + "_" + item + ".sv\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist_tc.f", "w")
             for item in self.tc:
-                fp.write("../testcase/" + name + "_" + item + ".sv\n")
+                fp.write("../../testcase/" + name + "_" + item + ".sv\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/testcase/" + name + "_case0.sv", "w")
             fp.write(re.sub("my", name, self.tc["case0"]))
@@ -1420,6 +1501,9 @@ class Verilog_tools:
             fp.close()
             fp = open(targetPath + name + "/sim_ctrl/test_list/test_list.py", "w")
             fp.write(self.test_list_py)
+            fp.close()
+            fp = open(targetPath + name + "/sim_ctrl/test_list/regress.py", "w")
+            fp.write(self.regress_py)
             fp.close()
             fp = open(targetPath + name + "/build/synopsys_sim.setup", "w")
             fp.write("WORK>DEFAULT\n")
