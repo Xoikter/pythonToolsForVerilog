@@ -56,7 +56,7 @@ class File_analyse:
                         'default',
                         'defparam', 'disable', 'edge', 'else', 'end', 'endcase', 'endmodule', 'endfunction',
                         'endprimitive','include',
-                        'endspecify',
+                        'endspecify','generate','endgenerate'
                         'endtable', 'endtask', 'event', 'for', 'force', 'forever', 'fork', 'function', 'highz0',
                         'highz1', 'if',
                         'initial',
@@ -409,6 +409,7 @@ class File_analyse:
         symbol = " \n\t"
         string = re.sub("\/\*.*?\*\/", "", string, flags=re.S)
         string = re.sub('//.*?\n', "", string, flags=re.S)
+        string = re.sub('\\bbegin\s*:\s*[A-Za-z_0-9]+', " begin ", string, flags=re.S)
         lexer = lex.lex()
         lexer.input(string)
         module_lex = []
