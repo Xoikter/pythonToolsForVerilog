@@ -3,7 +3,7 @@ export name = ${OUTPUT}
 REPEAT=1
 SEED=0
 DEL_PASS=False
-TC=${name}_case0
+TC=base_build_${name}_case0
 UVM_VERBOSITY=UVM_MEDIUM
 clean:
 	cd ../build && rm -rf  ./verdiLog  ./dff ./csrc *.daidir *log *.vpd *.vdb simv* *.key *race.out* *.rc *.fsdb *.vpd *.log *.conf *.dat *.conf

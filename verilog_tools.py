@@ -423,6 +423,7 @@ class Verilog_tools:
                 for para in ports[1]:
                     if len(para) > lenStr:
                         lenStr = len(para)
+                # print(ports[1])
                 for port in ports[1]:
                     if len(port[2]) > len_width:
                         len_width = len(ports[2])
@@ -501,13 +502,14 @@ class Verilog_tools:
                                 lineT)
             if resTemp is not None:
                 if len(para_dictionary) != 0:
-                    fp.write("module " + resTemp.group(1) + " #(\n")
+                    fp.write("module " + resTemp.group(2) + " #(\n")
                     cnt = 0
                     for para in para_dictionary:
                          if cnt == len(para_dictionary) - 1:
-                             fp.write(para_dictionary[para] + ")\n")
+                             fp.write("       parameter " + para_dictionary[para] + ")\n")
                          else:
-                             fp.write(para_dictionary[para] + ",\n")
+                            #  fp.write(para_dictionary[para] + ",\n")
+                             fp.write("       parameter " + para_dictionary[para] + ",\n")
                          cnt = cnt + 1
                     
                     fp.write(" " * 10 + "(\n")
@@ -1218,13 +1220,13 @@ class Verilog_tools:
             # fp.close()
         if not os.path.exists("../work/"+ test_case + "_" + str(seed) + "/tools.log"):
             print("[ERROR] can not find log !!!")
-            q.put([False,[]," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+            q.put([False,[]," sim path : " + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
             print("[ERROR] running test case number:",threading.activeCount() ,"  can not find log !!!")
         else:
             with open ("../work/"+ test_case + "_" + str(seed) + "/tools.log") as fi:
                 if re.search("TEST\s*CASE\s*PASSED",fi.read()) is not None:
                     print("[INFO] " + test_case + "_" + str(seed) + " pass")
-                    q.put([True,[]," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+                    q.put([True,[]," sim path : " + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
                     print("[INFO] running test case number:",threading.activeCount() - 1,"  "+test_case + "_" + str(seed) + " pass")
                     print("[INFO] " + test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
                     if self.del_pass:
@@ -1250,7 +1252,7 @@ class Verilog_tools:
                             # mask_cnt = 2
                             temp_result.append(line)
                             flag = True
-                    q.put([False,temp_result," sim path :" + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
+                    q.put([False,temp_result," sim path : " + os.path.abspath("../work/"+ test_case + "_" + str(seed))])
                     print("[INFO] active test case number:",threading.activeCount() - 2,"  "+test_case + "_" + str(seed) + " fail")
                     print("[INFO] " + test_case + "_" + str(seed), " sim path :", os.path.abspath("../work/"+ test_case + "_" + str(seed)))
         self.sem.release()
@@ -1458,10 +1460,10 @@ class Verilog_tools:
             self.tb_inst(sourcePath, fp, name, 0, 0)
             fp.close()
             fp = open(targetPath + "/" + name + "/filelist/filelist.f", "w")
-            fp.write("-f ../filelist/filelist_def.f\n")
-            fp.write("-f ../filelist/filelist_rtl.f\n")
-            fp.write("-f ../filelist/filelist_uvc.f\n")
-            fp.write("-f ../filelist/filelist_tc.f\n")
+            fp.write("-f ../../filelist/filelist_def.f\n")
+            fp.write("-f ../../filelist/filelist_rtl.f\n")
+            fp.write("-f ../../filelist/filelist_uvc.f\n")
+            fp.write("-f ../../filelist/filelist_tc.f\n")
             fp.close()
             fp = open(targetPath + "/" + name + "/filelist/makefile", "w")
             fp.write(self.makefile["dv/filelist"])

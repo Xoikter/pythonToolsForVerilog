@@ -355,6 +355,10 @@ class File_analyse:
             for item in res_temp:
                 portTemp = [res[0], res[1], res[2], item]
                 ports.append(portTemp)
+        # print( "ports = ",ports)
+        # print( "parajts = ",parameters)
+        # print( "para_all = ",parameters_all)
+        # print( "port_inter = ",ports_interface)
         return [ports, parameters, parameters_all,ports_interface]
 
     def connect_tool(self, stringIn: str):
