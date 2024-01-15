@@ -64,6 +64,7 @@ class Verilog_tools:
         self.del_pass = False
         self.max_thread = 50
         self.remain_task_num = 0
+        self.repeat_num = 1
         self.sem = threading.Semaphore(self.max_thread)
         self.uvm_verbosity="UVM_MEDIUM"
 
@@ -1124,24 +1125,24 @@ class Verilog_tools:
             os.system("cd ../build/"+key + " && echo start build > build.log")
             print("[INFO] run build " + key)
             print("[INFO] build command: " + self.build_list[key]["build_opts"])
-            os.system("cd ../build/" + key +"&& "+ self.build_list[key]["build_opts"] + ">> build.log")
+            os.system("cd ../build/" + key +"&& "+ self.build_list[key]["build_opts"] + "| tee build.log")
             with open("../build/" + key + "/build.log","r") as fq:
                 if (re.search("(Error-|ERROR)",fq.read()) is not None):
                     # print("\033[0;31m[ERROR]  " + self.filename + " build fail\033[0m")
                     print("\033[0;31m[ERROR]  " + key + " build fail\033[0m")
-                    fq.seek(0)
-                    lines = fq.readlines()
-                    flag = False
-                    mask_cnt = 2
-                    for line in lines:
-                        if(flag ==True and ((re.match("\s+",line) is not None) or (mask_cnt != 0))):
-                            print("\033[0;31m" + line + "\033[0m")
-                            mask_cnt = mask_cnt - 1
-                        else:
-                            flag = False
-                        if(flag == False and re.search("(Error-|ERROR-)",line) is not None):
-                            print("\033[0;31m" + line + "\033[0m")
-                            flag = True
+                    # fq.seek(0)
+                    # lines = fq.readlines()
+                    # flag = False
+                    # mask_cnt = 2
+                    # for line in lines:
+                    #     if(flag ==True and ((re.match("\s+",line) is not None) or (mask_cnt != 0))):
+                    #         print("\033[0;31m" + line + "\033[0m")
+                    #         mask_cnt = mask_cnt - 1
+                    #     else:
+                    #         flag = False
+                    #     if(flag == False and re.search("(Error-|ERROR-)",line) is not None):
+                    #         print("\033[0;31m" + line + "\033[0m")
+                    #         flag = True
                     # return False
                     result.append(False)
                 else:
@@ -1202,7 +1203,10 @@ class Verilog_tools:
         print("[INFO] run test case: ",test_case,", seed=",seed)
         # print("[INFO] command: ",self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed="+str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
         print("[INFO] command: "," ../../build/" + self.list_all[test_case][1] +"/simv " +  self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity)
-        os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + " ../../build/" + self.list_all[test_case][1] +"/simv " +  self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "> tools.log")
+        if self.repeat_num != 1:
+            os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + " ../../build/" + self.list_all[test_case][1] +"/simv " +  self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "> tools.log")
+        else:
+            os.system("cd " + "../work/"+ test_case + "_" + str(seed) + " && " + " ../../build/" + self.list_all[test_case][1] +"/simv " +  self.list_all[test_case][0]["sim_opts"] + " +ntb_random_seed=" +str(seed) + " +UVM_VERBOSITY=" + self.uvm_verbosity + "| tee tools.log")
         
         if self.del_pass is False:
             fp = open("../work/"+ test_case + "_" + str(seed) + "/makefile","w")
@@ -1291,6 +1295,7 @@ class Verilog_tools:
         pass_case = []
         fail_case = []
         fail_cnt = 0
+        self.repeat_num = repeat_num
         q = Queue()
         self.remain_task_num = repeat_num * len(test_list)
         threads = []
