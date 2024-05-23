@@ -56,7 +56,7 @@ class File_analyse:
                         'default',
                         'defparam', 'disable', 'edge', 'else', 'end', 'endcase', 'endmodule', 'endfunction',
                         'endprimitive','include',
-                        'endspecify','generate','endgenerate'
+                        'endspecify','generate','endgenerate',
                         'endtable', 'endtask', 'event', 'for', 'force', 'forever', 'fork', 'function', 'highz0',
                         'highz1', 'if',
                         'initial',
@@ -64,11 +64,11 @@ class File_analyse:
                         'negedge', 'nmos',
                         'nor', 'not', 'notif0',
                         'notifl', 'or', 'output', 'parameter', 'pmos', 'posedge', 'primitive', 'pull0', 'pull1',
-                        'pullup','typedef'
+                        'pullup','typedef',
                         'pulldown', 'rcmos',
                         'reg', 'releses', 'repeat', 'mmos', 'rpmos', 'rtran', 'rtranif0', 'rtranif1', 'scalared',
                         'small', 'specify',
-                        'specparam', 'timescale'
+                        'specparam', 'timescale',
                                      'strength', 'strong0', 'strong1', 'supply0', 'supply1', 'table', 'task', 'time',
                         'tran', 'tranif0',
                         'tranif1', 'tri',
