@@ -5,9 +5,9 @@ class my_env extends uvm_env;
    my_model   mdl;
    my_scoreboard scb;
    
-   uvm_tlm_analysis_fifo #(my_transaction) agt_scb_fifo;
-   uvm_tlm_analysis_fifo #(my_transaction) agt_mdl_fifo;
-   uvm_tlm_analysis_fifo #(my_transaction) mdl_scb_fifo;
+   uvm_tlm_analysis_fifo #(uvm_sequence_item) agt_scb_fifo;
+   uvm_tlm_analysis_fifo #(uvm_sequence_item) agt_mdl_fifo;
+   uvm_tlm_analysis_fifo #(uvm_sequence_item) mdl_scb_fifo;
    
    function new(string name = "my_env", uvm_component parent);
       super.new(name, parent);

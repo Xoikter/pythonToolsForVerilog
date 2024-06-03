@@ -1,4 +1,4 @@
-class my_driver extends uvm_driver#(my_transaction);
+class my_driver extends uvm_driver;
 
    virtual my_interface_port vif;
    virtual my_interface_inner vif_i;
@@ -22,9 +22,11 @@ class my_driver extends uvm_driver#(my_transaction);
 endclass
 
 task my_driver::main_phase(uvm_phase phase);
+   my_transaction tr;
    while(1) begin
       seq_item_port.get_next_item(req);
-      drive_one_pkt(req);
+      $cast(tr,req);
+      drive_one_pkt(tr);
       seq_item_port.item_done();
    end
 endtask

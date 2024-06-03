@@ -1,4 +1,4 @@
-class my_case0_sequence extends uvm_sequence #(my_transaction);
+class my_case0_sequence extends uvm_sequence #(uvm_sequence_item);
    my_transaction m_trans;
 
    function  new(string name= "my_case0_sequence");
