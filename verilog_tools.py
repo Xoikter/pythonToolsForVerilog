@@ -89,7 +89,7 @@ class Verilog_tools:
 
         self.makefile = {"de/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_de_filelist", "r",
                                              errors="ignore").read(),
-                         "de/": open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r",
+                         "de": open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r",
                                         errors="ignore").read(),
                          "dv/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_dv_filelist", "r",
                                              errors="ignore").read(),
@@ -101,7 +101,7 @@ class Verilog_tools:
                                         errors="ignore").read()}
         self.config = {
             "dv/tg": open(os.path.dirname(__file__) + "/config/config_dv_tg.txt", "r", errors="ignore").read(),
-            "de/": open(os.path.dirname(__file__) + "/config/config_de_rtl.txt", "r", errors="ignore").read()
+            "de": open(os.path.dirname(__file__) + "/config/config_de_rtl.txt", "r", errors="ignore").read()
         }
         self.config_lite = {
             "sim": open(os.path.dirname(__file__) + "/config/config_dv_tg_lite.txt", "r", errors="ignore").read(),
@@ -458,6 +458,24 @@ class Verilog_tools:
         para_dictionary = {}
         port_dictionary = {}
         variables_dictionary = {}
+
+
+        fd = open(sp, errors='ignore')
+        str_for_ports = fd.read()
+        string = re.sub("\/\*.*?\*\/", "", str_for_ports, flags=re.S)
+        string = re.sub('//.*?\n', "", string, flags=re.S)
+        match = re.search("\\bmodule\s*.*?\\bendmodule\\b", string, flags=re.S)
+        if match is None:
+            print("can't find module in this file")
+            return [[], [], []]
+        force_ports = self.fa.find_port_parameter(match.group())
+        if force_ports is None:
+            print("can't find ports or parameters in module  in " + sp)
+        fd.close()
+
+
+
+
         for lineT in lines:
             resTemp2 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)',
                                 lineT)
@@ -552,6 +570,14 @@ class Verilog_tools:
         fp = open(tp, "w+")
         # print(para_dictionary)
         # print(port_dictionary)
+        for index in range(len(force_ports[0])):
+            port = force_ports[0][index]
+            if port[3] not in port_dictionary:
+                port_dictionary[port[3]] = [port[0],port[1],port[2]]
+            else:
+                del port_dictionary[port[3]]
+                port_dictionary[port[3]] = [port[0],port[1],port[2]]
+
         for lineT in lines:
             resTemp = re.search('(\\bmodule+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*ports\*/\)',
                                 lineT)
@@ -589,13 +615,17 @@ class Verilog_tools:
                         fp.write(" " * 4 + port_dictionary[port][0] + " "*(port0_len -  len(port_dictionary[port][0]))  + " " + "logic" + " " * 0 + " " + port_dictionary[port][2] +" " * (port2_len -  len(port_dictionary[port][2])) + " " + port + ",\n")
                     cnt = cnt + 1
             else:
-                fp.write(lineT)
+                if(re.match("(\s*\\binput\\b|\\boutput\\b).*?$",lineT) is None):
+                    fp.write(lineT)
 
         fp.close()
         fp = open(tp, "r+", errors='ignore')
         lines = fp.readlines()
         fp.close()
         fp = open(tp, "w+")
+        for port in port_dictionary.keys():
+            if(port in variables_dictionary):
+                del variables_dictionary[port]
         for lineT in lines:
             resTemp = re.search('\s*/\*vars\*/',
                                 lineT)
