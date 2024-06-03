@@ -28,7 +28,7 @@ task my_scoreboard::main_phase(uvm_phase phase);
    fork 
       while (1) begin
          exp_port.get(get_expect);
-         $cast(expect_tr,get_expect)
+         $cast(expect_tr,get_expect);
          expect_queue.push_back(expect_tr);
       end
       while (1) begin

@@ -89,7 +89,7 @@ class Verilog_tools:
 
         self.makefile = {"de/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_de_filelist", "r",
                                              errors="ignore").read(),
-                         "de/rtl": open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r",
+                         "de/": open(os.path.dirname(__file__) + "/makefile/makefile_de_rtl", "r",
                                         errors="ignore").read(),
                          "dv/filelist": open(os.path.dirname(__file__) + "/makefile/makefile_dv_filelist", "r",
                                              errors="ignore").read(),
@@ -101,7 +101,7 @@ class Verilog_tools:
                                         errors="ignore").read()}
         self.config = {
             "dv/tg": open(os.path.dirname(__file__) + "/config/config_dv_tg.txt", "r", errors="ignore").read(),
-            "de/rtl": open(os.path.dirname(__file__) + "/config/config_de_rtl.txt", "r", errors="ignore").read()
+            "de/": open(os.path.dirname(__file__) + "/config/config_de_rtl.txt", "r", errors="ignore").read()
         }
         self.config_lite = {
             "sim": open(os.path.dirname(__file__) + "/config/config_dv_tg_lite.txt", "r", errors="ignore").read(),

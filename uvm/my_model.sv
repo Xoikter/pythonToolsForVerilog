@@ -27,7 +27,7 @@ task my_model::main_phase(uvm_phase phase);
    super.main_phase(phase);
    while(1) begin
       port.get(drive_req);
-      $cast(drive_tr,drive_tr)
+      $cast(drive_tr,drive_tr);
       scb_tr = new("scb_tr");
       ap.write(scb_tr);
    end
