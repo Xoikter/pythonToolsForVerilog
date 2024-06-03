@@ -25,7 +25,7 @@ if __name__ == '__main__':
     name = "test"
     uvm_verbosity = "UVM_MEDIUM"
 
-    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:e",["agent_in_num=","agent_out_num=","del_pass=","uvm_verbosity="])
+    opts, argv = getopt.getopt(sys.argv[1:],"c:t:n:x:s:r:e",["agent_in_num=","agent_out_num=","del_pass=","uvm_verbosity=","sp=","tp="])
     # print(args.exclude)
     for opt, arg in opts:
         if(opt == '-e'):
@@ -72,6 +72,10 @@ if __name__ == '__main__':
                 repeat_num = int(arg)
         elif(opt == '--uvm_verbosity'):
             uvm_verbosity = arg
+        elif(opt == '--sp'):
+            sourceFile = arg
+        elif(opt == '--tp'):
+            TargetFile = arg
         elif(opt == '-agent_in_num'):
             agent_in_num = int(arg)
         elif(opt == '-agent_out_num'):
@@ -153,6 +157,10 @@ if __name__ == '__main__':
             fc.regress(repeat_num)
         elif (cmd == "sanity"):
             fc.sanity()
+        elif (cmd == "gen_top"):
+            fc.gen_top(sourceFile,TargetFile,fc.SourcePath,2)
+        elif (cmd == "gen_filelist"):
+            fc.gen_filelist(name,TargetFile)
     else:
         print ("need cmd")
 

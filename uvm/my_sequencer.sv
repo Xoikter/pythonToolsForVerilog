@@ -1,4 +1,4 @@
-class my_sequencer extends uvm_sequencer #(my_transaction);
+class my_sequencer extends uvm_sequencer;
    
    function new(string name, uvm_component parent);
       super.new(name, parent);

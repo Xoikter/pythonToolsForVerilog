@@ -1,7 +1,7 @@
 class my_model extends uvm_component;
    
-   uvm_blocking_get_port #(my_transaction)  port;
-   uvm_analysis_port #(my_transaction)  ap;
+   uvm_blocking_get_port #(uvm_sequence_item)  port;
+   uvm_analysis_port #(uvm_sequence_item)  ap;
 
    extern function new(string name, uvm_component parent);
    extern function void build_phase(uvm_phase phase);
@@ -21,12 +21,14 @@ function void my_model::build_phase(uvm_phase phase);
 endfunction
 
 task my_model::main_phase(uvm_phase phase);
-   my_transaction tr;
-   my_transaction old_tr;
+   uvm_sequence_item drive_req;
+   my_transaction drive_tr;
+   my_transaction scb_tr;
    super.main_phase(phase);
    while(1) begin
-      port.get(old_tr);
-      tr = new("tr");
-      ap.write(tr);
+      port.get(drive_req);
+      $cast(drive_tr,drive_tr);
+      scb_tr = new("scb_tr");
+      ap.write(scb_tr);
    end
 endtask

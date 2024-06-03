@@ -32,6 +32,10 @@ t_SEMI = r';'
 t_SYMBOL = r"[\#]"
 t_LPAREN = r"\("
 t_RPAREN = r"\)"
+# t_COMMENTS = r'(//.*?$|/\*.*?\*/)'
+def t_COMMENTS(t):
+    r'(//.*?$|/\*.*?\*/)'
+    return t
 def t_MODULE(t):
     r"\bmodule\b"
     return t
