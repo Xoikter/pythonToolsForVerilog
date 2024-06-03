@@ -10,7 +10,7 @@ from file_analyse import File_analyse as fa
 
 # path = "../verilog_python"
 class Verilog_tools:
-    def __init__(self,name,agent_in_num,agent_out_num):
+    def __init__(self,name='top',agent_in_num=1,agent_out_num=1):
         self.keyword = ['always', 'and', 'assign', 'begin', 'buf', 'bufif0', 'bufif1', 'case', 'casex', 'casez', 'cmos',
                         'deassign',
                         'default',
@@ -338,6 +338,61 @@ class Verilog_tools:
                 return list3
 
         return lists[index:len(lists)]
+    
+    def gen_filelist(self, name, tp):
+        source_path = self.SourcePath
+        top_module_name = name
+        flags = 1
+        fp = open(tp, "w+", errors='ignore')
+
+        if self.mapGenFlag is not True:
+            self.map_initial()
+        if flags == 1:
+            path = self.find_rtl_file(source_path, top_module_name)
+            if path is None:
+                print("can't find top module " + top_module_name + " in path" + source_path)
+                return
+            defines = self.find_define(path)
+            lists_root = []
+            define_words = []
+            for item in defines:
+                if item not in define_words:
+                    define_words.append(item)
+                define_files = self.find_rtl_define_file(source_path, item)
+                if define_files not in lists_root:
+                    lists_root.append(define_files)
+        else:
+            path = self.find_test_file(source_path, top_module_name)
+            if path is None:
+                print("can't find top module " + top_module_name + " in path" + source_path)
+                return
+            defines = self.find_define(path)
+            lists_root = []
+        lists = self.find_module(path, flags)
+        lists = self.dfs(lists, 0, flags)
+        for item in lists:
+            if flags == 1:
+                path_local = self.find_rtl_file(self.SourcePath, item)
+                string = open(path_local, "r", errors="ignore").read()
+                define_temp = self.find_define(path_local)
+                for define in define_temp:
+                    if define not in define_words:
+                        define_file = self.find_rtl_define_file(source_path, define)
+                        if define_file not in lists_root and define_file != "":
+                            lists_root.append(define_file)
+                        define_words.append(define)
+
+        file_path_temp = []
+        for item in lists:
+            temp_path = self.find_rtl_file(source_path, item)
+            if temp_path not in file_path_temp:
+                file_path_temp.append(temp_path)
+        for item in file_path_temp:
+            if item is not None:
+                # fp.write(os.path.relpath(item, target_path).replace("\\", "/") + "\n")
+                fp.write(item.replace("\\", "/") + "\n")
+        # fp.write(os.path.relpath(path, target_path).replace("\\", "/") + "\n")
+        fp.write(path.replace("\\", "/") + "\n")
 
     def filelist_gen(self, source_path, target_path, top_module_name, fp, fq, flags):
         if self.mapGenFlag is not True:
@@ -390,6 +445,173 @@ class Verilog_tools:
             if item not in file_path_temp and item is not None:
                 fq.write(os.path.relpath(item, target_path).replace("\\", "/") + "\n")
 
+    def gen_top(self, sp, tp, dic, flags):
+        # os.chdir(os.path.dirname(__file__))
+        # path = self.find_rtl_file(dic, name)
+        fp = open(sp, "r+", errors='ignore')
+        lines = fp.readlines()
+        fp.close()
+        # fp = open(path + 'bak', 'w', errors='ignore')
+        # fp.writelines(lines)
+        # fp.close()
+        fp = open(tp, "w+")
+        para_dictionary = {}
+        port_dictionary = {}
+        variables_dictionary = {}
+        for lineT in lines:
+            resTemp2 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)',
+                                lineT)
+            resTemp1 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst_i\*/\)',
+                                lineT)
+            if (resTemp2 is not None) or (resTemp1 is not None):
+                # fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
+                if resTemp2 is not None:
+                    resTemp = resTemp2
+                else:
+                    resTemp = resTemp1
+                ports = self.find_port(self.find_rtl_file(dic, resTemp.group(1)), resTemp.group(1))
+                lenStr = 0
+                len_width = 0
+                for port in ports[0]:
+                    if len(port[3]) > lenStr:
+                        lenStr = len(port[3])
+                for para in ports[1]:
+                    if len(para) > lenStr:
+                        lenStr = len(para)
+                # print(ports[1])
+                for port in ports[1]:
+                    if len(port[2]) > len_width:
+                        len_width = len(ports[2])
+                if resTemp1 is not None:
+                    for index in range(len(ports[0])):
+                        port = ports[0][index]
+                        fp.write("logic " + port[2] + " " * (len_width - len(port[2])) + " " + port[3] + ";\n")
+                if len(ports[1]) != 0:
+                    fp.write(resTemp.group(1) + " #(\n")
+                    for index in range(len(ports[1])):
+                        para = ports[1][index]
+                        if para not in para_dictionary:
+                            para_dictionary[para] = ports[2][index]
+                        if flags == 1:
+                            if index == len(ports[1]) - 1:
+                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"())" + "\n")
+                            else:
+                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"()," + "\n")
+                        else:
+                            if index == len(ports[1]) - 1:
+                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + para + " " * (
+                                        lenStr + 2 - len(para)) + r"))" + "\n")
+                            else:
+                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + para + " " * (
+                                        lenStr + 2 - len(para)) + r")," + "\n")
+
+                    fp.write(" " * len(resTemp.group(1)) + " " + resTemp.group(2) + " " + r"(" + "\n")
+                else:
+                    fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
+
+                    # print(lenStr)
+
+                for index in range(len(ports[0])):
+                    port = ports[0][index]
+                    if port[3] not in port_dictionary:
+                        if port[3] not in variables_dictionary:
+                            port_dictionary[port[3]] = [port[0],port[1],port[2]]
+                    elif port[0] != port_dictionary[port[3]][0]:
+                        del port_dictionary[port[3]]
+                        if port[3] not in variables_dictionary:
+                            variables_dictionary[port[3]] = port[2]
+
+                    
+                    if flags == 1:
+                        if index == len(ports[0]) - 1:
+                            fp.write(
+                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"());" + r"//" + port[
+                                    0] + " " * (8 - len(port[0])) + port[2] + "\n")
+                        else:
+                            fp.write(
+                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"() ," + r"//" + port[
+                                    0] + " " * (8 - len(port[0])) + port[2] + "\n")
+                    else:
+                        if index == len(ports[0]) - 1:
+                            fp.write(
+                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
+                                        lenStr + 2 - len(port[3])) + r"));" + r"//" + port[0] + " " * (
+                                        8 - len(port[0])) + port[2] + "\n")
+                        else:
+                            fp.write(
+                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
+                                        lenStr + 2 - len(port[3])) + r") ," + r"//" + port[0] + " " * (
+                                        8 - len(port[0])) + port[2] + "\n")
+
+            else:
+                fp.write(lineT)
+        fp.close()
+        fp = open(tp, "r+", errors='ignore')
+        lines = fp.readlines()
+        fp.close()
+        fp = open(tp, "w+")
+        # print(para_dictionary)
+        # print(port_dictionary)
+        for lineT in lines:
+            resTemp = re.search('(\\bmodule+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*ports\*/\)',
+                                lineT)
+            if resTemp is not None:
+                if len(para_dictionary) != 0:
+                    fp.write("module " + resTemp.group(2) + " #(\n")
+                    cnt = 0
+                    for para in para_dictionary:
+                         if cnt == len(para_dictionary) - 1:
+                             fp.write("       parameter " + para_dictionary[para] + ")\n")
+                         else:
+                            #  fp.write(para_dictionary[para] + ",\n")
+                             fp.write("       parameter " + para_dictionary[para] + ",\n")
+                         cnt = cnt + 1
+                    
+                    fp.write(" " * 10 + "(\n")
+                else:
+                    fp.write("module " + resTemp.group(2) + " (\n")
+                cnt = 0
+                port0_len = 0
+                port1_len = 0
+                port2_len = 0
+                for port in port_dictionary:
+                    if len(port_dictionary[port][0]) > port0_len:
+                        port0_len = len(port_dictionary[port][0])
+                    if len(port_dictionary[port][1]) > port1_len:
+                        port1_len = len(port_dictionary[port][1])
+                    if len(port_dictionary[port][2]) > port2_len:
+                        port2_len = len(port_dictionary[port][2])
+                    
+                for port in port_dictionary:
+                    if cnt == len(port_dictionary) - 1:
+                        fp.write(" " * 4 + port_dictionary[port][0] + " "*(port0_len -  len(port_dictionary[port][0]))  + " " + "logic" + " " * 0 + " " + port_dictionary[port][2] +" " * (port2_len -  len(port_dictionary[port][2])) + " " + port + ");\n")
+                    else:
+                        fp.write(" " * 4 + port_dictionary[port][0] + " "*(port0_len -  len(port_dictionary[port][0]))  + " " + "logic" + " " * 0 + " " + port_dictionary[port][2] +" " * (port2_len -  len(port_dictionary[port][2])) + " " + port + ",\n")
+                    cnt = cnt + 1
+            else:
+                fp.write(lineT)
+
+        fp.close()
+        fp = open(tp, "r+", errors='ignore')
+        lines = fp.readlines()
+        fp.close()
+        fp = open(tp, "w+")
+        for lineT in lines:
+            resTemp = re.search('\s*/\*vars\*/',
+                                lineT)
+            if resTemp is not None :
+                name_len = 0
+                width_len = 0
+                for var in variables_dictionary:
+                    if(len(var) > name_len):
+                        name_len = len(var)
+                    if(len(variables_dictionary[var]) > width_len):
+                        width_len = len(variables_dictionary[var])
+                for var in variables_dictionary:
+                    fp.write("logic " + variables_dictionary[var] + " " * (width_len - len(variables_dictionary[var])) + " " + var + " " * (name_len - len(var)) + " ;\n")
+            else:
+                fp.write(lineT)
+        fp.close()
 
     def file_inst(self, dic, name, flags=1):
         # os.chdir(os.path.dirname(__file__))
