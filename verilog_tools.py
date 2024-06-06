@@ -475,24 +475,56 @@ class Verilog_tools:
 
 
 
+        sk_index = 0
 
-        for lineT in lines:
+        for line_index in range(len(lines)):
+            if(sk_index != 0):
+                sk_index = sk_index - 1
+                continue
+            lineT = lines[line_index]
             resTemp2 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst\*/\)',
                                 lineT)
             resTemp1 = re.search('(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s+(\\b[a-zA-Z_][a-zA-Z0-9_$]+\\b)\s*\(/\*inst_i\*/\)',
                                 lineT)
+                    
             if (resTemp2 is not None) or (resTemp1 is not None):
                 # fp.write(resTemp.group(1) + " " + resTemp.group(2) + " " + r"(" + "\n")
                 if resTemp2 is not None:
                     resTemp = resTemp2
                 else:
                     resTemp = resTemp1
+                res_ports = re.search("\s*\{.*?",lines[line_index + 1])
+
                 ports = self.find_port(self.find_rtl_file(dic, resTemp.group(1)), resTemp.group(1))
-                lenStr = 0
-                len_width = 0
+                temp_ports = {}
+                if (res_ports is not None):
+                    for temp_index in range(line_index + 1,len(lines)):
+                        res_temp_port = re.search("(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\:\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)",lines[temp_index])
+                        if(res_temp_port is not None):
+                            for port in ports[0]:
+                                if(res_temp_port.group(1) == port[3]):
+                                    temp_ports[res_temp_port.group(1)] = res_temp_port.group(2)
+                                    break
+                        res_break = re.search("\s*\}.*?",lines[temp_index])
+                        sk_index = sk_index + 1
+                        if(res_break is not None):
+                            break
+
                 for port in ports[0]:
-                    if len(port[3]) > lenStr:
-                        lenStr = len(port[3])
+                    if(port[3] not in temp_ports):
+                        temp_ports[port[3]] = port[3]
+                lenStr = 0
+                lenStr1 = 0
+                len_width = 0
+                # for port in ports[0]:
+                #     if len(port[3]) > lenStr:
+                #         lenStr = len(port[3])
+                for port in temp_ports:
+                    if len(port) > lenStr:
+                        lenStr = len(port)
+                for port in temp_ports:
+                    if len(temp_ports[port]) > lenStr1:
+                        lenStr1 = len(temp_ports[port])
                 for para in ports[1]:
                     if len(para) > lenStr:
                         lenStr = len(para)
@@ -531,13 +563,14 @@ class Verilog_tools:
 
                 for index in range(len(ports[0])):
                     port = ports[0][index]
-                    if port[3] not in port_dictionary:
-                        if port[3] not in variables_dictionary:
-                            port_dictionary[port[3]] = [port[0],port[1],port[2]]
-                    elif port[0] != port_dictionary[port[3]][0]:
-                        del port_dictionary[port[3]]
-                        if port[3] not in variables_dictionary:
-                            variables_dictionary[port[3]] = port[2]
+                    port_rename = temp_ports[port[3]]
+                    if port_rename not in port_dictionary:
+                        if port_rename not in variables_dictionary:
+                            port_dictionary[port_rename] = [port[0],port[1],port[2]]
+                    elif port[0] != port_dictionary[port_rename][0]:
+                        del port_dictionary[port_rename]
+                        if port_rename not in variables_dictionary:
+                            variables_dictionary[port_rename] = port[2]
 
                     
                     if flags == 1:
@@ -552,13 +585,13 @@ class Verilog_tools:
                     else:
                         if index == len(ports[0]) - 1:
                             fp.write(
-                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
-                                        lenStr + 2 - len(port[3])) + r"));" + r"//" + port[0] + " " * (
+                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + temp_ports[port[3]] + " " * (
+                                        lenStr1 + 2 - len(temp_ports[port[3]])) + r"));" + r"//" + port[0] + " " * (
                                         8 - len(port[0])) + port[2] + "\n")
                         else:
                             fp.write(
-                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + port[3] + " " * (
-                                        lenStr + 2 - len(port[3])) + r") ," + r"//" + port[0] + " " * (
+                                " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + temp_ports[port[3]] + " " * (
+                                        lenStr1 + 2 - len(temp_ports[port[3]])) + r") ," + r"//" + port[0] + " " * (
                                         8 - len(port[0])) + port[2] + "\n")
 
             else:
