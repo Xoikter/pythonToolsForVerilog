@@ -19,3 +19,12 @@ all:
 
 regress:
 	python ${PYTOOLS_HOME}/main.py -c regress -n ${name}  -s ${SEED} -x ${TC} -r ${REPEAT} --del_pass ${DEL_PASS} --uvm_verbosity ${UVM_VERBOSITY}
+
+lint:
+	python ${PYTOOLS_HOME}/main.py -c lint -n ${name}
+
+lint_gui:
+	python ${PYTOOLS_HOME}/main.py -c lint_gui -n ${name}
+
+dc:
+	python ${PYTOOLS_HOME}/main.py -c dc -n ${name}

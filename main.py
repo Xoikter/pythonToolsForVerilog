@@ -148,6 +148,12 @@ if __name__ == '__main__':
             fc.env_initial(0)
         elif (cmd == "comp"):
             fc.comp()
+        elif (cmd == "lint"):
+            fc.lint()
+        elif (cmd == "dc"):
+            fc.dc()
+        elif (cmd == "lint_gui"):
+            fc.lint_gui()
         elif (cmd == "sim"):
             fc.sim(testcase,seed,repeat_num,0)
         elif (cmd == "all"):

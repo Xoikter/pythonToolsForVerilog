@@ -97,6 +97,10 @@ class Verilog_tools:
                                        errors="ignore").read(),
                          "dv/sim": open(os.path.dirname(__file__) + "/makefile/makefile_dv_sim", "r",
                                         errors="ignore").read(),
+                         "lint": open(os.path.dirname(__file__) + "/makefile/makefile_lint", "r",
+                                        errors="ignore").read(),
+                         "syn": open(os.path.dirname(__file__) + "/makefile/makefile_syn", "r",
+                                        errors="ignore").read(),
                          "sim": open(os.path.dirname(__file__) + "/makefile/makefile_sim", "r",
                                         errors="ignore").read()}
         self.config = {
@@ -135,6 +139,9 @@ class Verilog_tools:
         self.build_py = open(os.path.dirname(__file__) + "/build/build.py", "r", errors="ignore").read()
         self.test_list_py = open(os.path.dirname(__file__) + "/test_list/test_list.py", "r", errors="ignore").read()
         self.regress_py = open(os.path.dirname(__file__) + "/test_list/regress.py", "r", errors="ignore").read()
+
+        self.dc_tcl = open(os.path.dirname(__file__) + "/rtl_qc/dc.tcl", "r", errors="ignore").read()
+        self.spy_tcl = open(os.path.dirname(__file__) + "/rtl_qc/spy.tcl", "r", errors="ignore").read()
 
     def test_map_initial(self):
         for relpath, dirs, files in os.walk(self.TargetPath):
@@ -1729,6 +1736,8 @@ class Verilog_tools:
             os.makedirs(targetPath + "/" + name + "/sim_ctrl")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl/build")
             os.makedirs(targetPath + "/" + name + "/sim_ctrl/test_list")
+            os.makedirs(targetPath + "/" + name + "/sim_ctrl/syn")
+            os.makedirs(targetPath + "/" + name + "/sim_ctrl/rtl_qc")
             # os.chdir(targetPath+"/"+name)
             for item in self.uvc:
                 fp = open(targetPath + "/" + name + "/uvc/" + name + "_" + item + ".sv", "w")
@@ -1797,6 +1806,14 @@ class Verilog_tools:
             fp = open(targetPath + name + "/sim_ctrl/test_list/regress.py", "w")
             fp.write(self.regress_py)
             fp.close()
+            fp = open(targetPath + name + "/sim_ctrl/syn/dc.tcl", "w")
+            fp.write(re.sub("my_top",name,self.dc_tcl))
+            fp.close()
+            fp = open(targetPath + name + "/sim_ctrl/rtl_qc/spy.tcl", "w")
+            fp.write(re.sub("my_top",name,self.spy_tcl))
+            fp.close()
+            fp = open(targetPath + name + "/sim_ctrl/rtl_qc/spy_waive.awl", "w")
+            fp.close()
             fp = open(targetPath + name + "/build/synopsys_sim.setup", "w")
             fp.write("WORK>DEFAULT\n")
             fp.write("DEFAULT:./work\n")
@@ -1804,6 +1821,41 @@ class Verilog_tools:
             fp.close()
         else:
             print("workspace exist")
+
+    def lint(self):
+        if not os.path.isdir( "../work/"):
+            print("[INFO] no work directory, create it")
+            os.makedirs("../work/")
+        if not os.path.isdir( "../work/lint"):
+            print("[INFO] no lint work directory, create it")
+            os.makedirs("../work/lint")
+            fp = open("../work/lint/makefile", "w")
+            fp.write(re.sub("my",self.filename, self.makefile["lint"]))
+            fp.close()
+        os.system("cd ../work/lint; sg_shell -tcl ../../sim_ctrl/rtl_qc/spy.tcl | tee lint.log")
+
+    def dc(self):
+        if not os.path.isdir( "../work/"):
+            print("[INFO] no work directory, create it")
+            os.makedirs("../work/")
+        if not os.path.isdir( "../work/syn"):
+            print("[INFO] no syn work directory, create it")
+            os.makedirs("../work/syn")
+            os.makedirs("../work/syn/report")
+            os.makedirs("../work/syn/netlist")
+            os.makedirs("../work/syn/script")
+            os.makedirs("../work/syn/sdc")
+            os.makedirs("../work/syn/svf")
+            fp = open("../work/syn/makefile", "w")
+            fp.write(re.sub("my",self.filename, self.makefile["syn"]))
+            fp.close()
+        os.system("cd ../work/syn; dc_shell -f ../../sim_ctrl/syn/dc.tcl | tee lint.log")
+        
+    def lint_gui(self):
+        if not os.path.isdir( "../work/lint"):
+            print("[INFO] no lint work directory")
+        else:
+            os.system("cd ../work/lint; make lint_gui")
 
     def env_initial(self,flag):
         # os.chdir(os.getcwd())
