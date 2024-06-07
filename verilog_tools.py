@@ -478,6 +478,25 @@ class Verilog_tools:
         force_ports = self.fa.find_port_parameter(match.group())
         if force_ports is None:
             print("can't find ports or parameters in module  in " + sp)
+        
+        for index in range(len(force_ports[0])):
+            port = force_ports[0][index]
+            if port[3] not in port_dictionary:
+                port_dictionary[port[3]] = [port[0],port[1],port[2]]
+            else:
+                del port_dictionary[port[3]]
+                port_dictionary[port[3]] = [port[0],port[1],port[2]]
+
+        force_vars = re.findall("(?:^|\n)\s*(reg|wire|logic)\\b\s*\\b(signed)?\\b\s*(\[.*?\])?\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*)\\b",match.group()
+                                    )
+        print(force_vars)
+        if force_vars is None:
+            print("can't find vars define in module  in " + sp)
+        else:
+            for force_var in force_vars:
+                if(force_var[3] not in port_dictionary):
+                    variables_dictionary[force_var[3]] = force_var[2]
+
         fd.close()
 
 
@@ -504,6 +523,7 @@ class Verilog_tools:
 
                 ports = self.find_port(self.find_rtl_file(dic, resTemp.group(1)), resTemp.group(1))
                 temp_ports = {}
+                temp_paras = {}
                 if (res_ports is not None):
                     for temp_index in range(line_index + 1,len(lines)):
                         res_temp_port = re.search("(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)\s*\:\s*(\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b)",lines[temp_index])
@@ -511,6 +531,10 @@ class Verilog_tools:
                             for port in ports[0]:
                                 if(res_temp_port.group(1) == port[3]):
                                     temp_ports[res_temp_port.group(1)] = res_temp_port.group(2)
+                                    break
+                            for para in ports[1]:
+                                if(res_temp_port.group(1) == para):
+                                    temp_paras[res_temp_port.group(1)] = res_temp_port.group(2)
                                     break
                         res_break = re.search("\s*\}.*?",lines[temp_index])
                         sk_index = sk_index + 1
@@ -520,8 +544,12 @@ class Verilog_tools:
                 for port in ports[0]:
                     if(port[3] not in temp_ports):
                         temp_ports[port[3]] = port[3]
+                for para in ports[1]:
+                    if(para not in temp_paras):
+                        temp_paras[para] = para
                 lenStr = 0
                 lenStr1 = 0
+                lenStr2 = 0
                 len_width = 0
                 # for port in ports[0]:
                 #     if len(port[3]) > lenStr:
@@ -532,9 +560,12 @@ class Verilog_tools:
                 for port in temp_ports:
                     if len(temp_ports[port]) > lenStr1:
                         lenStr1 = len(temp_ports[port])
-                for para in ports[1]:
+                for para in temp_paras:
                     if len(para) > lenStr:
                         lenStr = len(para)
+                for para in temp_paras:
+                    if len(temp_paras[para]) > lenStr2:
+                        lenStr2 = len(temp_paras[para])
                 # print(ports[1])
                 for port in ports[1]:
                     if len(port[2]) > len_width:
@@ -548,7 +579,10 @@ class Verilog_tools:
                     for index in range(len(ports[1])):
                         para = ports[1][index]
                         if para not in para_dictionary:
-                            para_dictionary[para] = ports[2][index]
+                            temp_str = ports[2][index]
+                            for temp_para in temp_paras:
+                                temp_str = re.sub("\\b" + temp_para + "\\b",temp_paras[temp_para],temp_str)
+                            para_dictionary[temp_paras[para]] = temp_str
                         if flags == 1:
                             if index == len(ports[1]) - 1:
                                 fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"())" + "\n")
@@ -556,11 +590,11 @@ class Verilog_tools:
                                 fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"()," + "\n")
                         else:
                             if index == len(ports[1]) - 1:
-                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + para + " " * (
-                                        lenStr + 2 - len(para)) + r"))" + "\n")
+                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + temp_paras[para] + " " * (
+                                        lenStr + 2 - len(temp_paras[para])) + r"))" + "\n")
                             else:
-                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + para + " " * (
-                                        lenStr + 2 - len(para)) + r")," + "\n")
+                                fp.write(" " * 8 + r"." + para + " " * (lenStr + 2 - len(para)) + r"(" + temp_paras[para] + " " * (
+                                        lenStr + 2 - len(temp_paras[para])) + r")," + "\n")
 
                     fp.write(" " * len(resTemp.group(1)) + " " + resTemp.group(2) + " " + r"(" + "\n")
                 else:
@@ -571,13 +605,16 @@ class Verilog_tools:
                 for index in range(len(ports[0])):
                     port = ports[0][index]
                     port_rename = temp_ports[port[3]]
+                    temp_port_width_str = port[2]
+                    for temp_para in temp_paras:
+                        temp_port_width_str = re.sub("\\b" + temp_para + "\\b",temp_paras[temp_para],temp_port_width_str)
                     if port_rename not in port_dictionary:
                         if port_rename not in variables_dictionary:
-                            port_dictionary[port_rename] = [port[0],port[1],port[2]]
+                            port_dictionary[port_rename] = [port[0],port[1],temp_port_width_str]
                     elif port[0] != port_dictionary[port_rename][0]:
                         del port_dictionary[port_rename]
                         if port_rename not in variables_dictionary:
-                            variables_dictionary[port_rename] = port[2]
+                            variables_dictionary[port_rename] = temp_port_width_str
 
                     
                     if flags == 1:
@@ -594,12 +631,12 @@ class Verilog_tools:
                             fp.write(
                                 " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + temp_ports[port[3]] + " " * (
                                         lenStr1 + 2 - len(temp_ports[port[3]])) + r"));" + r"//" + port[0] + " " * (
-                                        8 - len(port[0])) + port[2] + "\n")
+                                        8 - len(port[0])) + temp_port_width_str  + "\n")
                         else:
                             fp.write(
                                 " " * 8 + r"." + port[3] + " " * (lenStr + 2 - len(port[3])) + r"(" + temp_ports[port[3]] + " " * (
                                         lenStr1 + 2 - len(temp_ports[port[3]])) + r") ," + r"//" + port[0] + " " * (
-                                        8 - len(port[0])) + port[2] + "\n")
+                                        8 - len(port[0])) + temp_port_width_str + "\n")
 
             else:
                 fp.write(lineT)
@@ -680,7 +717,15 @@ class Verilog_tools:
                 for var in variables_dictionary:
                     fp.write("logic " + variables_dictionary[var] + " " * (width_len - len(variables_dictionary[var])) + " " + var + " " * (name_len - len(var)) + " ;\n")
             else:
-                fp.write(lineT)
+                del_line = False
+                for force_var in force_vars:
+                    var2_t = force_var[2].replace("[","\[")
+                    var2_t = var2_t.replace("]","\]")
+                    if(re.search("\s*" + force_var[0] + "\s*" + force_var[1] + "\s*(\[.*\])?\s*" + force_var[3] + "\s*",lineT,flags=re.S) is not None):
+                        print(lineT)
+                        del_line = True
+                if(del_line is not True):
+                    fp.write(lineT)
         fp.close()
 
     def file_inst(self, dic, name, flags=1):
