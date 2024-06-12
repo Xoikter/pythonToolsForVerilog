@@ -1888,6 +1888,7 @@ class Verilog_tools:
             os.makedirs("../work/syn")
             os.makedirs("../work/syn/report")
             os.makedirs("../work/syn/netlist")
+            os.makedirs("../work/syn/log")
             os.makedirs("../work/syn/script")
             os.makedirs("../work/syn/sdc")
             os.makedirs("../work/syn/svf")
