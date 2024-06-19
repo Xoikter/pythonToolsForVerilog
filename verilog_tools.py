@@ -366,7 +366,7 @@ class Verilog_tools:
                 if item not in define_words:
                     define_words.append(item)
                 define_files = self.find_rtl_define_file(source_path, item)
-                if define_files not in lists_root:
+                if define_files not in lists_root  and define_files != "":
                     lists_root.append(define_files)
         else:
             path = self.find_test_file(source_path, top_module_name)
